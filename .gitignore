@@ -1,3 +1,5 @@
+**/venv
+
 # vscode-python
 .DS_Store
 .huskyrc.json
