@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import scipy.signal as signal
 import cv2
 import math
 import numpy as np
@@ -16,7 +17,7 @@ def detect_color(image: np.ndarray, color: np.ndarray, th_mag: float, th_ang: fl
    img_mags = np.linalg.norm(image, axis=2)
    
    dp = np.tensordot(image, color, axes=(2,0))
-
+   
    out = np.arccos(dp / col_mag / img_mags) < th_ang
    out *= img_mags > th_mag
    return out
@@ -56,8 +57,18 @@ filtered_yellow = detect_color(rgb, ideal_yellow, 200, 0.25)
 yellow = filtered_yellow * 255
 yellow = yellow.astype(np.uint8)
 
+
 ideal_white = np.array([255, 255, 255])
+
 filtered_white = detect_color(rgb, ideal_white, 175, 0.1)
+blur_size = 100
+h1 = (1/(blur_size**2)) * np.ones((blur_size,blur_size))
+blurred_white = signal.convolve2d(filtered_white, h1)
+blurred_white /= np.max(blurred_white)
+cv2.imshow(window_name, blurred_white)
+cv2.waitKey(0) 
+cv2.destroyAllWindows() 
+
 
 ideal_yellow_bgr = ideal_yellow[::-1]
 ideal_yellow_bgr_img = np.tile(ideal_yellow_bgr, (img_shape[1], img_shape[0], 1))
