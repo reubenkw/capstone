@@ -23,7 +23,7 @@ def detect_color(image: np.ndarray, color: np.ndarray, th_mag: float, th_ang: fl
    return out
    
 def nearWhite(image, centroid):
-   return image[int(centroid[1])][int(centroid[0])] > 0.2
+   return image[int(centroid[1])][int(centroid[0])] > 100
 
 def gaussian_filter(n_rows, n_cols, stdv):
     """
@@ -59,16 +59,19 @@ yellow = yellow.astype(np.uint8)
 ideal_white = np.array([255, 255, 255])
 
 filtered_white = detect_color(rgb, ideal_white, 175, 0.1)
-# blur_size = 100
-# h1 = (1/(blur_size**2)) * np.ones((blur_size,blur_size))
-h1 = gaussian_filter(100, 100, 50)
+blur_size = 100
+h1 = (1/(blur_size)) * np.ones((1,blur_size))
+h2 = (1/(blur_size)) * np.ones((blur_size, 1))
 
 blurred_white = signal.convolve2d(filtered_white, h1)
-blurred_white /= np.max(blurred_white)
+blurred_white = signal.convolve2d(blurred_white, h2)
+pad = int(blur_size/2)
+blurred_white = blurred_white[pad:len(blurred_white)-pad+1]
+blurred_white = blurred_white[:, pad:len(blurred_white[0])-pad+1]
+blurred_white /= np.max(blurred_white) 
+blurred_white *= 255.0
 
-cv2.imshow(window_name, blurred_white)
-cv2.waitKey(0) 
-cv2.destroyAllWindows() 
+cv2.imwrite("blurred_white.png", blurred_white)
 
 ideal_yellow_bgr = ideal_yellow[::-1]
 ideal_yellow_bgr_img = np.tile(ideal_yellow_bgr, (img_shape[1], img_shape[0], 1))
@@ -116,10 +119,6 @@ stats = output[2]
 # The fourth cell is the centroid matrix
 centroids = output[3]
 
-print(len(centroids))
-print(len(filtered))
-print(len(filtered[0]))
-
 numBlobs = 0
 
 for i in range(len(stats)-1):
@@ -127,13 +126,10 @@ for i in range(len(stats)-1):
       filtered[int(centroids[i][1])][int(centroids[i][0])] = [0, 0, 255]
       numBlobs += 1
 
-print(numBlobs)
-
 print(f"Time taken: {(time.time_ns() - t_start) * 1e-9:.5f} [s]")
 # elin original commit: [37.40255, 25.84262]
 
-
-
+cv2.imwrite("filtered.png", filtered)
 cv2.imshow(window_name, filtered)
 cv2.waitKey(0) 
 cv2.destroyAllWindows() 
