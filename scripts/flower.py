@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import scipy.signal as signal
 import cv2
 import math
 import numpy as np
@@ -38,22 +39,20 @@ def detect_color(image: np.ndarray, color: np.ndarray, th_mag: float, th_ang: fl
    mask *= img_mags > th_mag
    return mask
    
-def nearWhite(image, centroid, area):
-   numWhitePixels=0
-   length = int(math.sqrt(area))
-   for i in range(-1*length, length):
-      for j in range(-1*length, length):
-         if (i < 0):
-            x_index = min(max(0, int(centroid[1]) + i - length), len(image)-1)
-         else :
-            x_index = min(max(0, int(centroid[1]) + i + length), len(image)-1)
-         if (j < 0):   
-            y_index = min(max(0, int(centroid[0]) + j - length), len(image[0])-1)
-         else :
-            y_index = min(max(0, int(centroid[0]) + j + length), len(image[0])-1)
-         if (np.all(image[x_index][y_index] == 255)):
-            numWhitePixels+=1
-   return numWhitePixels > area * 0.1
+def nearWhite(image, centroid):
+   return image[int(centroid[1])][int(centroid[0])] > 100
+
+def gaussian_filter(n_rows, n_cols, stdv):
+    """
+    Returns a 2d Gaussian image filter.
+    """
+    g_r = signal.windows.gaussian(n_rows, stdv)
+    g_c = signal.windows.gaussian(n_cols, stdv)
+
+    G = np.outer(g_r, g_c)
+
+    return G/np.sum(G)
+
 
    
 filtered = np.zeros_like(image)
@@ -67,15 +66,30 @@ filtered = np.zeros_like(image)
 #       yellow[i][j] = 255
 
 rgb = image[...,::-1].copy()
-plot_image(rgb, filename="scripts/plots/original.png")
+plot_image(rgb, filename="original.png")
 # ideal yellow in rgb
 ideal_yellow = np.array([255, 255, 0])
 filtered_yellow = detect_color(rgb, ideal_yellow, 200, 0.25)
 yellow = filtered_yellow * 255
 yellow = yellow.astype(np.uint8)
 
+
 ideal_white = np.array([255, 255, 255])
+
 filtered_white = detect_color(rgb, ideal_white, 175, 0.1)
+blur_size = 100
+h1 = (1/(blur_size)) * np.ones((1,blur_size))
+h2 = (1/(blur_size)) * np.ones((blur_size, 1))
+
+blurred_white = signal.convolve2d(filtered_white, h1)
+blurred_white = signal.convolve2d(blurred_white, h2)
+pad = int(blur_size/2)
+blurred_white = blurred_white[pad:len(blurred_white)-pad+1]
+blurred_white = blurred_white[:, pad:len(blurred_white[0])-pad+1]
+blurred_white /= np.max(blurred_white) 
+blurred_white *= 255.0
+
+plot_image(blurred_white, filename="blurred_white.png")
 
 ideal_yellow_bgr = ideal_yellow[::-1]
 ideal_yellow_bgr_img = np.tile(ideal_yellow_bgr, (img_shape[1], img_shape[0], 1))
@@ -122,16 +136,16 @@ stats = output[2]
 # The fourth cell is the centroid matrix
 centroids: np.ndarray = output[3]
 
-plot_image(filtered[..., ::-1], filename="scripts/plots/masks.png")
+plot_image(filtered[..., ::-1], filename="masks.png")
 print(f"Number of yellow centroids: {len(centroids)}")
 
 filtered_centroids = []
 for i in range(len(stats)-1):
-   if (nearWhite(filtered, centroids[i], stats[i][cv2.CC_STAT_AREA])):
+   if (nearWhite(blurred_white, centroids[i])):
       filtered[int(centroids[i][1])][int(centroids[i][0])] = [0, 0, 255]
       filtered_centroids.append([centroids[i, 0], centroids[i, 1]])
 
-plot_image(rgb, filtered_centroids, filename="scripts/plots/centroids.png")
+plot_image(rgb, filtered_centroids, filename="centroids.png")
 
 # clusters are grouped together in lists
 clusters = cluster(filtered_centroids, d = 50)
@@ -141,7 +155,7 @@ for c in clusters:
    c_arr = np.array(c)
    c_avg = np.mean(c_arr, axis=0)
    detections.append((c_avg[0], c_avg[1]))
-plot_image(rgb, detections, filename="scripts/plots/detected_flowers.png")
+plot_image(rgb, detections, filename="detected_flowers.png")
 
 print(f"Time taken: {(time.time_ns() - t_start) * 1e-9:.5f} [s]")
 # elin original commit: [37.40255, 25.84262]
