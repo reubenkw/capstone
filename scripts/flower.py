@@ -22,22 +22,20 @@ def detect_color(image: np.ndarray, color: np.ndarray, th_mag: float, th_ang: fl
    out *= img_mags > th_mag
    return out
    
-def nearWhite(image, centroid, area):
-   numWhitePixels=0
-   length = int(math.sqrt(area))
-   for i in range(-1*length, length):
-      for j in range(-1*length, length):
-         if (i < 0):
-            x_index = min(max(0, int(centroid[1]) + i - length), len(image)-1)
-         else :
-            x_index = min(max(0, int(centroid[1]) + i + length), len(image)-1)
-         if (j < 0):   
-            y_index = min(max(0, int(centroid[0]) + j - length), len(image[0])-1)
-         else :
-            y_index = min(max(0, int(centroid[0]) + j + length), len(image[0])-1)
-         if (np.all(image[x_index][y_index] == 255)):
-            numWhitePixels+=1
-   return numWhitePixels > area * 0.1
+def nearWhite(image, centroid):
+   return image[int(centroid[1])][int(centroid[0])] > 0.2
+
+def gaussian_filter(n_rows, n_cols, stdv):
+    """
+    Returns a 2d Gaussian image filter.
+    """
+    g_r = signal.windows.gaussian(n_rows, stdv)
+    g_c = signal.windows.gaussian(n_cols, stdv)
+
+    G = np.outer(g_r, g_c)
+
+    return G/np.sum(G)
+
 
    
 filtered = np.zeros_like(image)
@@ -61,14 +59,16 @@ yellow = yellow.astype(np.uint8)
 ideal_white = np.array([255, 255, 255])
 
 filtered_white = detect_color(rgb, ideal_white, 175, 0.1)
-blur_size = 100
-h1 = (1/(blur_size**2)) * np.ones((blur_size,blur_size))
+# blur_size = 100
+# h1 = (1/(blur_size**2)) * np.ones((blur_size,blur_size))
+h1 = gaussian_filter(100, 100, 50)
+
 blurred_white = signal.convolve2d(filtered_white, h1)
 blurred_white /= np.max(blurred_white)
+
 cv2.imshow(window_name, blurred_white)
 cv2.waitKey(0) 
 cv2.destroyAllWindows() 
-
 
 ideal_yellow_bgr = ideal_yellow[::-1]
 ideal_yellow_bgr_img = np.tile(ideal_yellow_bgr, (img_shape[1], img_shape[0], 1))
@@ -123,7 +123,7 @@ print(len(filtered[0]))
 numBlobs = 0
 
 for i in range(len(stats)-1):
-   if (nearWhite(filtered, centroids[i], stats[i][cv2.CC_STAT_AREA])):
+   if (nearWhite(blurred_white, centroids[i])):
       filtered[int(centroids[i][1])][int(centroids[i][0])] = [0, 0, 255]
       numBlobs += 1
 
