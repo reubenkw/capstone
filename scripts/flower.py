@@ -111,6 +111,8 @@ def detect_flowers(img) -> tuple[list[tuple[int, int]], dict]:
     for c in centroids:
         if nearWhite(blurred_white, c):
             filtered_centroids.append([c[0], c[1]])
+    info["n_filtered_centroids"] = len(filtered_centroids)
+    info["filtered_centroids"] = filtered_centroids
 
     # clusters are grouped together in lists
     clusters = cluster(filtered_centroids, d=50)
@@ -129,6 +131,7 @@ def test_detect_flower(path="scripts/data/flowers.jpg"):
 
     detections, info = detect_flowers(original)
     plot_image(original, info["centroids"], filename="centroids.png")
+    plot_image(original, info["filtered_centroids"], filename="filtered_centroids.png")
     plot_image(original, detections, filename="detected_flowers.png")
     plot_image(info["masks"], filename="masks.png")
     plot_image(info["blur_white"], filename="blurred_white.png")
