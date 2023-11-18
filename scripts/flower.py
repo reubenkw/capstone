@@ -4,162 +4,131 @@ import cv2
 import math
 import numpy as np
 import time
-from clustering import cluster
+from clustering import cluster, centroids_from_clusters
 from plotting import plot_image
+from utils import timing
 
-t_start = time.time_ns()
 
-img_shape = (756, 800)
-image = cv2.imread('scripts/data/flowers.jpg')
-image = cv2.resize(image, img_shape)
-window_name = 'flowers'
-
-def detect_color(image: np.ndarray, color: np.ndarray, th_mag: float, th_ang: float) -> np.ndarray:
-   """
-   image: image with shape (X, Y, 3)
-   color: color in same space as image (3,)
-   th_mag: each pixel in the image must have at least this magnitude
-   th_ang: threshold for angle between each pixel and filter color
-   returns:
-      mask: shape (X, Y)
-   """
-   near_zero = 0.0001
-
-   col_mag = np.linalg.norm(color)
-   img_mags = np.linalg.norm(image, axis=2)
-   
-   dp = np.tensordot(image, color, axes=(2,0))
-
-   # avoid divide by zero error
-   img_mags[img_mags == 0] = near_zero
-   if not col_mag:
-      col_mag = near_zero
-   
-   mask = np.arccos(dp / col_mag / img_mags) < th_ang
-   mask *= img_mags > th_mag
-   return mask
-   
-def nearWhite(image, centroid):
-   return image[int(centroid[1])][int(centroid[0])] > 100
-
-def gaussian_filter(n_rows, n_cols, stdv):
+def detect_color(
+    image: np.ndarray, color: np.ndarray, th_mag: float, th_ang: float
+) -> np.ndarray:
     """
-    Returns a 2d Gaussian image filter.
+    image: image with shape (X, Y, 3)
+    color: color in same space as image (3,)
+    th_mag: each pixel in the image must have at least this magnitude
+    th_ang: threshold for angle between each pixel and filter color
+    returns:
+       mask: shape (X, Y)
     """
-    g_r = signal.windows.gaussian(n_rows, stdv)
-    g_c = signal.windows.gaussian(n_cols, stdv)
+    near_zero = 0.0001
 
-    G = np.outer(g_r, g_c)
+    col_mag = np.linalg.norm(color)
+    img_mags = np.linalg.norm(image, axis=2)
 
-    return G/np.sum(G)
+    dp = np.tensordot(image, color, axes=(2, 0))
 
+    # avoid divide by zero error
+    img_mags[img_mags == 0] = near_zero
+    if not col_mag:
+        col_mag = near_zero
 
-   
-filtered = np.zeros_like(image)
-# yellow = np.zeros([image.shape[0], image.shape[1]], np.uint8)
-# for i in range (image.shape[0]-1) :
-#   for j in range (image.shape[1]-1) :
-#     if (detect_white([image[i][j][2], image[i][j][1], image[i][j][0]])):
-#       filtered[i][j] = [255, 255, 255]
-#     elif (detect_yellow([image[i][j][2], image[i][j][1], image[i][j][0]])):
-#       filtered[i][j] = [0, 255, 255]
-#       yellow[i][j] = 255
-
-rgb = image[...,::-1].copy()
-plot_image(rgb, filename="original.png")
-# ideal yellow in rgb
-ideal_yellow = np.array([255, 255, 0])
-filtered_yellow = detect_color(rgb, ideal_yellow, 200, 0.25)
-yellow = filtered_yellow * 255
-yellow = yellow.astype(np.uint8)
+    mask = np.arccos(dp / col_mag / img_mags) < th_ang
+    mask *= img_mags > th_mag
+    return mask
 
 
-ideal_white = np.array([255, 255, 255])
+def nearWhite(img, centroid) -> bool:
+    return img[int(centroid[1])][int(centroid[0])] > 100
 
-filtered_white = detect_color(rgb, ideal_white, 175, 0.1)
 
-numRows = 100
-stdDev = 50
-# h1 = (1/(blur_size)) * np.ones((1,blur_size))
-# h2 = (1/(blur_size)) * np.ones((blur_size, 1))
-oneDimGaussian = np.outer(signal.windows.gaussian(numRows, stdDev), 1)
-oneDimGaussian = oneDimGaussian/np.sum(oneDimGaussian)
-blurred_white = signal.convolve2d(filtered_white, oneDimGaussian)
-blurred_white = signal.convolve2d(blurred_white, np.transpose(oneDimGaussian))
-pad = int(numRows/2)
+def blur_img(img, numRows=100, stdDev=50):
+    oneDimGaussian = np.outer(signal.windows.gaussian(numRows, stdDev), 1)
+    oneDimGaussian = oneDimGaussian / np.sum(oneDimGaussian)
+    blur = signal.convolve2d(img, oneDimGaussian)
+    blur = signal.convolve2d(blur, np.transpose(oneDimGaussian))
+    pad = int(numRows / 2)
 
-blurred_white = blurred_white[pad:len(blurred_white)-pad+1]
-blurred_white = blurred_white[:, pad:len(blurred_white[0])-pad+1]
-blurred_white /= np.max(blurred_white) 
-blurred_white *= 255.0
+    blur = blur[pad : len(blur) - pad + 1]
+    blur = blur[:, pad : len(blur[0]) - pad + 1]
+    blur /= np.max(blur)
+    blur *= 255.0
 
-plot_image(blurred_white, filename="blurred_white.png")
+    return blur
 
-ideal_yellow_bgr = ideal_yellow[::-1]
-ideal_yellow_bgr_img = np.tile(ideal_yellow_bgr, (img_shape[1], img_shape[0], 1))
-filtered = np.where(np.tile(filtered_yellow.T, (3, 1, 1)).T, ideal_yellow_bgr_img, filtered)
 
-ideal_white_bgr = ideal_white[::-1]
-ideal_white_bgr_img = np.tile(ideal_white_bgr, (img_shape[1], img_shape[0], 1))
-filtered = np.where(np.tile(filtered_white.T, (3, 1, 1)).T, ideal_white_bgr_img, filtered)
+def add_mask_to_img(img, mask, color) -> np.ndarray:
+    """
+    img: rgb (width, height, 3)
+    mask: greyscale (width, height)
+    color: rgb color (3,) or image (width, height)
+    """
+    width, height, _ = img.shape
+    if color.ndim == 1:
+        color = np.tile(color, (width, height, 1))
+    return np.where(np.tile(mask.T, (3, 1, 1)).T, color, img).astype(np.uint8)
 
-filtered = filtered.astype(np.uint8)
 
-# # Setup SimpleBlobDetector parameters.
-# params = cv2.SimpleBlobDetector_Params()
- 
-# # Filter by Area.
-# params.filterByArea = True
-# params.minArea = 1
-# params.maxArea = 100000
+# TODO: switch to float coordinates 0.0->1.0
+def detect_flowers(img) -> tuple[list[tuple[int, int]], dict]:
+    """
+    img: rgb
+    return:
+       detections: list of x, y points in pixels from top left
+       info: dict
+    """
+    info = {}
 
-# # Filter by Circularity
-# params.filterByCircularity = False
- 
-# # Filter by Convexity
-# params.filterByConvexity = False
- 
-# # Filter by Inertia
-# params.filterByInertia = False
+    # colors in rgb
+    ideal_yellow = np.array([255, 255, 0])
+    ideal_white = np.array([255, 255, 255])
 
-# detector = cv2.SimpleBlobDetector_create(params)
-# yellow_keypoints = detector.detect(yellow)
-# print(len(yellow_keypoints))
+    mask_yellow = detect_color(img, ideal_yellow, 200, 0.25)
+    info["mask_yellow"] = mask_yellow
+    mask_white = detect_color(img, ideal_white, 175, 0.1)
 
-# im_with_keypoints = cv2.drawKeypoints(yellow, yellow_keypoints, np.array([]), (0,0,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
- 
-output =  cv2.connectedComponentsWithStats(yellow, 8)
+    blurred_white = blur_img(mask_white)
+    info["blur_white"] = blurred_white
 
-# Get the results
-# The first cell is the number of labels
-num_labels = output[0]
-# The second cell is the label matrix
-labels = output[1]
-# The third cell is the stat matrix
-stats = output[2]
-# The fourth cell is the centroid matrix
-centroids: np.ndarray = output[3]
+    mask_overlay = np.zeros_like(img)
+    mask_overlay = add_mask_to_img(mask_overlay, mask_yellow, ideal_yellow)
+    mask_overlay = add_mask_to_img(mask_overlay, mask_white, ideal_white)
+    info["masks"] = mask_overlay
 
-plot_image(filtered[..., ::-1], filename="masks.png")
-print(f"Number of yellow centroids: {len(centroids)}")
+    output = cv2.connectedComponentsWithStats((mask_yellow * 255).astype(np.uint8), 8)
+    # The third cell is the stat matrix
+    # stats = output[2]
+    # The fourth cell is the centroid matrix
+    centroids: np.ndarray = output[3]
+    centroids = centroids.tolist()
+    info["n_centroids"] = len(centroids)
+    info["centroids"] = centroids
 
-filtered_centroids = []
-for i in range(len(stats)-1):
-   if (nearWhite(blurred_white, centroids[i])):
-      filtered[int(centroids[i][1])][int(centroids[i][0])] = [0, 0, 255]
-      filtered_centroids.append([centroids[i, 0], centroids[i, 1]])
+    filtered_centroids = []
+    for c in centroids:
+        if nearWhite(blurred_white, c):
+            filtered_centroids.append([c[0], c[1]])
 
-plot_image(rgb, filtered_centroids, filename="centroids.png")
+    # clusters are grouped together in lists
+    clusters = cluster(filtered_centroids, d=50)
+    detections = centroids_from_clusters(clusters)
+    info["n_detections"] = len(detections)
 
-# clusters are grouped together in lists
-clusters = cluster(filtered_centroids, d = 50)
-print(f"Number of clusters {len(clusters)}")
-detections = []
-for c in clusters:
-   c_arr = np.array(c)
-   c_avg = np.mean(c_arr, axis=0)
-   detections.append((c_avg[0], c_avg[1]))
-plot_image(rgb, detections, filename="detected_flowers.png")
+    return detections, info
 
-print(f"Time taken: {(time.time_ns() - t_start) * 1e-9:.5f} [s]")
-# elin original commit: [37.40255, 25.84262]
+
+def test_detect_flower(path="scripts/data/flowers.jpg"):
+    img_shape = (756, 800)
+    # original in rgb
+    original = cv2.imread(path)[..., ::-1]
+    original = cv2.resize(original, img_shape)
+    plot_image(original, filename="original.png")
+
+    detections, info = detect_flowers(original)
+    plot_image(original, info["centroids"], filename="centroids.png")
+    plot_image(original, detections, filename="detected_flowers.png")
+    plot_image(info["masks"], filename="masks.png")
+    plot_image(info["blur_white"], filename="blurred_white.png")
+
+
+if __name__ == "__main__":
+    test_detect_flower()
