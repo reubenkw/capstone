@@ -9,6 +9,7 @@ from plotting import plot_image
 from utils import timing
 
 
+@timing(print_args=False)
 def detect_color(
     image: np.ndarray, color: np.ndarray, th_mag: float, th_ang: float
 ) -> np.ndarray:
@@ -41,6 +42,7 @@ def nearWhite(img, centroid) -> bool:
     return img[int(centroid[1])][int(centroid[0])] > 100
 
 
+@timing(print_args=False)
 def blur_img(img, numRows=100, stdDev=50):
     oneDimGaussian = np.outer(signal.windows.gaussian(numRows, stdDev), 1)
     oneDimGaussian = oneDimGaussian / np.sum(oneDimGaussian)
@@ -56,6 +58,7 @@ def blur_img(img, numRows=100, stdDev=50):
     return blur
 
 
+@timing(print_args=False)
 def add_mask_to_img(img, mask, color) -> np.ndarray:
     """
     img: rgb (width, height, 3)
@@ -69,6 +72,7 @@ def add_mask_to_img(img, mask, color) -> np.ndarray:
 
 
 # TODO: switch to float coordinates 0.0->1.0
+@timing(print_args=False)
 def detect_flowers(img) -> tuple[list[tuple[int, int]], dict]:
     """
     img: rgb
