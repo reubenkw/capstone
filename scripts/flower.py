@@ -77,13 +77,17 @@ yellow = yellow.astype(np.uint8)
 ideal_white = np.array([255, 255, 255])
 
 filtered_white = detect_color(rgb, ideal_white, 175, 0.1)
-blur_size = 100
-h1 = (1/(blur_size)) * np.ones((1,blur_size))
-h2 = (1/(blur_size)) * np.ones((blur_size, 1))
 
-blurred_white = signal.convolve2d(filtered_white, h1)
-blurred_white = signal.convolve2d(blurred_white, h2)
-pad = int(blur_size/2)
+numRows = 100
+stdDev = 50
+# h1 = (1/(blur_size)) * np.ones((1,blur_size))
+# h2 = (1/(blur_size)) * np.ones((blur_size, 1))
+oneDimGaussian = np.outer(signal.windows.gaussian(numRows, stdDev), 1)
+oneDimGaussian = oneDimGaussian/np.sum(oneDimGaussian)
+blurred_white = signal.convolve2d(filtered_white, oneDimGaussian)
+blurred_white = signal.convolve2d(blurred_white, np.transpose(oneDimGaussian))
+pad = int(numRows/2)
+
 blurred_white = blurred_white[pad:len(blurred_white)-pad+1]
 blurred_white = blurred_white[:, pad:len(blurred_white[0])-pad+1]
 blurred_white /= np.max(blurred_white) 
