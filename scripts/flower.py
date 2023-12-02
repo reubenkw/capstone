@@ -94,21 +94,26 @@ def detect_flowers(img) -> tuple[list[tuple[int, int]], dict]:
     info["blur_white"] = blurred_white
 
     mask_overlay = np.zeros_like(img)
-    mask_overlay = add_mask_to_img(mask_overlay, mask_yellow, ideal_yellow)
     mask_overlay = add_mask_to_img(mask_overlay, mask_white, ideal_white)
+    mask_overlay = add_mask_to_img(mask_overlay, mask_yellow, ideal_yellow)
     info["masks"] = mask_overlay
 
     output = cv2.connectedComponentsWithStats((mask_yellow * 255).astype(np.uint8), 8)
-    # The third cell is the stat matrix
-    # stats = output[2]
+    stats: np.array = output[2]
+    stats = stats[1::]  # disregard first background blob
+    areas = stats[:, cv2.CC_STAT_AREA].tolist()
+    info["centroid_areas"] = areas
     # The fourth cell is the centroid matrix
     centroids: np.ndarray = output[3]
+    centroids = centroids[1::]  # disregard first background blob
     centroids = centroids.tolist()
     info["n_centroids"] = len(centroids)
     info["centroids"] = centroids
 
     filtered_centroids = []
-    for c in centroids:
+    for c, area in zip(centroids, areas):
+        if area < 25:
+            continue
         if nearWhite(blurred_white, c):
             filtered_centroids.append([c[0], c[1]])
     info["n_filtered_centroids"] = len(filtered_centroids)
@@ -122,19 +127,32 @@ def detect_flowers(img) -> tuple[list[tuple[int, int]], dict]:
     return detections, info
 
 
-def test_detect_flower(path="scripts/data/flowers.jpg"):
+def test_detect_flower(path="scripts/data/closed_flowers.png"):
     img_shape = (756, 800)
     # original in rgb
     original = cv2.imread(path)[..., ::-1]
     original = cv2.resize(original, img_shape)
-    plot_image(original, filename="original.png")
 
     detections, info = detect_flowers(original)
-    plot_image(original, info["centroids"], filename="centroids.png")
-    plot_image(original, info["filtered_centroids"], filename="filtered_centroids.png")
-    plot_image(original, detections, filename="detected_flowers.png")
-    plot_image(info["masks"], filename="masks.png")
-    plot_image(info["blur_white"], filename="blurred_white.png")
+
+    # save individual images
+    # plot_image(original, filename="original.png")
+    # plot_image(info["masks"], filename="masks.png")
+    # plot_image(original, info["centroids"], filename="centroids.png")
+    # plot_image(info["blur_white"], filename="blurred_white.png")
+    # plot_image(original, info["filtered_centroids"], filename="filtered_centroids.png")
+    # plot_image(original, detections, filename="detected_flowers.png")
+
+    fig, axs = plt.subplots(2, 3, figsize=(11, 7))
+    plot_image(axs[0, 0], original, title="Original")
+    plot_image(axs[0, 1], info["masks"], title="Masks")
+    plot_image(axs[0, 2], original, info["centroids"], title="Centroids")
+    plot_image(axs[1, 0], info["blur_white"], title="Blurred White")
+    plot_image(axs[1, 1], original, info["filtered_centroids"], title="Filtered Centroids")
+    plot_image(axs[1, 2], original, detections, title="Detected Flowers")
+
+    fig.tight_layout()
+    fig.savefig("scripts/plots/subplots.png")
 
 
 if __name__ == "__main__":
