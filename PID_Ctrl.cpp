@@ -2,37 +2,26 @@
 
 #include <cassert>
 
-PID_Ctrl::PID_Ctrl(double pterm, double iterm, double dterm, int intWindowSize, int deriveWindowSize) :
-    pterm(pterm), iterm(iterm), dterm(dterm), intWindowSize(intWindowSize), deriveWindowSize(deriveWindowSize) { }
+PID_Ctrl::PID_Ctrl(double pterm, double iterm, double dterm, double integratorClamp) :
+    pterm(pterm), iterm(iterm), dterm(dterm), integratorClamp(integratorClamp) {
+        assert(("integrator clamp value should be positive", integratorClamp >= 0 ));
+     }
 
 double PID_Ctrl::update_ctrl_signal(double error, double timestep){
 
     double derivative = (error-last_error)/timestep;
-    // average derivative
-    if (counter < deriveWindowSize){
-        derivativehistory.push_back(derivative);
-        derivativeSum += derivative;
-    } else {
-        derivativeSum -= derivativehistory.at(counter%deriveWindowSize);
-        derivativehistory.at(counter%deriveWindowSize) = derivative;
-        derivativeSum += derivative;
-    }
-
     double error_inc = error * timestep;
-    // moving window integral
-    if (counter < intWindowSize){
-        history.push_back(error_inc);
-        integratorSum += error_inc;
-    } else {
-        integratorSum -= history.at(counter%intWindowSize);
-        history.at(counter%intWindowSize) = error_inc;
-        integratorSum += error_inc;
-    }    
-    
-    counter++;
 
+    integratorSum += error_inc;
+
+    if (integratorSum > integratorClamp) {
+        integratorSum = integratorClamp;
+    } else if (integratorSum < -1 * integratorClamp) {
+        integratorSum = -1 * integratorClamp;
+    }
+    
     return pterm * error 
-        + dterm * derivativeSum/derivativehistory.size()
+        + dterm * derivative
         + iterm * integratorSum;
     
 }

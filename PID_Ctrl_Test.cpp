@@ -4,7 +4,7 @@
 #include "PID_Ctrl.h"
 
 int main(){
-    PID_Ctrl pid_ctrl(10, 1, 2);
+    PID_Ctrl pid_ctrl(10, 1, 2, 5);
     
     std::ofstream myfile;
     myfile.open ("testing.csv");
