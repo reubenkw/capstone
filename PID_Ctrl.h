@@ -3,19 +3,19 @@
 
 #include <vector>
 
-class PID_Ctrl{
-    double pterm;
-    double iterm;
-    double dterm;
-    
-    double integratorClamp;
+class PID_Ctrl {
+	double pterm;
+	double iterm;
+	double dterm;
 
-    double integratorSum = 0;
-    double last_error = 0;
+	double integratorClamp;
 
-    public:
-        PID_Ctrl(double pterm, double iterm, double dterm, double integratorClamp);
-        double update_ctrl_signal(double error, double timestep);
+	double integratorSum = 0;
+	double last_error = 0;
+
+public:
+	PID_Ctrl(double pterm, double iterm, double dterm, double integratorClamp);
+	double update_ctrl_signal(double error, double timestep);
 };
 
 #endif //h

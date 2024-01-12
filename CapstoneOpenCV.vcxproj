@@ -19,21 +19,21 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Imaging.cpp" />
+    <ClCompile Include="imaging.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="MotorController.cpp" />
-    <ClCompile Include="PID_Ctrl.cpp" />
-    <ClCompile Include="PID_Ctrl_Test.cpp" />
-    <ClCompile Include="Robot.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Imaging.h" />
-    <ClInclude Include="MotorController.h" />
-    <ClInclude Include="PID_Ctrl.h" />
-    <ClInclude Include="Robot.h" />
+    <ClCompile Include="motor_controller.cpp" />
+    <ClCompile Include="pid_ctrl.cpp" />
+    <ClCompile Include="pid_ctrl_test.cpp" />
+    <ClCompile Include="robot.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="lena.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="imaging.h" />
+    <ClInclude Include="motor_controller.h" />
+    <ClInclude Include="pid_ctrl.h" />
+    <ClInclude Include="robot.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
