@@ -2,6 +2,8 @@
 
 #include <cmath>
 
+#define IDEAL_LINEAR_SPEED 0.1
+
 Robot::Robot(double robotLength, double robotWidth, double wheelRadius, Camera & camera, double robotPosTol, double armPosTol) 
     : robotLength(robotLength), robotWidth(robotWidth), wheelRadius(wheelRadius), camera(camera), robotPosTol(robotPosTol), armPosTol(armPosTol) {
     // TODO: pid terms need to be determined experimentally
@@ -53,7 +55,7 @@ void Robot::driveRobotForward(Point idealPos) {
 		double r = calculate_radius(delta.x, delta.y);
 
 		// TODO: how to figure ideal v?
-		double v = 1;
+		double v = IDEAL_LINEAR_SPEED;
 		double w = v / r;
 		double leftWheelSpeed = calculate_wheel_speed(v, -1 * w);
 		double rightWheelSpeed = calculate_wheel_speed(v, w);
@@ -70,21 +72,16 @@ void Robot::driveRobotForward(Point idealPos) {
 
 }
 
-void Robot::moveArm(Point idealPos) {
-	Point delta = idealPos - armPosition;
+void Robot::moveServoArm(ServoMotor motor, double pos) {
+	double delta = pos - armPosition[pos];
+	while (delta < armPosTol) {
+		// TODO: how to figure ideal v?
+		double idealSpeed = IDEAL_LINEAR_SPEED;
 
-	while (delta.mag() < armPosTol) {
-		double idealSpeedx = 1;
-		double idealSpeedy = 1;
-		double idealSpeedz = 1;
 		// TODO: do we need PID controllers ideal speed of servo arm position? 
-		servoArm[x].setIdealSpeed(idealSpeedx);
-		servoArm[y].setIdealSpeed(idealSpeedy);
-		servoArm[z].setIdealSpeed(idealSpeedz);
-
+		servoArm[motor].setIdealSpeed(idealSpeed);
 		updateArmPosition();
-
-		delta = idealPos - armPosition;
+		delta = pos - armPosition[pos];
 	}
 }
 
@@ -98,7 +95,7 @@ std::vector<Point> Robot::findFlowerCenters(Image const& image) {
 }
 
 // TODO: Find center of row
-double findYCenterOfPlant(Image const& image) {
+double Robot::findYCenterOfPlant(Image const& image) {
 	return 0;
 }
 

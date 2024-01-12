@@ -16,6 +16,7 @@ class PID_Ctrl {
 public:
 	PID_Ctrl(double pterm, double iterm, double dterm, double integratorClamp);
 	double update_ctrl_signal(double error, double timestep);
+	void reset_ctrller();
 };
 
 #endif //h

@@ -4,10 +4,11 @@
 #include "motor_controller.h"
 #include "imaging.h"
 
+#include <stdexcept>
 #include <math.h> 
 
-enum DriveMotors { frontLeft, backLeft, frontRight, backRight };
-enum ServoMotors { x, y, z };
+enum DriveMotor { frontLeft, backLeft, frontRight, backRight };
+enum ServoMotor { x, y, z };
 
 struct Point {
 	double x;
@@ -19,6 +20,12 @@ struct Point {
 	bool operator!=(Point const& rhs) { return !(*this == rhs); }
 	Point operator+(Point const& rhs) { return Point(x + rhs.x, y + rhs.y, z + rhs.z); }
 	Point operator-(Point const& rhs) { return Point(x - rhs.x, y - rhs.y, z - rhs.z); }
+	double& operator[](int index) {
+		if (index == 0) return x;
+		else if (index == 1) return y;
+		else if (index == 2) return z;
+		else throw std::out_of_range("Index out of range");
+	}
 	double mag() { return sqrt(x * x + y * y + z * z); }
 };
 
@@ -49,7 +56,7 @@ public:
 
 	double calculate_wheel_speed(double v, double w);
 	void driveRobotForward(Point idealPos);
-	void moveArm(Point idealPos);
+	void moveServoArm(ServoMotor motor, double pos);
 	void pollinate();
 	std::vector<Point> findFlowerCenters(Image const& image);
 	double findYCenterOfPlant(Image const& image);

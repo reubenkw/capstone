@@ -26,3 +26,7 @@ double PID_Ctrl::update_ctrl_signal(double error, double timestep) {
 		+ iterm * integratorSum;
 
 }
+
+void PID_Ctrl::reset_ctrller() {
+	integratorSum = 0;
+}
