@@ -1,5 +1,7 @@
 #include "Robot.h"
 
+#include <cmath>
+
 Robot::Robot(double robotLength, double robotWidth, double wheelRadius, Camera & camera, double robotPosTol, double armPosTol) 
     : robotLength(robotLength), robotWidth(robotWidth), wheelRadius(wheelRadius), camera(camera), robotPosTol(robotPosTol), armPosTol(armPosTol) {
     // pid terms need to be determined experimentally
