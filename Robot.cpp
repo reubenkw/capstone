@@ -2,13 +2,13 @@
 
 #include <cmath>
 
-Robot::Robot(double robotLength, double robotWidth, double wheelRadius, Camera& camera, double robotPosTol, double armPosTol)
-	: robotLength(robotLength), robotWidth(robotWidth), wheelRadius(wheelRadius), camera(camera), robotPosTol(robotPosTol), armPosTol(armPosTol) {
-	// pid terms need to be determined experimentally
-	drive[frontLeft] = MotorController(10, 1, 1, 5, 0);
-	drive[backLeft] = MotorController(10, 1, 1, 5, 0);
-	drive[frontRight] = MotorController(10, 1, 1, 5, 0);
-	drive[backRight] = MotorController(10, 1, 1, 5, 0);
+Robot::Robot(double robotLength, double robotWidth, double wheelRadius, Camera & camera, double robotPosTol, double armPosTol) 
+    : robotLength(robotLength), robotWidth(robotWidth), wheelRadius(wheelRadius), camera(camera), robotPosTol(robotPosTol), armPosTol(armPosTol) {
+    // TODO: pid terms need to be determined experimentally
+    drive[frontLeft] = MotorController(10, 1, 1, 5, 0);
+    drive[backLeft] = MotorController(10, 1, 1, 5, 0);
+    drive[frontRight] = MotorController(10, 1, 1, 5, 0);
+    drive[backRight] = MotorController(10, 1, 1, 5, 0);
 
 	servoArm[x] = MotorController(10, 1, 1, 5, 0);
 	servoArm[y] = MotorController(10, 1, 1, 5, 0);
@@ -40,6 +40,7 @@ double calculate_radius(double delta_x, double delta_y) {
 
 // From MTE 544 Modeling III IV Lecture Slide 16
 // Pass in -w for left wheel
+// Assume positive w is CCW orientation
 double Robot::calculate_wheel_speed(double v, double w) {
 	return 1 / wheelRadius * (v + robotWidth * w / 2 + std::pow(robotLength * w / 2, 2) / (v + robotWidth * w / 2));
 }
