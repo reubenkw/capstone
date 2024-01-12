@@ -4,7 +4,7 @@
 
 Robot::Robot(double robotLength, double robotWidth, double wheelRadius, Camera & camera, double robotPosTol, double armPosTol) 
     : robotLength(robotLength), robotWidth(robotWidth), wheelRadius(wheelRadius), camera(camera), robotPosTol(robotPosTol), armPosTol(armPosTol) {
-    // pid terms need to be determined experimentally
+    // TODO: pid terms need to be determined experimentally
     drive[frontLeft] = MotorController(10, 1, 1, 5, 0);
     drive[backLeft] = MotorController(10, 1, 1, 5, 0);
     drive[frontRight] = MotorController(10, 1, 1, 5, 0);
