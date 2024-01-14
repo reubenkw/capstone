@@ -73,7 +73,7 @@ void Robot::driveRobotForward(Point idealPos) {
 }
 
 void Robot::moveServoArm(ServoMotor motor, double pos) {
-	double delta = pos - armPosition[pos];
+	double delta = pos - armPosition[motor];
 	while (delta < armPosTol) {
 		// TODO: how to figure ideal v?
 		double idealSpeed = IDEAL_LINEAR_SPEED;
@@ -81,21 +81,11 @@ void Robot::moveServoArm(ServoMotor motor, double pos) {
 		// TODO: do we need PID controllers ideal speed of servo arm position? 
 		servoArm[motor].setIdealSpeed(idealSpeed);
 		updateArmPosition();
-		delta = pos - armPosition[pos];
+		delta = pos - armPosition[motor];
 	}
 }
 
 // TODO: perform pollination pattern
 void Robot::pollinate() { }
 
-// TODO: Fancy schmancy image processing
-std::vector<Point> Robot::findFlowerCenters(Image const& image) {
-	std::vector<Point> flowerCenters;
-	return flowerCenters;
-}
-
-// TODO: Find center of row
-double Robot::findYCenterOfPlant(Image const& image) {
-	return 0;
-}
 

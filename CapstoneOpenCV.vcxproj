@@ -23,16 +23,13 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="motor_controller.cpp" />
     <ClCompile Include="pid_ctrl.cpp" />
-    <ClCompile Include="pid_ctrl_test.cpp" />
     <ClCompile Include="robot.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="lena.png" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="imaging.h" />
     <ClInclude Include="motor_controller.h" />
     <ClInclude Include="pid_ctrl.h" />
+    <ClInclude Include="point.h" />
     <ClInclude Include="robot.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

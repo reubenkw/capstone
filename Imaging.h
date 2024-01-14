@@ -1,21 +1,27 @@
 #ifndef IMAGING_H
 #define IMAGING_H
 
-const int IMAGE_WIDTH = 1280;
-const int IMAGE_HEIGHT = 720;
+#include "point.h"
+
+#include <vector>
+#include <opencv2/opencv.hpp>
+
+std::vector<Point> findFlowerCenters(cv::Mat &  image);
+double findYCenterOfPlant(cv::Mat & image);
 
 struct Pixel {
-	double r;
-	double g;
-	double b;
+	uint8_t r;
+	uint8_t g;
+	uint8_t b;
 };
 
-class Image {
-	Pixel image[IMAGE_WIDTH][IMAGE_HEIGHT];
-public:
-	Pixel readPixelVal(int x, int y);
-	void writePixelVal(int x, int y, Pixel val);
+struct Image {
+	int height;
+	int width;
+	Pixel * pixels;
 };
+
+// TODO: conversion between Image returned from Camera and cv::Mat
 
 class Camera {
 public:
