@@ -24,8 +24,7 @@ int image_processing_test() {
 	}
 
 	cv::cvtColor(image, image, cv::COLOR_BGR2RGB);
-	cv::imshow("image", image);
-	cv::waitKey(0);
+	cv::imwrite(".\\plots\\flowers.jpg", image);
 
 	return 0;
 }
