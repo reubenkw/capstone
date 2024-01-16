@@ -1102,3 +1102,8 @@ dkms.conf
 *.dis
 # C/C++ binary extension file
 *.bin
+
+CapstoneOpenCV.sln
+CapstoneOpenCV.vcxproj
+CapstoneOpenCV.vcxproj.filters
+CapstoneOpenCV.vcxproj.user
