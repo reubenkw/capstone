@@ -8,7 +8,7 @@ Robot::Robot(double robotLength, double robotWidth, double wheelRadius, Camera &
     : robotLength(robotLength), robotWidth(robotWidth), wheelRadius(wheelRadius), camera(camera), robotPosTol(robotPosTol), armPosTol(armPosTol) {
     // TODO: pid terms need to be determined experimentally
     drive[frontLeft] = MotorController(10, 1, 1, 5, 0);
-    drive[backLeft] = MotorController(10, 1, 1, 5, 0);
+	drive[backLeft] = MotorController(10, 1, 1, 5, 0);
     drive[frontRight] = MotorController(10, 1, 1, 5, 0);
     drive[backRight] = MotorController(10, 1, 1, 5, 0);
 
@@ -70,6 +70,11 @@ void Robot::driveRobotForward(Point idealPos) {
 		delta = idealPos - robotPosition;
 	}
 
+	drive[frontLeft].setIdealSpeed(0);
+	drive[backLeft].setIdealSpeed(0);
+	drive[frontRight].setIdealSpeed(0);
+	drive[backRight].setIdealSpeed(0);
+
 }
 
 void Robot::moveServoArm(ServoMotor motor, double pos) {
@@ -83,6 +88,7 @@ void Robot::moveServoArm(ServoMotor motor, double pos) {
 		updateArmPosition();
 		delta = pos - armPosition[pos];
 	}
+	servoArm[motor].setIdealSpeed(0);
 }
 
 // TODO: perform pollination pattern
