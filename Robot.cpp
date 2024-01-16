@@ -30,6 +30,8 @@ Point Robot::getArmPosition() {
 
 // how are we going to do this? 
 // should it just be called at the end of each robot move function? 
+// update robot position or delta 
+// for calculating how much farther we have to go
 void Robot::updateRobotPosition() {}
 void Robot::updateArmPosition() {}
 
@@ -65,6 +67,11 @@ void Robot::driveRobotForward(Point idealPos) {
 		drive[frontRight].setIdealSpeed(rightWheelSpeed);
 		drive[backRight].setIdealSpeed(rightWheelSpeed);
 
+		drive[frontLeft].update();
+		drive[backLeft].update();
+		drive[frontRight].update();
+		drive[backRight].update();
+
 		updateRobotPosition();
 
 		delta = idealPos - robotPosition;
@@ -79,12 +86,14 @@ void Robot::driveRobotForward(Point idealPos) {
 
 void Robot::moveServoArm(ServoMotor motor, double pos) {
 	double delta = pos - armPosition[pos];
-	while (delta < armPosTol) {
-		// TODO: how to figure ideal v?
-		double idealSpeed = IDEAL_LINEAR_SPEED;
+	// TODO: how to figure ideal v?
+	double idealSpeed = IDEAL_LINEAR_SPEED;
 
-		// TODO: do we need PID controllers ideal speed of servo arm position? 
-		servoArm[motor].setIdealSpeed(idealSpeed);
+	// TODO: do we need PID controllers ideal speed of servo arm position? 
+	servoArm[motor].setIdealSpeed(idealSpeed);
+
+	while (delta < armPosTol) {
+		servoArm[motor].update();
 		updateArmPosition();
 		delta = pos - armPosition[pos];
 	}
