@@ -15,7 +15,7 @@ double MotorController::readEncoderValue() {
 	return 1;
 }
 
-void MotorController::outputMotorVoltage() {
+void MotorController::update() {
 	double encoderVal = readEncoderValue();
 	std::chrono::time_point<std::chrono::system_clock> currentTime = std::chrono::system_clock::now();
 	double deltaT = (std::chrono::duration_cast<std::chrono::seconds>(currentTime - lastUpdateTime)).count();

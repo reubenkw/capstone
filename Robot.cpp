@@ -8,7 +8,7 @@ Robot::Robot(double robotLength, double robotWidth, double wheelRadius, Camera &
     : robotLength(robotLength), robotWidth(robotWidth), wheelRadius(wheelRadius), camera(camera), robotPosTol(robotPosTol), armPosTol(armPosTol) {
     // TODO: pid terms need to be determined experimentally
     drive[frontLeft] = MotorController(10, 1, 1, 5, 0);
-    drive[backLeft] = MotorController(10, 1, 1, 5, 0);
+	drive[backLeft] = MotorController(10, 1, 1, 5, 0);
     drive[frontRight] = MotorController(10, 1, 1, 5, 0);
     drive[backRight] = MotorController(10, 1, 1, 5, 0);
 
@@ -30,6 +30,8 @@ Point Robot::getArmPosition() {
 
 // how are we going to do this? 
 // should it just be called at the end of each robot move function? 
+// update robot position or delta 
+// for calculating how much farther we have to go
 void Robot::updateRobotPosition() {}
 void Robot::updateArmPosition() {}
 
@@ -65,24 +67,37 @@ void Robot::driveRobotForward(Point idealPos) {
 		drive[frontRight].setIdealSpeed(rightWheelSpeed);
 		drive[backRight].setIdealSpeed(rightWheelSpeed);
 
+		drive[frontLeft].update();
+		drive[backLeft].update();
+		drive[frontRight].update();
+		drive[backRight].update();
+
 		updateRobotPosition();
 
 		delta = idealPos - robotPosition;
 	}
 
+	drive[frontLeft].setIdealSpeed(0);
+	drive[backLeft].setIdealSpeed(0);
+	drive[frontRight].setIdealSpeed(0);
+	drive[backRight].setIdealSpeed(0);
+
 }
 
 void Robot::moveServoArm(ServoMotor motor, double pos) {
-	double delta = pos - armPosition[motor];
-	while (delta < armPosTol) {
-		// TODO: how to figure ideal v?
-		double idealSpeed = IDEAL_LINEAR_SPEED;
+	double delta = pos - armPosition[pos];
+	// TODO: how to figure ideal v?
+	double idealSpeed = IDEAL_LINEAR_SPEED;
 
-		// TODO: do we need PID controllers ideal speed of servo arm position? 
-		servoArm[motor].setIdealSpeed(idealSpeed);
+	// TODO: do we need PID controllers ideal speed of servo arm position? 
+	servoArm[motor].setIdealSpeed(idealSpeed);
+
+	while (delta < armPosTol) {
+		servoArm[motor].update();
 		updateArmPosition();
 		delta = pos - armPosition[motor];
 	}
+	servoArm[motor].setIdealSpeed(0);
 }
 
 // TODO: perform pollination pattern
