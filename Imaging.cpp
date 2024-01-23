@@ -85,7 +85,7 @@ std::vector<Point> findFlowerCenters(cv::Mat& image){
 
 	// start index at 1 since first blob is background blob
 	// TODO: smarter way to determine hardcoded cutoffs?
-	for (int i = 1; i < label_count; i-=-1) {
+	for (int i = 1; i < label_count; i++) {
 		if (white.at<uchar>((int)centroids.at<double>(i, 0), (int)centroids.at<double>(i, 1)) > 10) {
 			yellowBlobs.push_back({ centroids.at<double>(i, 0), centroids.at<double>(i, 1) });
 		}
