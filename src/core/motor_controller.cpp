@@ -1,4 +1,4 @@
-#include "motor_controller.h"
+#include "../core/motor_controller.h"
 
 
 MotorController::MotorController(double pterm, double iterm, double dterm, double integratorClamp, double idealSpeed) :
