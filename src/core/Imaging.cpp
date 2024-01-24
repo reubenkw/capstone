@@ -75,10 +75,10 @@ std::vector<Point> findFlowerCenters(cv::Mat& image){
 	double brightest = brightestPixelVal(image);
 
 	cv::Mat yellowMask = colorMask(image, brightest, {255, 255, 0}, 0.25);
-	cv::imwrite(".\\plots\\yellow.png", yellowMask);
+	cv::imwrite("./plots/yellow.png", yellowMask);
 	cv::Mat white = colorMask(image, brightest, {255, 255, 255}, 0.1);
 	cv::blur(white, white, cv::Size(100, 100));
-	cv::imwrite(".\\plots\\blurredWhite.png", white);
+	cv::imwrite("./plots/blurredWhite.png", white);
 
 	cv::Mat labels, stats, centroids;
 	int label_count = cv::connectedComponentsWithStats(yellowMask, labels, stats, centroids);
