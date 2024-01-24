@@ -1,5 +1,5 @@
-#include "PID_Ctrl.h"
-#include "Imaging.h"
+#include "pid_ctrl.h"
+#include "imaging.h"
 
 #include <stdio.h>
 #include <iostream>

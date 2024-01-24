@@ -1,7 +1,7 @@
 #ifndef MOTOR_CONTROLLER_H
 #define MOTOR_CONTROLLER_H
 
-#include "PID_Ctrl.h"
+#include "pid_ctrl.h"
 #include <chrono>
 
 class MotorController {
