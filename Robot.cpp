@@ -95,7 +95,7 @@ void Robot::moveServoArm(ServoMotor motor, double pos) {
 	while (delta < armPosTol) {
 		servoArm[motor].update();
 		updateArmPosition();
-		delta = pos - armPosition[pos];
+		delta = pos - armPosition[motor];
 	}
 	servoArm[motor].setIdealSpeed(0);
 }
@@ -103,14 +103,4 @@ void Robot::moveServoArm(ServoMotor motor, double pos) {
 // TODO: perform pollination pattern
 void Robot::pollinate() { }
 
-// TODO: Fancy schmancy image processing
-std::vector<Point> Robot::findFlowerCenters(Image const& image) {
-	std::vector<Point> flowerCenters;
-	return flowerCenters;
-}
-
-// TODO: Find center of row
-double Robot::findYCenterOfPlant(Image const& image) {
-	return 0;
-}
 
