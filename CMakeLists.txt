@@ -1,0 +1,8 @@
+cmake_minimum_required(VERSION 3.0)
+project( capstone )
+find_package( OpenCV REQUIRED )
+include_directories( ${OpenCV_INCLUDE_DIRS} )
+include_directories( ${CMAKE_SOURCE_DIR}/include/core )
+add_executable( capstone src/core/Imaging.cpp  src/core/PID_Ctrl.cpp src/core/motor_controller.cpp src/core/Robot.cpp src/core/main.cpp)
+target_link_libraries( capstone ${OpenCV_LIBS} )
+MESSAGE ( include directories ) 

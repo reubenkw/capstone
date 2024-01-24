@@ -2,7 +2,7 @@
 #define ROBOT_H
 
 #include "motor_controller.h"
-#include "imaging.h"
+#include "Imaging.h"
 #include "point.h"
 
 enum DriveMotor { frontLeft, backLeft, frontRight, backRight };

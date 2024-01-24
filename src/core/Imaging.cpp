@@ -1,4 +1,4 @@
-#include "../core/imaging.h"
+#include "Imaging.h"
 
 #include <stdexcept>
 #include <iostream>
