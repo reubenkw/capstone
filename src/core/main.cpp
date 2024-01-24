@@ -4,10 +4,13 @@
 #include <stdio.h>
 #include <iostream>
 #include <fstream>
+#include <cstdlib>
+
+std::string const HOME = std::getenv("HOME") ? std::getenv("HOME") : ".";
 
 int image_processing_test() {
 	cv::Mat image;
-	image = cv::imread(".\\data\\flowers.jpg");
+	image = cv::imread( HOME + "/capstone/data/flowers.jpg");
 	cv::resize(image, image, cv::Size(), 0.25, 0.25);
 	cv::cvtColor(image, image, cv::COLOR_BGR2RGB);
 
@@ -24,7 +27,7 @@ int image_processing_test() {
 	}
 
 	cv::cvtColor(image, image, cv::COLOR_BGR2RGB);
-	cv::imwrite(".\\plots\\flowers.jpg", image);
+	cv::imwrite(HOME + "/capstone/plots/flowers.jpg", image);
 
 	return 0;
 }
