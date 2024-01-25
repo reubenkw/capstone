@@ -18,6 +18,8 @@ Robot::Robot(double robotLength, double robotWidth, double wheelRadius, Camera &
 
 	robotPosition = Point(0, 0, 0);
 	armPosition = Point(0, 0, 0);
+
+	// TODO: Initialize i2c bus connection 
 }
 
 Point Robot::getRobotPosition() {

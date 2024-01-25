@@ -1,5 +1,7 @@
 #include "pid_ctrl.h"
 #include "imaging.h"
+#include "log.h"
+#include "comm.h"
 
 #include <stdio.h>
 #include <iostream>
@@ -47,5 +49,7 @@ int pid_motor_ctrl_test() {
 
 int main(int argc, char** argv)
 {
+	log(std::string("hello world!"));
+	open_i2c();
 	return image_processing_test();
 }

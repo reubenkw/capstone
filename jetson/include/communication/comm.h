@@ -21,7 +21,7 @@
 #define ENCODER_Y 0x1000
 #define ENCODER_Z 0x1000
 
-int open_i2c(int dev_address);
+int open_i2c();
 uint16_t read_i2c(int file, uint8_t dev_address, uint8_t reg);
 void write_i2c(int file, uint8_t dev_address, uint8_t reg, uint16_t data);
 
