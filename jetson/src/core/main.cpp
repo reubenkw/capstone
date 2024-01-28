@@ -1,8 +1,6 @@
 #include "pid_ctrl.h"
 #include "imaging.h"
 
-#include <spidev_lib.h>
-
 #include <stdio.h>
 #include <iostream>
 #include <fstream>
