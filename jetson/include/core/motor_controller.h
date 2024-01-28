@@ -8,16 +8,17 @@ class MotorController {
 	PID_Ctrl ctrller;
 	double idealSpeed;
 
-	std::chrono::time_point<std::chrono::system_clock>  lastUpdateTime;
-
-	double readEncoderValue();
-	
+	double elapsedDistance;
+	int lastEncoderVal;
+	std::chrono::time_point<std::chrono::system_clock>  lastUpdateTime;	
+	double radius;
 
 public:
-	MotorController(double pterm = 0, double iterm = 0, double dterm = 0, double integratorClamp = 0, double idealSpeed = 0);
+	MotorController(double pterm = 0, double iterm = 0, double dterm = 0, double integratorClamp = 0, double radius = 0.01, double idealSpeed = 0);
 	void setIdealSpeed(double idealSpeed);
 	void update();
-
+	void resetElapsedDistance();
+	double getElapsedDistance();
 };
 
 #endif //h
