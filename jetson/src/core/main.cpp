@@ -3,8 +3,6 @@
 #include "log.h"
 #include "comm.h"
 
-#include <spidev_lib.h>
-
 #include <stdio.h>
 #include <iostream>
 #include <fstream>
