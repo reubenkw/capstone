@@ -1,0 +1,7 @@
+cmake_minimum_required(VERSION 3.0)
+project( mcu1 )
+include_directories( ${CMAKE_SOURCE_DIR}/include/communication )
+include_directories( ${CMAKE_SOURCE_DIR}/include/core )
+add_executable( mcu1.exe src/communication/log.c src/communication/spi.c src/core/main.c)
+target_link_libraries( mcu1.exe  libspidev-lib.a )
+MESSAGE ( include directories ) 
