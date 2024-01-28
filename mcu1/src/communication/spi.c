@@ -20,7 +20,7 @@ uint8_t * Rx(spi_config_t spi_config, uint8_t * rx_buffer, uint8_t len){
     int spifd=spi_open("/dev/spidev2.0", spi_config);
     int ret = spi_read(spifd, rx_buffer, len);
     if (ret < 0) {
-        c_log("ERROR: failed to Rx spi msg");
+        c_log("ERROR: failed to Rx spi msg\n");
     } else {
         char msg[100];
         sprintf(msg, "INFO: read %s, frpm spidev2.0\n ",rx_buffer);
