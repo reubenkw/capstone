@@ -77,15 +77,26 @@ static void configure_led(void)
 
 void app_main(void)
 {
-
-    /* Configure the peripheral according to the LED type */
-    configure_led();
-
-    while (1) {
-        ESP_LOGI(TAG, "Turning the LED %s!", s_led_state == true ? "ON" : "OFF");
-        blink_led();
-        /* Toggle the LED state */
-        s_led_state = !s_led_state;
-        vTaskDelay(CONFIG_BLINK_PERIOD / portTICK_PERIOD_MS);
+    // Initialize spi bus as master
+    // default transfer size is 64 bytes when DMA disabled
+    spi_bus_config_t spi_config = {
+        .mosi_io_num = 19, 
+        .miso_io_num = 21, 
+        .sclk_io_num = 20, 
+        .data2_io_num = -1, 
+        .data3_io_num = -1, 
+        .data4_io_num = -1, 
+        .data5_io_num = -1, 
+        .data6_io_num = -1, 
+        .data7_io_num = -1
+    }; 
+    spi_bus_initialize(SPI1_HOST, spi_config, SPI_DMA_DISABLED);
+    // Initialize i2c bus as master to buck converter and imu
+    
+    // Initialize i2c bus as slave to listen to jetson nano
+    // some sort of indication mcu1 is set up 
+    while(true){
+        // wait until jetson nano reads from mcu1 over i2c 
+        // based on jetson nano command, do different tasks
     }
 }
