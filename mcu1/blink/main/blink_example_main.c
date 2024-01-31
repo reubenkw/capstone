@@ -14,6 +14,8 @@
 #include "led_strip.h"
 #include "sdkconfig.h"
 
+#include "driver/i2c.h"
+
 static const char *TAG = "example";
 
 /* Use project configuration menu (idf.py menuconfig) to choose the GPIO to blink,
@@ -90,10 +92,38 @@ void app_main(void)
         .data6_io_num = -1, 
         .data7_io_num = -1
     }; 
-    spi_bus_initialize(SPI1_HOST, spi_config, SPI_DMA_DISABLED);
-    // Initialize i2c bus as master to buck converter and imu
+    spi_bus_initialize(SPI1_HOST, &spi_config, SPI_DMA_DISABLED);
     
     // Initialize i2c bus as slave to listen to jetson nano
+    i2c_config_t i2c_jetson_config = {
+        .mode = I2C_MODE_SLAVE, 
+        .sda_io_num = 17, 
+        .scl_io_num = 18, 
+        .sda_pullup_en = true, 
+        .scl_pullup_en = true, 
+        .slave = {
+            .addr_10bit_en = 0, 
+            .slave_addr = 0x1000, 
+            .maximum_speed = 1000000
+        }
+    };
+    i2c_param_config(I2C_NUM_0, &i2c_jetson_config);
+    i2c_driver_install(I2C_NUM_0, I2C_MODE_SLAVE,  32, 32, ESP_INTR_FLAG_HIGH);
+
+    // Initialize i2c bus as master to buck converter and imu
+    i2c_config_t i2c_periph_config = {
+        .mode = I2C_MODE_MASTER, 
+        .sda_io_num = 28, 
+        .scl_io_num = 29, 
+        .sda_pullup_en = true, 
+        .scl_pullup_en = true, 
+        .master = {
+            .clk_speed = 1000000
+        }
+    };
+    i2c_param_config(I2C_NUM_1, &i2c_periph_config);
+    i2c_driver_install(I2C_NUM_1, I2C_MODE_MASTER, 32, 32, ESP_INTR_FLAG_LOWMED );
+
     // some sort of indication mcu1 is set up 
     while(true){
         // wait until jetson nano reads from mcu1 over i2c 
