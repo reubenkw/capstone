@@ -17,7 +17,11 @@
     "istream": "c",
     "ostream": "c",
     "regex": "c",
-    "i2c_types.h": "c"
+    "i2c_types.h": "c",
+    "task.h": "c",
+    "i2c.h": "c",
+    "esp_intr_alloc.h": "c",
+    "freertos.h": "c"
   },
   "C_Cpp.errorSquiggles": "disabled"
 }

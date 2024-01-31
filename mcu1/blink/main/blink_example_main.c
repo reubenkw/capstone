@@ -15,67 +15,8 @@
 #include "sdkconfig.h"
 
 #include "driver/i2c.h"
-
-static const char *TAG = "example";
-
-/* Use project configuration menu (idf.py menuconfig) to choose the GPIO to blink,
-   or you can edit the following line and set a number here.
-*/
-#define BLINK_GPIO CONFIG_BLINK_GPIO
-
-static uint8_t s_led_state = 0;
-
-#ifdef CONFIG_BLINK_LED_RMT
-
-static led_strip_handle_t led_strip;
-
-static void blink_led(void)
-{
-    /* If the addressable LED is enabled */
-    if (s_led_state) {
-        /* Set the LED pixel using RGB from 0 (0%) to 255 (100%) for each color */
-        led_strip_set_pixel(led_strip, 0, 16, 16, 16);
-        /* Refresh the strip to send data */
-        led_strip_refresh(led_strip);
-    } else {
-        /* Set all LED off to clear all pixels */
-        led_strip_clear(led_strip);
-    }
-}
-
-static void configure_led(void)
-{
-    ESP_LOGI(TAG, "Example configured to blink addressable LED!");
-    /* LED strip initialization with the GPIO and pixels number*/
-    led_strip_config_t strip_config = {
-        .strip_gpio_num = BLINK_GPIO,
-        .max_leds = 1, // at least one LED on board
-    };
-    led_strip_rmt_config_t rmt_config = {
-        .resolution_hz = 10 * 1000 * 1000, // 10MHz
-    };
-    ESP_ERROR_CHECK(led_strip_new_rmt_device(&strip_config, &rmt_config, &led_strip));
-    /* Set all LED off to clear all pixels */
-    led_strip_clear(led_strip);
-}
-
-#elif CONFIG_BLINK_LED_GPIO
-
-static void blink_led(void)
-{
-    /* Set the GPIO level according to the state (LOW or HIGH)*/
-    gpio_set_level(BLINK_GPIO, s_led_state);
-}
-
-static void configure_led(void)
-{
-    ESP_LOGI(TAG, "Example configured to blink GPIO LED!");
-    gpio_reset_pin(BLINK_GPIO);
-    /* Set the GPIO as a push/pull output */
-    gpio_set_direction(BLINK_GPIO, GPIO_MODE_OUTPUT);
-}
-
-#endif
+#include "freertos/portmacro.h"
+#include "addresses.h"
 
 void app_main(void)
 {
@@ -90,9 +31,34 @@ void app_main(void)
         .data4_io_num = -1, 
         .data5_io_num = -1, 
         .data6_io_num = -1, 
-        .data7_io_num = -1
+        .data7_io_num = -1, 
+        .intr_flags = ESP_INTR_FLAG_LOWMED
     }; 
     spi_bus_initialize(SPI1_HOST, &spi_config, SPI_DMA_DISABLED);
+
+    spi_device_interface_config_t dc_mc_config = {
+        .command_bits = 8, 
+        .address_bits = 8, 
+        .mode = 0,
+        .clock_speed_hz = 100000, 
+        .spics_io_num = 25
+    }; 
+
+    spi_device_handle_t dc_mc_spi;
+
+    spi_bus_add_device(SPI1_HOST, &dc_mc_config, &dc_mc_spi);
+
+     spi_device_interface_config_t stp_mc_config = {
+        .command_bits = 8, 
+        .address_bits = 8, 
+        .mode = 0,
+        .clock_speed_hz = 100000, 
+        .spics_io_num = 30
+    }; 
+
+    spi_device_handle_t stp_mc_spi;
+
+    spi_bus_add_device(SPI1_HOST, &stp_mc_config, &stp_mc_spi);
     
     // Initialize i2c bus as slave to listen to jetson nano
     i2c_config_t i2c_jetson_config = {
@@ -104,11 +70,11 @@ void app_main(void)
         .slave = {
             .addr_10bit_en = 0, 
             .slave_addr = 0x1000, 
-            .maximum_speed = 1000000
+            .maximum_speed = 100000
         }
     };
     i2c_param_config(I2C_NUM_0, &i2c_jetson_config);
-    i2c_driver_install(I2C_NUM_0, I2C_MODE_SLAVE,  32, 32, ESP_INTR_FLAG_HIGH);
+    i2c_driver_install(I2C_NUM_0, I2C_MODE_SLAVE,  32, 32, ESP_INTR_FLAG_LOWMED);
 
     // Initialize i2c bus as master to buck converter and imu
     i2c_config_t i2c_periph_config = {
@@ -118,15 +84,45 @@ void app_main(void)
         .sda_pullup_en = true, 
         .scl_pullup_en = true, 
         .master = {
-            .clk_speed = 1000000
+            .clk_speed = 100000
         }
     };
     i2c_param_config(I2C_NUM_1, &i2c_periph_config);
     i2c_driver_install(I2C_NUM_1, I2C_MODE_MASTER, 32, 32, ESP_INTR_FLAG_LOWMED );
 
     // some sort of indication mcu1 is set up 
+    int DATA_LENGTH = 4;
+    uint8_t *data = (uint8_t *)malloc(DATA_LENGTH);
     while(true){
         // wait until jetson nano reads from mcu1 over i2c 
         // based on jetson nano command, do different tasks
+        int readBytes = i2c_slave_read_buffer(I2C_NUM_0, data, DATA_LENGTH, portMAX_DELAY);
+
+        // check if command is complete
+        if (readBytes >= DATA_LENGTH ){
+            uint8_t * tx = (data)[1];
+            switch (data[0]) {
+                case DRIVE_MC: 
+                    // TODO: update command and address once electronics are completed
+                    spi_transaction_t spi_dc_tx = {
+                        .cmd = 1, 
+                        .addr = 1, 
+                        .length = 3, 
+                        .tx_buffer = tx
+                    };
+                    spi_device_queue_trans(dc_mc_spi, &spi_dc_tx, portMAX_DELAY);
+                break;
+                case SERVO_MC:
+                    // TODO: update command and address once electronics are completed
+                    spi_transaction_t spi_stp_tx = {
+                        .cmd = 1, 
+                        .addr = 1, 
+                        .length = 3, 
+                        .tx_buffer = tx
+                    };
+                    spi_device_queue_trans(stp_mc_spi, &spi_stp_tx, portMAX_DELAY);
+                break;
+            }
+        }
     }
 }
