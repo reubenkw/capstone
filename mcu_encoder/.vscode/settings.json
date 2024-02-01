@@ -1,0 +1,7 @@
+{
+    "idf.adapterTargetName": "esp32s3",
+    "C_Cpp.errorSquiggles": "disabled",
+    "files.associations": {
+        "inttypes.h": "c"
+    }
+}
