@@ -21,11 +21,13 @@ message(INFO "Found find_library(realsense2)")
 
 
 find_package( OpenCV REQUIRED )
+
+include_directories( ${CMAKE_SOURCE_DIR}/include/communication )
 include_directories( ${OpenCV_INCLUDE_DIRS} )
 include_directories( ${CMAKE_SOURCE_DIR}/include/core )
 include_directories( ${ADDITIONAL_INCLUDE_DIRS} )
 
-add_executable( capstone.exe src/core/imaging.cpp  src/core/pid_ctrl.cpp src/core/motor_controller.cpp src/core/robot.cpp src/core/main.cpp)
+add_executable( capstone.exe src/communication/log.cpp src/communication/comm.cpp src/core/imaging.cpp  src/core/pid_ctrl.cpp src/core/motor_controller.cpp src/core/robot.cpp src/core/main.cpp)
 
 # set gcc flag
 target_link_libraries( capstone.exe -lrealsense2 )
@@ -41,3 +43,7 @@ install(
     RUNTIME DESTINATION
     ${CMAKE_INSTALL_PREFIX}/bin
 )
+
+target_link_libraries( capstone.exe ${OpenCV_LIBS} )
+target_link_libraries( capstone.exe  i2c )
+MESSAGE ( include directories ) 

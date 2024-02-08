@@ -1,4 +1,5 @@
 # vscode-python
+**/log.txt
 .DS_Store
 .huskyrc.json
 out
@@ -404,6 +405,7 @@ tmtags
 !.vscode/launch.json
 !.vscode/extensions.json
 *.code-workspace
+**/.vscode/settings.json
 
 # Local History for Visual Studio Code
 .history/
