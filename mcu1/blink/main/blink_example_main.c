@@ -12,7 +12,7 @@
 #include "driver/spi_common.h"
 #include "driver/spi_master.h"
 #include "freertos/portmacro.h"
-#include "addresses.h"
+#include "constants.h"
 
 void app_main(void)
 {
@@ -89,24 +89,56 @@ void app_main(void)
     // some sort of indication mcu1 is set up 
     int DATA_LENGTH = 4;
     uint8_t *data = (uint8_t *)malloc(DATA_LENGTH);
+    uint8_t *rx_buf = (uint8_t *)malloc(DATA_LENGTH);
+    esp_err_t err;
     while(true){
+        bool stat_ok = true;
         // wait until jetson nano reads from mcu1 over i2c 
         // based on jetson nano command, do different tasks
         int readBytes = i2c_slave_read_buffer(I2C_NUM_0, data, DATA_LENGTH, portMAX_DELAY);
 
         // check if command is complete
         if (readBytes >= DATA_LENGTH ){
-            uint8_t * tx = (data)[1];
-            switch (data[0]) {
+            uint8_t tx = data[2];
+            uint16_t device = data[0] << 4 | data[1];
+            switch (device) {
                 case DRIVE_MC: 
                     // TODO: update command and address once electronics are completed
                     spi_transaction_t spi_dc_tx = {
                         .cmd = 1, 
                         .addr = 1, 
                         .length = 3, 
-                        .tx_buffer = tx
+                        .tx_buffer = &tx
                     };
-                    spi_device_queue_trans(dc_mc_spi, &spi_dc_tx, portMAX_DELAY);
+                    err = spi_device_transmit(dc_mc_spi, &spi_dc_tx);
+
+                    if (stat_ok && err != ESP_OK){
+                        stat_ok = false;
+                        uint32_t error_msg[2] = {SPI_TX_ERR, err};
+                        i2c_slave_write_buffer(I2C_NUM_0, *error_msg, sizeof(uint32_t)*2, portMAX_DELAY);
+                    }
+
+                    // TODO: update command and addresses to read from the status register
+                    spi_transaction_t spi_dc_rx = {
+                        .cmd = 1, 
+                        .addr = 1, 
+                        .length = 3,
+                        .rxlength = DATA_LENGTH,
+                        .rx_buffer = rx_buf
+                    };
+                    err = spi_device_transmit(dc_mc_spi, &spi_dc_rx);
+
+                    if (stat_ok && err != ESP_OK){
+                        stat_ok = false;
+                        uint8_t error_msg[2] = {SPI_RX_ERR, err};
+                        i2c_slave_write_buffer(I2C_NUM_0, *error_msg, sizeof(uint8_t)*2, portMAX_DELAY);
+                    }
+
+                    if (stat_ok && rx_buf[0]!=MC_STAT_OK) {
+                        stat_ok = false;
+                        uint8_t error_msg[2] = {DRIVE_MC_ERR, rx_buf};
+                        i2c_slave_write_buffer(I2C_NUM_0, *error_msg, sizeof(uint8_t)*2, portMAX_DELAY);
+                    }
                 break;
                 case SERVO_MC:
                     // TODO: update command and address once electronics are completed
@@ -114,11 +146,45 @@ void app_main(void)
                         .cmd = 1, 
                         .addr = 1, 
                         .length = 3, 
-                        .tx_buffer = tx
+                        .tx_buffer = &tx
                     };
-                    spi_device_queue_trans(stp_mc_spi, &spi_stp_tx, portMAX_DELAY);
+                    err = spi_device_transmit(stp_mc_spi, &spi_stp_tx);
+
+                    if (stat_ok && err != ESP_OK){
+                        stat_ok = false;
+                        uint32_t error_msg[2] = {SPI_TX_ERR, err};
+                        i2c_slave_write_buffer(I2C_NUM_0, *error_msg, sizeof(uint32_t)*2, portMAX_DELAY);
+                    }
+
+                    // TODO: update command and addresses to read from the status register
+                    spi_transaction_t spi_servo_rx = {
+                        .cmd = 1, 
+                        .addr = 1, 
+                        .length = 3,
+                        .rxlength = DATA_LENGTH,
+                        .rx_buffer = rx_buf
+                    };
+
+                    err = spi_device_transmit(stp_mc_spi, &spi_servo_rx);
+
+                    if (stat_ok && err != ESP_OK){
+                        stat_ok = false;
+                        uint8_t error_msg[2] = {SPI_RX_ERR, err};
+                        i2c_slave_write_buffer(I2C_NUM_0, &error_msg, sizeof(uint8_t)*2, portMAX_DELAY);
+                    }
+
+                    if (stat_ok && rx_buf[0]!=MC_STAT_OK) {
+                        stat_ok = false;
+                        uint8_t error_msg[2] = {SERVO_MC_ERR, rx_buf};
+                        i2c_slave_write_buffer(I2C_NUM_0, &error_msg, sizeof(uint8_t)*2, portMAX_DELAY);
+                    }
+                    
                 break;
             }
+        }
+
+        if (stat_ok) {
+            i2c_slave_write_buffer(I2C_NUM_0, STAT_OK, DATA_LENGTH, portMAX_DELAY);
         }
     }
 }
