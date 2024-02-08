@@ -19,3 +19,7 @@ installing vscode extension brings up setup. Choose newest version.
 ### i2c tools 
 `sudo apt-get install -y libi2c-dev`
 
+### Librealsense
+```
+https://github.com/IntelRealSense/librealsense/blob/master/doc/installation.md
+```

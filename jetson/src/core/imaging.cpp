@@ -6,6 +6,7 @@
 #include <math.h>
 
 #include <opencv2/core/types.hpp>
+#include <librealsense2/rs.hpp>
 
 // very rough outline of an imaging class
 
@@ -103,16 +104,57 @@ double findYCenterOfPlant(cv::Mat& image) {
 }
 
 // TODO: Camera Initialization
-Camera::Camera() {
+Camera::Camera() : color{rs2::frame()}, depth{rs2::frame()} {
+	p.start();
+
+	// Block program until frames arrive
+	// TODO: log "Waiting for camera init."
+	storeSnapshot();
+	// TODO: log "Camera initialized successfully"
 }
 
-// TODO: Take a camera image
-Image Camera::getCameraImage() {
-	Image image;
-	return image;
+// returns the most recent snapshot
+cv::Mat Camera::getColorImage() {
+	// Query frame size (width and height)
+    const int w = color.as<rs2::video_frame>().get_width();
+    const int h = color.as<rs2::video_frame>().get_height();
+
+    // Create OpenCV matrix of size (w,h) from the colorized depth data
+    return cv::Mat(cv::Size(w, h), CV_8UC3, (void*)color.get_data(), cv::Mat::AUTO_STEP);
 }
 
-// TODO: Read depth val of pixel from camera
-double Camera::getDepthVal(int x, int y) {
-	return 0;
+// returns the most recent snapshot
+cv::Mat Camera::getDepthImage() {
+	rs2::colorizer c;
+
+	rs2::video_frame colorized_depth = c.colorize(depth);
+
+	// Query frame size (width and height)
+    const int w = colorized_depth.get_width();
+    const int h = colorized_depth.get_height();
+
+    // Create OpenCV matrix of size (w,h) from the colorized depth data
+    return cv::Mat(cv::Size(w, h), CV_8UC3, (void*)colorized_depth.get_data(), cv::Mat::AUTO_STEP);
+}
+
+// ensure that the color and depth image are associated
+void Camera::storeSnapshot() {
+	// blocks until frames have been recieved
+	rs2::frameset frameset = p.wait_for_frames();
+
+	depth = frameset.get_depth_frame();
+	color = frameset.get_color_frame();
+	
+	// TODO: probably want some error handling
+}
+
+// Read depth val at a point in the image
+double Camera::getDepthVal(float x, float y) {
+	// Get the depth frame's dimensions
+	float width = depth.get_width();
+	float height = depth.get_height();
+
+	// perhaps some alignment should be done? 
+	// https://github.com/IntelRealSense/librealsense/blob/master/examples/align/rs-align.cpp
+	return depth.get_distance(std::floor(width * x), std::floor(height * y));
 }
