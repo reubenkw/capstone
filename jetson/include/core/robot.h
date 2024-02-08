@@ -6,7 +6,13 @@
 #include "point.h"
 
 enum DriveMotor { frontLeft, backLeft, frontRight, backRight };
-enum ServoMotor { x, y, z };
+
+namespace Arm {
+	enum ServoMotor { x, y, z };
+};
+namespace roboPos {
+	enum robotPosition { x, y, theta};
+};
 
 class Robot {
 	double robotLength;
@@ -22,8 +28,13 @@ class Robot {
 	// there's only one camera, everything should affect the same camera
 	Camera& camera;
 
+	// Robot position: x y theta
 	Point robotPosition;
+	// Arm position: x y z
 	Point armPosition;
+
+	int i2c_bus_file;
+
 public:
 
 
@@ -35,7 +46,8 @@ public:
 
 	double calculate_wheel_speed(double v, double w);
 	void driveRobotForward(Point idealPos);
-	void moveServoArm(ServoMotor motor, double pos);
+	void resetServoArm(Arm::ServoMotor motor);
+	void moveServoArm(Arm::ServoMotor motor, double pos);
 	void pollinate();
 	// TODO: add logging somewhere
 };

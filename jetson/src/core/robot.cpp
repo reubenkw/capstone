@@ -12,12 +12,14 @@ Robot::Robot(double robotLength, double robotWidth, double wheelRadius, Camera &
     drive[frontRight] = MotorController(10, 1, 1, 5, 0);
     drive[backRight] = MotorController(10, 1, 1, 5, 0);
 
-	servoArm[x] = MotorController(10, 1, 1, 5, 0);
-	servoArm[y] = MotorController(10, 1, 1, 5, 0);
-	servoArm[z] = MotorController(10, 1, 1, 5, 0);
+	servoArm[Arm::x] = MotorController(10, 1, 1, 5, 0);
+	servoArm[Arm::y] = MotorController(10, 1, 1, 5, 0);
+	servoArm[Arm::z] = MotorController(10, 1, 1, 5, 0);
 
 	robotPosition = Point(0, 0, 0);
 	armPosition = Point(0, 0, 0);
+
+	// TODO: Initialize i2c bus connection 
 }
 
 Point Robot::getRobotPosition() {
@@ -28,12 +30,24 @@ Point Robot::getArmPosition() {
 	return armPosition;
 }
 
-// how are we going to do this? 
-// should it just be called at the end of each robot move function? 
-// update robot position or delta 
-// for calculating how much farther we have to go
-void Robot::updateRobotPosition() {}
-void Robot::updateArmPosition() {}
+// Based on MTE 544 Localization I and II 
+void Robot::updateRobotPosition() {
+	double d_left = (drive[frontLeft].getElapsedDistance() + drive[backLeft].getElapsedDistance()) / 2.0;
+	double d_right = (drive[frontRight].getElapsedDistance() + drive[backRight].getElapsedDistance()) / 2.0;
+	double d_avg = (d_left + d_right)/2;
+
+	double rotation = (d_right - d_left)/robotWidth;
+
+	robotPosition[roboPos::theta] += rotation;
+	robotPosition[roboPos::x] += d_avg*cos(robotPosition[roboPos::theta]);
+	robotPosition[roboPos::y] += d_avg*sin(robotPosition[roboPos::theta]);
+}
+
+void Robot::updateArmPosition() {
+	armPosition[0] = servoArm[0].getElapsedDistance();
+	armPosition[1] = servoArm[1].getElapsedDistance();
+	armPosition[2] = servoArm[2].getElapsedDistance();
+}
 
 // From MTE 544 Control Lecture Slide 9
 double calculate_radius(double delta_x, double delta_y) {
@@ -49,8 +63,12 @@ double Robot::calculate_wheel_speed(double v, double w) {
 	return 1 / wheelRadius * (v + robotWidth * w / 2 + std::pow(robotLength * w / 2, 2) / (v + robotWidth * w / 2));
 }
 
-void Robot::driveRobotForward(Point idealPos) {
-	Point delta = idealPos - robotPosition;
+void Robot::driveRobotForward(Point delta) {
+	robotPosition = Point(0, 0, 0);
+	drive[frontLeft].resetElapsedDistance();
+	drive[backLeft].resetElapsedDistance();
+	drive[frontRight].resetElapsedDistance();
+	drive[backRight].resetElapsedDistance();
 
 	while (delta.mag() < robotPosTol) {
 
@@ -74,7 +92,7 @@ void Robot::driveRobotForward(Point idealPos) {
 
 		updateRobotPosition();
 
-		delta = idealPos - robotPosition;
+		delta = delta - robotPosition;
 	}
 
 	drive[frontLeft].setIdealSpeed(0);
@@ -84,7 +102,23 @@ void Robot::driveRobotForward(Point idealPos) {
 
 }
 
-void Robot::moveServoArm(ServoMotor motor, double pos) {
+void Robot::resetServoArm(Arm::ServoMotor motor) {
+	bool limitSwitch = false;
+	// TODO: read limit switch values servo motor
+	// TODO: figure out direction
+	double idealSpeed = IDEAL_LINEAR_SPEED;
+
+	servoArm[motor].setIdealSpeed(idealSpeed);
+
+	while (!limitSwitch) {
+		// TODO: limitSwitch = read from limit switch 
+	}
+	servoArm[motor].setIdealSpeed(0);
+	armPosition[motor] = 0;
+	servoArm[motor].resetElapsedDistance();
+}
+
+void Robot::moveServoArm(Arm::ServoMotor motor, double pos) {
 	double delta = pos - armPosition[pos];
 	// TODO: how to figure ideal v?
 	double idealSpeed = IDEAL_LINEAR_SPEED;
