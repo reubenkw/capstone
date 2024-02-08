@@ -104,7 +104,7 @@ double findYCenterOfPlant(cv::Mat& image) {
 }
 
 // TODO: Camera Initialization
-Camera::Camera() {
+Camera::Camera() : color{rs2::frame()}, depth{rs2::frame()} {
 	p.start();
 
 	// Block program until frames arrive
@@ -133,10 +133,11 @@ void Camera::storeSnapshot() {
 // Read depth val at a point in the image
 double Camera::getDepthVal(float x, float y) {
 	// Get the depth frame's dimensions
-	float width = this->depth.get_width();
-	float height = this->depth.get_height();
+	float width = depth.get_width();
+	float height = depth.get_height();
 
 	// perhaps some alignment should be done? 
 	// https://github.com/IntelRealSense/librealsense/blob/master/examples/align/rs-align.cpp
 	return depth.get_distance(std::floor(width * x), std::floor(height * y));
+	return 0;
 }
