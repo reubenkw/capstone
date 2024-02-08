@@ -32,6 +32,9 @@ class Robot {
 	Point robotPosition;
 	// Arm position: x y z
 	Point armPosition;
+
+	int i2c_bus_file;
+
 public:
 
 
