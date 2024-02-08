@@ -113,10 +113,28 @@ Camera::Camera() : color{rs2::frame()}, depth{rs2::frame()} {
 	// TODO: log "Camera initialized successfully"
 }
 
-// TODO: Take a camera image
-Image Camera::getCameraImage() {
-	Image image;
-	return image;
+// returns the most recent snapshot
+cv::Mat Camera::getColorImage() {
+	// Query frame size (width and height)
+    const int w = color.as<rs2::video_frame>().get_width();
+    const int h = color.as<rs2::video_frame>().get_height();
+
+    // Create OpenCV matrix of size (w,h) from the colorized depth data
+    return cv::Mat(cv::Size(w, h), CV_8UC3, (void*)color.get_data(), cv::Mat::AUTO_STEP);
+}
+
+// returns the most recent snapshot
+cv::Mat Camera::getDepthImage() {
+	rs2::colorizer c;
+
+	rs2::video_frame colorized_depth = c.colorize(depth);
+
+	// Query frame size (width and height)
+    const int w = colorized_depth.get_width();
+    const int h = colorized_depth.get_height();
+
+    // Create OpenCV matrix of size (w,h) from the colorized depth data
+    return cv::Mat(cv::Size(w, h), CV_8UC3, (void*)colorized_depth.get_data(), cv::Mat::AUTO_STEP);
 }
 
 // ensure that the color and depth image are associated

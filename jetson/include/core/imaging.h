@@ -17,14 +17,6 @@ struct Pixel {
 	uint8_t b;
 };
 
-struct Image {
-	int height;
-	int width;
-	Pixel * pixels;
-};
-
-// TODO: conversion between Image returned from Camera and cv::Mat
-
 class Camera {
 	rs2::pipeline p;
 	rs2::video_frame color;
@@ -33,7 +25,8 @@ class Camera {
 public:
 	Camera();
 	void storeSnapshot();
-	Image getCameraImage();
+	cv::Mat getColorImage();
+	cv::Mat getDepthImage();
 	double getDepthVal(float x, float y);
 };
 
