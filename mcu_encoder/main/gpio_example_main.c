@@ -118,7 +118,7 @@ void app_main(void)
     //bit mask of the pins that you want to set,e.g.GPIO18/19
     io_conf.pin_bit_mask = GPIO_OUTPUT_PIN_SEL;
     //disable pull-down mode
-    io_conf.pull_down_en = 0;
+    io_conf.pull_down_en = 1;
     //disable pull-up mode
     io_conf.pull_up_en = 0;
     //configure GPIO with the given settings
