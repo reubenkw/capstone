@@ -157,5 +157,4 @@ double Camera::getDepthVal(float x, float y) {
 	// perhaps some alignment should be done? 
 	// https://github.com/IntelRealSense/librealsense/blob/master/examples/align/rs-align.cpp
 	return depth.get_distance(std::floor(width * x), std::floor(height * y));
-	return 0;
 }
