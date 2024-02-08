@@ -59,8 +59,8 @@ void app_main(void)
     // Initialize i2c bus as slave to listen to jetson nano
     i2c_config_t i2c_jetson_config = {
         .mode = I2C_MODE_SLAVE, 
-        .sda_io_num = 17, 
-        .scl_io_num = 18, 
+        .sda_io_num = 18, 
+        .scl_io_num = 17, 
         .sda_pullup_en = true, 
         .scl_pullup_en = true, 
         .slave = {
@@ -75,8 +75,8 @@ void app_main(void)
     // Initialize i2c bus as master to buck converter and imu
     i2c_config_t i2c_periph_config = {
         .mode = I2C_MODE_MASTER, 
-        .sda_io_num = 28, 
-        .scl_io_num = 29, 
+        .sda_io_num = 29, 
+        .scl_io_num = 28, 
         .sda_pullup_en = true, 
         .scl_pullup_en = true, 
         .master = {
@@ -90,6 +90,7 @@ void app_main(void)
     int DATA_LENGTH = 4;
     uint8_t *data = (uint8_t *)malloc(DATA_LENGTH);
     uint8_t *rx_buf = (uint8_t *)malloc(DATA_LENGTH);
+    uint8_t *error_msg = (uint8_t *)malloc(DATA_LENGTH);
     esp_err_t err;
     while(true){
         bool stat_ok = true;
@@ -114,8 +115,9 @@ void app_main(void)
 
                     if (stat_ok && err != ESP_OK){
                         stat_ok = false;
-                        uint32_t error_msg[2] = {SPI_TX_ERR, err};
-                        i2c_slave_write_buffer(I2C_NUM_0, *error_msg, sizeof(uint32_t)*2, portMAX_DELAY);
+                        error_msg[0] = SPI_TX_ERR;
+                        error_msg[1] = err;
+                        i2c_slave_write_buffer(I2C_NUM_0, error_msg, sizeof(uint32_t)*2, portMAX_DELAY);
                     }
 
                     // TODO: update command and addresses to read from the status register
@@ -130,14 +132,16 @@ void app_main(void)
 
                     if (stat_ok && err != ESP_OK){
                         stat_ok = false;
-                        uint8_t error_msg[2] = {SPI_RX_ERR, err};
-                        i2c_slave_write_buffer(I2C_NUM_0, *error_msg, sizeof(uint8_t)*2, portMAX_DELAY);
+                        error_msg[0] = SPI_RX_ERR;
+                        error_msg[1] = err;
+                        i2c_slave_write_buffer(I2C_NUM_0, error_msg, sizeof(uint8_t)*2, portMAX_DELAY);
                     }
 
                     if (stat_ok && rx_buf[0]!=MC_STAT_OK) {
                         stat_ok = false;
-                        uint8_t error_msg[2] = {DRIVE_MC_ERR, rx_buf};
-                        i2c_slave_write_buffer(I2C_NUM_0, *error_msg, sizeof(uint8_t)*2, portMAX_DELAY);
+                        error_msg[0] = DRIVE_MC_ERR;
+                        error_msg[1] = rx_buf[1];
+                        i2c_slave_write_buffer(I2C_NUM_0, error_msg, sizeof(uint8_t)*2, portMAX_DELAY);
                     }
                 break;
                 case SERVO_MC:
@@ -152,8 +156,9 @@ void app_main(void)
 
                     if (stat_ok && err != ESP_OK){
                         stat_ok = false;
-                        uint32_t error_msg[2] = {SPI_TX_ERR, err};
-                        i2c_slave_write_buffer(I2C_NUM_0, *error_msg, sizeof(uint32_t)*2, portMAX_DELAY);
+                        error_msg[0] = SPI_TX_ERR;
+                        error_msg[1] = err;
+                        i2c_slave_write_buffer(I2C_NUM_0, error_msg, sizeof(uint32_t)*2, portMAX_DELAY);
                     }
 
                     // TODO: update command and addresses to read from the status register
@@ -169,14 +174,16 @@ void app_main(void)
 
                     if (stat_ok && err != ESP_OK){
                         stat_ok = false;
-                        uint8_t error_msg[2] = {SPI_RX_ERR, err};
-                        i2c_slave_write_buffer(I2C_NUM_0, &error_msg, sizeof(uint8_t)*2, portMAX_DELAY);
+                        error_msg[0] = SPI_RX_ERR;
+                        error_msg[1] = err;
+                        i2c_slave_write_buffer(I2C_NUM_0, error_msg, sizeof(uint8_t)*2, portMAX_DELAY);
                     }
 
                     if (stat_ok && rx_buf[0]!=MC_STAT_OK) {
                         stat_ok = false;
-                        uint8_t error_msg[2] = {SERVO_MC_ERR, rx_buf};
-                        i2c_slave_write_buffer(I2C_NUM_0, &error_msg, sizeof(uint8_t)*2, portMAX_DELAY);
+                        error_msg[0] = SERVO_MC_ERR;
+                        error_msg[1] = rx_buf[1];
+                        i2c_slave_write_buffer(I2C_NUM_0, error_msg, sizeof(uint8_t)*2, portMAX_DELAY);
                     }
                     
                 break;
