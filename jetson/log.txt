@@ -1,2 +1,0 @@
-hello world!
-ERROR: failed to open i2c bus
