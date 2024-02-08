@@ -1,0 +1,27 @@
+{
+  "C_Cpp.intelliSenseEngine": "default",
+  "idf.adapterTargetName": "esp32s3",
+  "idf.openOcdConfigs": [
+    "interface/ftdi/esp32_devkitj_v1.cfg",
+    "target/esp32s3.cfg"
+  ],
+  "files.associations": {
+    "spi_periph.h": "c",
+    "led_strip.h": "c",
+    "led_strip_spi.h": "c",
+    "spi_master.h": "c",
+    "*.inc": "c",
+    "*.tcc": "c",
+    "complex": "c",
+    "fstream": "c",
+    "istream": "c",
+    "ostream": "c",
+    "regex": "c",
+    "i2c_types.h": "c",
+    "task.h": "c",
+    "i2c.h": "c",
+    "esp_intr_alloc.h": "c",
+    "freertos.h": "c"
+  },
+  "C_Cpp.errorSquiggles": "disabled"
+}
