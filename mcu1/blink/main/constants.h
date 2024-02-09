@@ -1,5 +1,5 @@
-#define DRIVE_MC 0x1000
-#define SERVO_MC 0x2000
+#define DRIVE_MC 0x1 // must be same as comm.h
+#define SERVO_MC 0x2 // must be same as comm.h
 
 #define DRIVE_MC_ADDR 0x1000
 #define SERVO_MC_ADDR 0x2000
