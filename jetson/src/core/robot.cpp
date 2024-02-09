@@ -7,19 +7,19 @@
 Robot::Robot(double robotLength, double robotWidth, double wheelRadius, Camera & camera, double robotPosTol, double armPosTol) 
     : robotLength(robotLength), robotWidth(robotWidth), wheelRadius(wheelRadius), camera(camera), robotPosTol(robotPosTol), armPosTol(armPosTol) {
     // TODO: pid terms need to be determined experimentally
-    drive[frontLeft] = MotorController(10, 1, 1, 5, 0);
-	drive[backLeft] = MotorController(10, 1, 1, 5, 0);
-    drive[frontRight] = MotorController(10, 1, 1, 5, 0);
-    drive[backRight] = MotorController(10, 1, 1, 5, 0);
+    drive[frontLeft] = MotorController(10, 1, 1, 5, 0, 0);
+	drive[backLeft] = MotorController(10, 1, 1, 5, 0, 0);
+    drive[frontRight] = MotorController(10, 1, 1, 5, 0, 0);
+    drive[backRight] = MotorController(10, 1, 1, 5, 0, 0);
 
-	servoArm[Arm::x] = MotorController(10, 1, 1, 5, 0);
-	servoArm[Arm::y] = MotorController(10, 1, 1, 5, 0);
-	servoArm[Arm::z] = MotorController(10, 1, 1, 5, 0);
+	servoArm[Arm::x] = MotorController(10, 1, 1, 5, 0, 0);
+	servoArm[Arm::y] = MotorController(10, 1, 1, 5, 0, 0);
+	servoArm[Arm::z] = MotorController(10, 1, 1, 5, 0, 0);
 
 	robotPosition = Point(0, 0, 0);
 	armPosition = Point(0, 0, 0);
 
-	// TODO: Initialize i2c bus connection 
+	i2c_bus_file = open_i2c();
 }
 
 Point Robot::getRobotPosition() {
@@ -28,6 +28,10 @@ Point Robot::getRobotPosition() {
 
 Point Robot::getArmPosition() {
 	return armPosition;
+}
+
+void Robot::readEncoderVals(){
+	read_i2c(i2c_bus_file, MCU_ENCODER, (uint8_t * )encoderVal, 14);
 }
 
 // Based on MTE 544 Localization I and II 
@@ -85,10 +89,12 @@ void Robot::driveRobotForward(Point delta) {
 		drive[frontRight].setIdealSpeed(rightWheelSpeed);
 		drive[backRight].setIdealSpeed(rightWheelSpeed);
 
-		drive[frontLeft].update();
-		drive[backLeft].update();
-		drive[frontRight].update();
-		drive[backRight].update();
+		readEncoderVals();
+
+		drive[frontLeft].update(encoderVal[frontLeft]);
+		drive[backLeft].update(encoderVal[backLeft]);
+		drive[frontRight].update(encoderVal[frontRight]);
+		drive[backRight].update(encoderVal[backRight]);
 
 		updateRobotPosition();
 
@@ -127,7 +133,10 @@ void Robot::moveServoArm(Arm::ServoMotor motor, double pos) {
 	servoArm[motor].setIdealSpeed(idealSpeed);
 
 	while (delta < armPosTol) {
-		servoArm[motor].update();
+		readEncoderVals();
+
+		// 4 bc 4 drive motors
+		servoArm[motor].update(encoderVal[4 + motor]);
 		updateArmPosition();
 		delta = pos - armPosition[motor];
 	}

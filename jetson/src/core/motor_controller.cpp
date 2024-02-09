@@ -14,10 +14,7 @@ void MotorController::setIdealSpeed(double idealSpeed) {
 	idealSpeed = idealSpeed;
 }
 
-void MotorController::update() {
-	double encoderVal;
-	// TODO: read encoder value
-	
+void MotorController::update(uint16_t encoderVal) {	
 	std::chrono::time_point<std::chrono::system_clock> currentTime = std::chrono::system_clock::now();
 	double deltaT = (std::chrono::duration_cast<std::chrono::seconds>(currentTime - lastUpdateTime)).count();
 	lastUpdateTime = currentTime;

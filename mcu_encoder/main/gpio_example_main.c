@@ -77,7 +77,7 @@ void app_main(void)
     i2c_param_config(I2C_NUM_0, &i2c_jetson_config);
     i2c_driver_install(I2C_NUM_0, I2C_MODE_SLAVE,  32, 32, ESP_INTR_FLAG_LOWMED);
 
-    int encoderCounts[7] = {0, 0, 0, 0, 0, 0, 0};
+    uint16_t encoderCounts[7] = {0, 0, 0, 0, 0, 0, 0};
     struct encoder_t encoders[7];
     encoders[0].lastState = 0;
     encoders[0].pin_a = DRIVE_LB_A;
@@ -126,7 +126,7 @@ void app_main(void)
 
 
     while(true) {
-        i2c_slave_write_buffer(I2C_NUM_0, encoderCounts, 7, portMAX_DELAY);
+        i2c_slave_write_buffer(I2C_NUM_0, encoderCounts, 14, portMAX_DELAY);
 
         for(int i = 0; i < 7; i++){
             int aState = gpio_get_level(encoders[i].pin_a);
