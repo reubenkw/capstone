@@ -77,7 +77,7 @@ std::vector<Point> findFlowerCenters(cv::Mat& image){
 	double brightest = brightestPixelVal(image);
 	log(std::string("brightest pixel value: ") + std::to_string(brightest));
 
-	cv::Mat yellowMask = colorMask(image, brightest, {255, 255, 0}, 0.25);
+	cv::Mat yellowMask = colorMask(image, brightest, {255, 255, 100}, 0.1);
 	cv::imwrite("./plots/yellow.png", yellowMask);
 	cv::Mat white = colorMask(image, brightest, {255, 255, 255}, 0.1);
 	cv::blur(white, white, cv::Size(100, 100));

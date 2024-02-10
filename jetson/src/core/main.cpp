@@ -16,9 +16,9 @@ int image_processing_test() {
 
 	cv::Mat image = cam.getColorImage();
 
-	cv::Mat out = image;
-	cv::cvtColor(out, out, cv::COLOR_RGB2BGR);
+	cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
 	cv::imwrite("./plots/original_image.png", image);
+	cv::cvtColor(image, image, cv::COLOR_BGR2RGB);
 
 	std::vector<Point> yellowBlobs = findFlowerCenters(image);
 
