@@ -1,4 +1,5 @@
 #include "imaging.h"
+#include "log.h"
 
 #include <stdexcept>
 #include <iostream>
@@ -108,9 +109,9 @@ Camera::Camera() : color{rs2::frame()}, depth{rs2::frame()} {
 	p.start();
 
 	// Block program until frames arrive
-	// TODO: log "Waiting for camera init."
+	log(std::string("Waiting for camera init."));
 	storeSnapshot();
-	// TODO: log "Camera initialized successfully"
+	log(std::string("Camera initialized successfully"));
 }
 
 // returns the most recent snapshot
@@ -128,6 +129,7 @@ cv::Mat Camera::getDepthImage() {
 	rs2::colorizer c;
 
 	rs2::video_frame colorized_depth = c.colorize(depth);
+	log(std::string("colourized image"));
 
 	// Query frame size (width and height)
     const int w = colorized_depth.get_width();

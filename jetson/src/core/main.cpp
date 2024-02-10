@@ -53,10 +53,15 @@ int test_camera_image() {
 	Camera cam;
 
 	cv::Mat color = cam.getColorImage();
+	log(std::string("color image"));
 	cv::Mat depth = cam.getDepthImage();
+	log(std::string("depth image"));
 
 	cv::imwrite("./plots/color.png", color);
+	log(std::string("wrote color image"));
+
 	cv::imwrite("./plots/depth.png", depth);
+	log(std::string("wrote depth image"));
 
 	log(std::string("saved color and depth image under jetson/plots/"));
 	return 0;
