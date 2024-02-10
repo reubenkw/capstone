@@ -79,10 +79,11 @@ std::vector<Point> findFlowerCenters(cv::Mat& image){
 
 	cv::Mat yellowMask = colorMask(image, brightest, {255, 255, 100}, 0.1);
 	cv::imwrite("./plots/yellow.png", yellowMask);
-	
-	cv::Mat green = colorMask(image, brightest, {50, 255, 50}, 0.25);
-	cv::blur(green, green, cv::Size(50, 50));
+
+	cv::Mat green = colorMask(image, 50, {30, 60, 20}, 0.1);
+	cv::blur(green, green, cv::Size(100, 100));
 	cv::imwrite("./plots/blurredGreen.png", green);
+	
 	cv::Mat white = colorMask(image, brightest, {255, 255, 255}, 0.1);
 	cv::blur(white, white, cv::Size(100, 100));
 	cv::imwrite("./plots/blurredWhite.png", white);
