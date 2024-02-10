@@ -99,7 +99,7 @@ std::vector<Point> findFlowerCenters(cv::Mat& image){
 	// start index at 1 since first blob is background blob
 	// TODO: smarter way to determine hardcoded cutoffs?
 	for (int i = 1; i < label_count; i++) {
-		int blurredGreenVal = green.at<uchar>((int)centroids.at<double>(i, 0), (int)centroids.at<double>(i, 1));
+		int blurredGreenVal = green.at<uchar>((int)centroids.at<double>(i, 1), (int)centroids.at<double>(i, 0));
 
 		// log(std::to_string((int)centroids.at<double>(i, 0)) + std::string(", ") + std::to_string((int)centroids.at<double>(i, 1)));
 		// log(std::to_string(blurredGreenVal));
