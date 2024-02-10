@@ -12,16 +12,13 @@
 std::string const HOME = std::getenv("HOME") ? std::getenv("HOME") : ".";
 
 int image_processing_test() {
-	cv::Mat image;
-	image = cv::imread( "./data/flowers.jpg");
-	cv::resize(image, image, cv::Size(), 0.25, 0.25);
-	cv::cvtColor(image, image, cv::COLOR_BGR2RGB);
+	Camera cam;
 
-	if (!image.data)
-	{
-		printf("No image data \n");
-		return -1;
-	}
+	cv::Mat image = cam.getColorImage();
+
+	cv::Mat out = image;
+	cv::cvtColor(image, out, cv::COLOR_RGB2BGR);
+	cv::imwrite("./plots/original_image.png", image);
 
 	std::vector<Point> yellowBlobs = findFlowerCenters(image);
 
@@ -58,7 +55,7 @@ int test_camera_image() {
 	log(std::string("depth image"));
 
 	cv::Mat out = color;
-cv::cvtColor(color, out, cv::COLOR_RGB2BGR);
+	cv::cvtColor(color, out, cv::COLOR_RGB2BGR);
 
 	cv::imwrite("./plots/color.png", color);
 	log(std::string("wrote color image"));
@@ -73,5 +70,6 @@ cv::cvtColor(color, out, cv::COLOR_RGB2BGR);
 int main(int argc, char** argv)
 {
 	log(std::string("Starting Program!"));
-	return test_camera_image();
+	// return test_camera_image();
+	return image_processing_test();
 }
