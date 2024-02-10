@@ -1,4 +1,5 @@
 #include "imaging.h"
+#include "log.h"
 
 #include <stdexcept>
 #include <iostream>
@@ -108,9 +109,9 @@ Camera::Camera() : color{rs2::frame()}, depth{rs2::frame()} {
 	p.start();
 
 	// Block program until frames arrive
-	// TODO: log "Waiting for camera init."
+	log(std::string("Waiting for camera init."));
 	storeSnapshot();
-	// TODO: log "Camera initialized successfully"
+	log(std::string("Camera initialized successfully"));
 }
 
 // returns the most recent snapshot
@@ -128,13 +129,23 @@ cv::Mat Camera::getDepthImage() {
 	rs2::colorizer c;
 
 	rs2::video_frame colorized_depth = c.colorize(depth);
+	log(std::string("colourized image"));
 
 	// Query frame size (width and height)
     const int w = colorized_depth.get_width();
     const int h = colorized_depth.get_height();
+	log(std::string("width: ") + std::to_string(w));
+	log(std::string("height: ") + std::to_string(h));
+
+	cv::Mat depth_image = cv::Mat(cv::Size(w, h), CV_16UC1, (void*)depth.get_data(), cv::Mat::AUTO_STEP);
+	cv::Mat oneRow = depth_image.reshape(0,1);
+	std::ostringstream os;
+	os << oneRow;                             // Put to the stream
+	std::string asStr = os.str();
+	log(asStr);
 
     // Create OpenCV matrix of size (w,h) from the colorized depth data
-    return cv::Mat(cv::Size(w, h), CV_8UC3, (void*)colorized_depth.get_data(), cv::Mat::AUTO_STEP);
+    return depth_image;
 }
 
 // ensure that the color and depth image are associated
