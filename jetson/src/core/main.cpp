@@ -7,6 +7,7 @@
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
+#include <opencv2/core/types.hpp>
 
 std::string const HOME = std::getenv("HOME") ? std::getenv("HOME") : ".";
 
@@ -47,9 +48,22 @@ int pid_motor_ctrl_test() {
 	return 0;
 }
 
+int test_camera_image() {
+	log(std::string("Starting test_camera_image"));
+	Camera cam;
+
+	cv::Mat color = cam.getColorImage();
+	cv::Mat depth = cam.getDepthImage();
+
+	cv::imwrite("./plots/color.png", color);
+	cv::imwrite("./plots/depth.png", depth);
+
+	log(std::string("saved color and depth image under jetson/plots/"));
+	return 0;
+}
+
 int main(int argc, char** argv)
 {
-	log(std::string("hello world!"));
-	open_i2c();
-	return image_processing_test();
+	log(std::string("Starting Program!"));
+	return test_camera_image();
 }
