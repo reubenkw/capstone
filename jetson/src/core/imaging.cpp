@@ -137,7 +137,7 @@ cv::Mat Camera::getDepthImage() {
 	log(std::string("width: ") + std::to_string(w));
 	log(std::string("height: ") + std::to_string(h));
 
-	cv::Mat depth_image = cv::Mat(cv::Size(w, h), CV_8UC3, (void*)colorized_depth.get_data(), cv::Mat::AUTO_STEP);
+	cv::Mat depth_image = cv::Mat(cv::Size(w, h), CV_16UC1, (void*)depth.get_data(), cv::Mat::AUTO_STEP);
 	cv::Mat oneRow = depth_image.reshape(0,1);
 	std::ostringstream os;
 	os << oneRow;                             // Put to the stream

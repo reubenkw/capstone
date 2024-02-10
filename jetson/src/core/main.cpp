@@ -57,6 +57,9 @@ int test_camera_image() {
 	cv::Mat depth = cam.getDepthImage();
 	log(std::string("depth image"));
 
+	cv::Mat out = color;
+cv::cvtColor(color, out, cv::COLOR_RGB2BGR);
+
 	cv::imwrite("./plots/color.png", color);
 	log(std::string("wrote color image"));
 
