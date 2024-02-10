@@ -90,11 +90,20 @@ std::vector<Point> findFlowerCenters(cv::Mat& image){
 
 	cv::Mat labels, stats, centroids;
 	int label_count = cv::connectedComponentsWithStats(yellowMask, labels, stats, centroids);
-
+	
+	cv::Mat oneRow = green.reshape(0,1);
+	std::ostringstream os;
+	os << oneRow;
+	std::string asStr = os.str();
+	log(asStr);
 	// start index at 1 since first blob is background blob
 	// TODO: smarter way to determine hardcoded cutoffs?
 	for (int i = 1; i < label_count; i++) {
-		if (green.at<uchar>((int)centroids.at<double>(i, 0), (int)centroids.at<double>(i, 1)) > 10) {
+		int blurredGreenVal = green.at<uchar>((int)centroids.at<double>(i, 0), (int)centroids.at<double>(i, 1));
+
+		// log(std::to_string((int)centroids.at<double>(i, 0)) + std::string(", ") + std::to_string((int)centroids.at<double>(i, 1)));
+		// log(std::to_string(blurredGreenVal));
+		if ( blurredGreenVal > 10) {
 			yellowBlobs.push_back({ centroids.at<double>(i, 0), centroids.at<double>(i, 1) });
 		}
 	}
