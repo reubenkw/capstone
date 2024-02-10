@@ -23,12 +23,15 @@ int image_processing_test() {
 	std::vector<Point> yellowBlobs = findFlowerCenters(image);
 
 	cv::Mat depth = cam.getDepthImage();
+	cv::imwrite("./plots/depth.png", depth);
+	int width = image.cols;
+	int height = image.rows;
 
 	for (Point const& blob : yellowBlobs) {
 		cv::circle(image, cv::Point((int)blob.x, (int)blob.y), 5, { 255, 0, 255 }, 5);
-		float* row_ptr = depth.ptr<float>((int)blob.y);
-		float depthVal = row_ptr[(int)blob.x];
-		log(std::string("depth val: ") + std::to_string(depthVal));
+		float x = blob.x/width;
+		float y = blob.y/height;
+		log(std::string("depth val: ") + std::to_string(cam.getDepthVal(x, y)));
 	}
 	
 	cv::cvtColor(image, image, cv::COLOR_RGB2BGR);

@@ -79,6 +79,10 @@ std::vector<Point> findFlowerCenters(cv::Mat& image){
 
 	cv::Mat yellowMask = colorMask(image, brightest, {255, 255, 100}, 0.1);
 	cv::imwrite("./plots/yellow.png", yellowMask);
+	
+	cv::Mat green = colorMask(image, brightest, {50, 255, 50}, 0.25);
+	cv::blur(green, green, cv::Size(50, 50));
+	cv::imwrite("./plots/blurredGreen.png", green);
 	cv::Mat white = colorMask(image, brightest, {255, 255, 255}, 0.1);
 	cv::blur(white, white, cv::Size(100, 100));
 	cv::imwrite("./plots/blurredWhite.png", white);
@@ -89,7 +93,7 @@ std::vector<Point> findFlowerCenters(cv::Mat& image){
 	// start index at 1 since first blob is background blob
 	// TODO: smarter way to determine hardcoded cutoffs?
 	for (int i = 1; i < label_count; i++) {
-		if (white.at<uchar>((int)centroids.at<double>(i, 0), (int)centroids.at<double>(i, 1)) > 10) {
+		if (green.at<uchar>((int)centroids.at<double>(i, 0), (int)centroids.at<double>(i, 1)) > 10) {
 			yellowBlobs.push_back({ centroids.at<double>(i, 0), centroids.at<double>(i, 1) });
 		}
 	}
