@@ -17,7 +17,7 @@ int image_processing_test() {
 	cv::Mat image = cam.getColorImage();
 
 	cv::Mat out = image;
-	cv::cvtColor(image, out, cv::COLOR_RGB2BGR);
+	cv::cvtColor(out, out, cv::COLOR_RGB2BGR);
 	cv::imwrite("./plots/original_image.png", image);
 
 	std::vector<Point> yellowBlobs = findFlowerCenters(image);
@@ -25,8 +25,8 @@ int image_processing_test() {
 	for (Point const& blob : yellowBlobs) {
 		cv::circle(image, cv::Point((int)blob.x, (int)blob.y), 5, { 255, 0, 255 }, 5);
 	}
-
-	cv::cvtColor(image, image, cv::COLOR_BGR2RGB);
+	
+	cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
 	cv::imwrite("plots/flowers.jpg", image);
 
 	return 0;
