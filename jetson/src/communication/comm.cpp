@@ -18,8 +18,8 @@ int open_i2c() {
     return file;
 }
 
-#define READ 1
-#define WRITE 0
+#define READ 0
+#define WRITE 1
 
 void read_i2c(int file, uint8_t mcu_addr, uint8_t * data, uint8_t len) {
     if (ioctl(file, I2C_SLAVE, mcu_addr) < 0) {
