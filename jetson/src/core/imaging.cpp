@@ -75,20 +75,23 @@ std::vector<Point> findFlowerCenters(cv::Mat& image){
 	std::vector<Point> yellowBlobs;
 
 	double brightest = brightestPixelVal(image);
+	log(std::string("brightest pixel value: ") + std::to_string(brightest));
 
-	cv::Mat yellowMask = colorMask(image, brightest, {255, 255, 0}, 0.25);
+	cv::Mat yellowMask = colorMask(image, brightest, {255, 255, 100}, 0.1);
 	cv::imwrite("./plots/yellow.png", yellowMask);
-	cv::Mat white = colorMask(image, brightest, {255, 255, 255}, 0.1);
-	cv::blur(white, white, cv::Size(100, 100));
-	cv::imwrite("./plots/blurredWhite.png", white);
+
+	cv::Mat green = colorMask(image, 50, {30, 60, 20}, 0.1);
+	cv::blur(green, green, cv::Size(100, 100));
+	cv::imwrite("./plots/blurredGreen.png", green);
 
 	cv::Mat labels, stats, centroids;
 	int label_count = cv::connectedComponentsWithStats(yellowMask, labels, stats, centroids);
-
+	
 	// start index at 1 since first blob is background blob
 	// TODO: smarter way to determine hardcoded cutoffs?
 	for (int i = 1; i < label_count; i++) {
-		if (white.at<uchar>((int)centroids.at<double>(i, 0), (int)centroids.at<double>(i, 1)) > 10) {
+		int blurredGreenVal = green.at<uchar>((int)centroids.at<double>(i, 1), (int)centroids.at<double>(i, 0));
+		if ( blurredGreenVal > 10) {
 			yellowBlobs.push_back({ centroids.at<double>(i, 0), centroids.at<double>(i, 1) });
 		}
 	}
@@ -126,26 +129,11 @@ cv::Mat Camera::getColorImage() {
 
 // returns the most recent snapshot
 cv::Mat Camera::getDepthImage() {
-	rs2::colorizer c;
+	const int w = depth.as<rs2::video_frame>().get_width();
+    const int h = depth.as<rs2::video_frame>().get_height();
+    // Create OpenCV matrix of size (w,h) from the depth data
 
-	rs2::video_frame colorized_depth = c.colorize(depth);
-	log(std::string("colourized image"));
-
-	// Query frame size (width and height)
-    const int w = colorized_depth.get_width();
-    const int h = colorized_depth.get_height();
-	log(std::string("width: ") + std::to_string(w));
-	log(std::string("height: ") + std::to_string(h));
-
-	cv::Mat depth_image = cv::Mat(cv::Size(w, h), CV_16UC1, (void*)depth.get_data(), cv::Mat::AUTO_STEP);
-	cv::Mat oneRow = depth_image.reshape(0,1);
-	std::ostringstream os;
-	os << oneRow;                             // Put to the stream
-	std::string asStr = os.str();
-	log(asStr);
-
-    // Create OpenCV matrix of size (w,h) from the colorized depth data
-    return depth_image;
+    return cv::Mat(cv::Size(w, h), CV_16UC1, (void*)depth.get_data(), cv::Mat::AUTO_STEP);;
 }
 
 // ensure that the color and depth image are associated
