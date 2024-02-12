@@ -71,8 +71,8 @@ cv::Mat colorMask(cv::Mat& image, double brightest, Pixel ideal, double tol) {
 }
 
 // TODO: Fancy schmancy image processing
-std::vector<Point> findFlowerCenters(cv::Mat& image){
-	std::vector<Point> yellowBlobs;
+std::vector<Point2D> findFlowerCenters(cv::Mat& image){
+	std::vector<Point2D> yellowBlobs;
 
 	double brightest = brightestPixelVal(image);
 	log(std::string("brightest pixel value: ") + std::to_string(brightest));

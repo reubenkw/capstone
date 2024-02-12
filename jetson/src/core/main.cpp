@@ -2,6 +2,7 @@
 #include "imaging.h"
 #include "log.h"
 #include "comm.h"
+#include "cluster.h"
 
 #include <stdio.h>
 #include <iostream>
@@ -20,14 +21,14 @@ int image_processing_test() {
 	cv::imwrite("./plots/original_image.png", image);
 	cv::cvtColor(image, image, cv::COLOR_BGR2RGB);
 
-	std::vector<Point> yellowBlobs = findFlowerCenters(image);
+	std::vector<Point2D> yellowBlobs = findFlowerCenters(image);
 
 	cv::Mat depth = cam.getDepthImage();
 	cv::imwrite("./plots/depth.png", depth);
 	int width = image.cols;
 	int height = image.rows;
 
-	for (Point const& blob : yellowBlobs) {
+	for (Point2D const& blob : yellowBlobs) {
 		cv::circle(image, cv::Point((int)blob.x, (int)blob.y), 5, { 255, 0, 255 }, 5);
 		float x = blob.x/width;
 		float y = blob.y/height;
@@ -79,5 +80,6 @@ int main(int argc, char** argv)
 {
 	log(std::string("Starting Program!"));
 	// return test_camera_image();
-	return image_processing_test();
+	// return image_processing_test();
+	test_clustering();
 }

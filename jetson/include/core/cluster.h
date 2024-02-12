@@ -1,15 +1,11 @@
 #ifndef CLUSTER_H
 #define CLUSTER_H
 
+#include "point.h"
 #include <vector>
 
-// TODO: refactor to have a 2D point and a 3D point in a seperate file
-struct ClPoint {
-    float x;
-    float y;
-};
-
-std::vector<std::vector<ClPoint>> cluster(std::vector<ClPoint> points, float d);
+std::vector<std::vector<Point2D>> cluster(std::vector<Point2D> points, float d);
+std::vector<std::vector<Point3D>> cluster(std::vector<Point3D> points, float d);
 void test_clustering();
 
 #endif //h 

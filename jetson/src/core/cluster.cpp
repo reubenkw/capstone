@@ -1,4 +1,5 @@
 #include "cluster.h"
+#include "point.h"
 
 #include <math.h>
 #include <vector>
@@ -9,21 +10,18 @@
 
 using namespace std;
 
-float dist(ClPoint p1, ClPoint p2) {
-    return pow(pow(p1.x - p2.x, 2) + pow(p1.y - p2.y, 2), 0.5);
-}
-
-bool fits_cluster(vector<ClPoint> cluster, ClPoint point, float d) {
+bool fits_cluster(vector<Point3D> cluster, Point3D point, float d) {
     for (int i = 0; i < cluster.size(); i++) {
-        if (dist(point, cluster[i]) < d) {
+        // check distance
+        if ((point - cluster[i]).mag() < d) {
             return true;
         }
     }
     return false;
 }
 
-vector<vector<ClPoint>> cluster(vector<ClPoint> points, float d) {
-    vector<vector<ClPoint>> clusters{};
+vector<vector<Point3D>> cluster(vector<Point3D> points, float d) {
+    vector<vector<Point3D>> clusters{};
     
     for (auto point : points) {
         std::vector<int> fits_clusters;
@@ -53,10 +51,33 @@ vector<vector<ClPoint>> cluster(vector<ClPoint> points, float d) {
     return clusters;
 }
 
+// couple extra linear passes to convert between Point2D and Point3D
+vector<vector<Point2D>> cluster(vector<Point2D> points, float d) {
+    // convert from 2d to 3d
+    vector<Point3D> pts3d;
+    for ( Point2D pt2d : points ) {
+        pts3d.push_back(Point3D(pt2d.x, pt2d.y, 0));
+    }
+
+    // cluster in 3d
+    vector<vector<Point3D>> clustered = cluster(pts3d, d);
+
+    // 3d to 2d
+    vector<vector<Point2D>> clustered2d;
+    for ( vector<Point3D> group3d : clustered ) {
+        vector<Point2D> group2d;
+        for ( Point3D pt3d : group3d ) {
+            group2d.push_back(Point2D(pt3d.x, pt3d.y));
+        }
+        clustered2d.push_back(group2d);
+    }
+    return clustered2d;
+}
+
 void test_clustering() {
-    vector<ClPoint> points{ClPoint{.1, .1}, ClPoint{.1, .2}, ClPoint{.2, .3}, ClPoint{0, 1}, ClPoint{0, .9}, ClPoint{1, 1}};
-    vector<vector<ClPoint>> expected{{ClPoint{1, 1}}, {ClPoint{0, .9}, ClPoint{0, 1}}, {ClPoint{.1, .1}, ClPoint{.1, .2}, ClPoint{.2, .3}}};
-    vector<vector<ClPoint>> recieved = cluster(points, 0.2);
+    vector<Point2D> points{Point2D{.1, .1}, Point2D{.1, .2}, Point2D{.2, .3}, Point2D{0, 1}, Point2D{0, .9}, Point2D{1, 1}};
+    vector<vector<Point2D>> expected{{Point2D{1, 1}}, {Point2D{0, .9}, Point2D{0, 1}}, {Point2D{.1, .1}, Point2D{.1, .2}, Point2D{.2, .3}}};
+    vector<vector<Point2D>> recieved = cluster(points, 0.2);
 
     assert(recieved.size() == 3);
 

@@ -8,7 +8,7 @@
 #include <librealsense2/rs.hpp>
 
 
-std::vector<Point> findFlowerCenters(cv::Mat &  image);
+std::vector<Point2D> findFlowerCenters(cv::Mat &  image);
 double findYCenterOfPlant(cv::Mat & image);
 
 struct Pixel {
