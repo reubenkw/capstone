@@ -21,17 +21,22 @@ Robot::Robot(double robotLength, double robotWidth, double wheelRadius, Camera &
 	servoArm[Arm::y] = MotorController(10, 1, 1, 5, 0, 0, SERVO_MC, Arm::y, encoderVal[4 + Arm::y], i2c_bus_file);
 	servoArm[Arm::z] = MotorController(10, 1, 1, 5, 0, 0, SERVO_MC, Arm::z, encoderVal[4 + Arm::z], i2c_bus_file);
 
-	robotPosition = Point(0, 0, 0);
-	armPosition = Point(0, 0, 0);
+	robotPosition = Point2D(0, 0);
+	robotAngle = 0;
+	armPosition = Point3D(0, 0, 0);
 
 	
 }
 
-Point Robot::getRobotPosition() {
+Point2D Robot::getRobotPosition() {
 	return robotPosition;
 }
 
-Point Robot::getArmPosition() {
+double Robot::getRobotAngle() {
+	return robotAngle;
+}
+
+Point3D Robot::getArmPosition() {
 	return armPosition;
 }
 
@@ -40,16 +45,16 @@ void Robot::readEncoderVals(){
 }
 
 // Based on MTE 544 Localization I and II 
-void Robot::updateRobotPosition() {
+void Robot::updateRobotOrientation() {
 	double d_left = (drive[frontLeft].getElapsedDistance() + drive[backLeft].getElapsedDistance()) / 2.0;
 	double d_right = (drive[frontRight].getElapsedDistance() + drive[backRight].getElapsedDistance()) / 2.0;
 	double d_avg = (d_left + d_right)/2;
 
 	double rotation = (d_right - d_left)/robotWidth;
 
-	robotPosition[roboPos::theta] += rotation;
-	robotPosition[roboPos::x] += d_avg*cos(robotPosition[roboPos::theta]);
-	robotPosition[roboPos::y] += d_avg*sin(robotPosition[roboPos::theta]);
+	robotAngle += rotation;
+	robotPosition.x += d_avg*cos(robotAngle);
+	robotPosition.y += d_avg*sin(robotAngle);
 }
 
 void Robot::updateArmPosition() {
@@ -72,8 +77,8 @@ double Robot::calculate_wheel_speed(double v, double w) {
 	return 1 / wheelRadius * (v + robotWidth * w / 2 + std::pow(robotLength * w / 2, 2) / (v + robotWidth * w / 2));
 }
 
-void Robot::driveRobotForward(Point delta) {
-	robotPosition = Point(0, 0, 0);
+void Robot::driveRobotForward(Point2D delta) {
+	robotPosition = Point2D(0, 0);
 	drive[frontLeft].resetElapsedDistance();
 	drive[backLeft].resetElapsedDistance();
 	drive[frontRight].resetElapsedDistance();
@@ -101,7 +106,7 @@ void Robot::driveRobotForward(Point delta) {
 		drive[frontRight].update(encoderVal[frontRight]);
 		drive[backRight].update(encoderVal[backRight]);
 
-		updateRobotPosition();
+		updateRobotOrientation();
 
 		delta = delta - robotPosition;
 	}
