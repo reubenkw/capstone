@@ -17,12 +17,13 @@ class MotorController {
 	double radius;
 	int mc;
 	int reg;
+	int file;
 
 public:
 	MotorController(double pterm = 0, double iterm = 0, double dterm = 0.01, double integratorClamp = 0, 
-		double radius = 0.01, double idealSpeed = 0, int mc = 0, int reg = 0, int encoderVal = 0);
+		double radius = 0.01, double idealSpeed = 0, int mc = 0, int reg = 0, int encoderVal = 0, int file = 0);
 	void setIdealSpeed(double idealSpeed);
-	void update(int file, uint16_t encoderVal);
+	void update(uint16_t encoderVal);
 	void resetElapsedDistance();
 	double getElapsedDistance();
 };

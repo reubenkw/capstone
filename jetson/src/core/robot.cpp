@@ -8,22 +8,23 @@ Robot::Robot(double robotLength, double robotWidth, double wheelRadius, Camera &
     : robotLength(robotLength), robotWidth(robotWidth), wheelRadius(wheelRadius), camera(camera), robotPosTol(robotPosTol), armPosTol(armPosTol) {
     
 	readEncoderVals();
+	i2c_bus_file = open_i2c();
 	
 	// TODO: pid terms need to be determined experimentally
-    drive[frontLeft] = MotorController(10, 1, 1, 5, 0, 0, DRIVE_MC, frontLeft, encoderVal[frontLeft]);
-	drive[backLeft] = MotorController(10, 1, 1, 5, 0, 0, DRIVE_MC, backLeft, encoderVal[backLeft]);
-    drive[frontRight] = MotorController(10, 1, 1, 5, 0, 0, DRIVE_MC, frontRight, encoderVal[frontRight]);
-    drive[backRight] = MotorController(10, 1, 1, 5, 0, 0, DRIVE_MC, backRight, encoderVal[backRight]);
+    drive[frontLeft] = MotorController(10, 1, 1, 5, 0, 0, DRIVE_MC, frontLeft, encoderVal[frontLeft], i2c_bus_file);
+	drive[backLeft] = MotorController(10, 1, 1, 5, 0, 0, DRIVE_MC, backLeft, encoderVal[backLeft], i2c_bus_file);
+    drive[frontRight] = MotorController(10, 1, 1, 5, 0, 0, DRIVE_MC, frontRight, encoderVal[frontRight], i2c_bus_file);
+    drive[backRight] = MotorController(10, 1, 1, 5, 0, 0, DRIVE_MC, backRight, encoderVal[backRight], i2c_bus_file);
 
 	// 4 bc 4 drive motors
-	servoArm[Arm::x] = MotorController(10, 1, 1, 5, 0, 0, SERVO_MC, Arm::x, encoderVal[4 + Arm::x]);
-	servoArm[Arm::y] = MotorController(10, 1, 1, 5, 0, 0, SERVO_MC, Arm::y, encoderVal[4 + Arm::y]);
-	servoArm[Arm::z] = MotorController(10, 1, 1, 5, 0, 0, SERVO_MC, Arm::z, encoderVal[4 + Arm::z]);
+	servoArm[Arm::x] = MotorController(10, 1, 1, 5, 0, 0, SERVO_MC, Arm::x, encoderVal[4 + Arm::x], i2c_bus_file);
+	servoArm[Arm::y] = MotorController(10, 1, 1, 5, 0, 0, SERVO_MC, Arm::y, encoderVal[4 + Arm::y], i2c_bus_file);
+	servoArm[Arm::z] = MotorController(10, 1, 1, 5, 0, 0, SERVO_MC, Arm::z, encoderVal[4 + Arm::z], i2c_bus_file);
 
 	robotPosition = Point(0, 0, 0);
 	armPosition = Point(0, 0, 0);
 
-	i2c_bus_file = open_i2c();
+	
 }
 
 Point Robot::getRobotPosition() {
@@ -95,10 +96,10 @@ void Robot::driveRobotForward(Point delta) {
 
 		readEncoderVals();
 
-		drive[frontLeft].update(i2c_bus_file, encoderVal[frontLeft]);
-		drive[backLeft].update(i2c_bus_file, encoderVal[backLeft]);
-		drive[frontRight].update(i2c_bus_file, encoderVal[frontRight]);
-		drive[backRight].update(i2c_bus_file, encoderVal[backRight]);
+		drive[frontLeft].update(encoderVal[frontLeft]);
+		drive[backLeft].update(encoderVal[backLeft]);
+		drive[frontRight].update(encoderVal[frontRight]);
+		drive[backRight].update(encoderVal[backRight]);
 
 		updateRobotPosition();
 
@@ -140,7 +141,7 @@ void Robot::moveServoArm(Arm::ServoMotor motor, double pos) {
 		readEncoderVals();
 
 		// 4 bc 4 drive motors
-		servoArm[motor].update(i2c_bus_file, encoderVal[4 + motor]);
+		servoArm[motor].update(encoderVal[4 + motor]);
 		updateArmPosition();
 		delta = pos - armPosition[motor];
 	}
