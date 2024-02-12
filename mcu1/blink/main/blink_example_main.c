@@ -105,7 +105,7 @@ void app_main(void)
         // check if command is complete
         if (readBytes >= DATA_LENGTH ){
             uint8_t tx = data[1];
-            uint8_t device = data[0] << 4;
+            uint8_t device = data[0] & 0xF0;
             uint8_t reg = data[0] & 0xF;
             switch (device) {
                 case DRIVE_MC: 
