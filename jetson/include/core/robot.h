@@ -46,8 +46,8 @@ public:
 
 	double calculate_wheel_speed(double v, double w);
 	void driveRobotForward(Point2D idealPos);
-	void resetServoArm(Arm::ServoMotor motor);
-	void moveServoArm(Arm::ServoMotor motor, double pos);
+	void resetServoArm(ServoMotor motor);
+	void moveServoArm(ServoMotor motor, double pos);
 	void pollinate();
 	void readEncoderVals();
 	// TODO: add logging somewhere

@@ -17,9 +17,9 @@ Robot::Robot(double robotLength, double robotWidth, double wheelRadius, Camera &
     drive[backRight] = MotorController(10, 1, 1, 5, 0, 0, DRIVE_MC, backRight, encoderVal[backRight], i2c_bus_file);
 
 	// 4 bc 4 drive motors
-	servoArm[Arm::x] = MotorController(10, 1, 1, 5, 0, 0, SERVO_MC, Arm::x, encoderVal[4 + Arm::x], i2c_bus_file);
-	servoArm[Arm::y] = MotorController(10, 1, 1, 5, 0, 0, SERVO_MC, Arm::y, encoderVal[4 + Arm::y], i2c_bus_file);
-	servoArm[Arm::z] = MotorController(10, 1, 1, 5, 0, 0, SERVO_MC, Arm::z, encoderVal[4 + Arm::z], i2c_bus_file);
+	servoArm[x] = MotorController(10, 1, 1, 5, 0, 0, SERVO_MC, x, encoderVal[4 + x], i2c_bus_file);
+	servoArm[y] = MotorController(10, 1, 1, 5, 0, 0, SERVO_MC, y, encoderVal[4 + y], i2c_bus_file);
+	servoArm[z] = MotorController(10, 1, 1, 5, 0, 0, SERVO_MC, z, encoderVal[4 + z], i2c_bus_file);
 
 	robotPosition = Point2D(0, 0);
 	robotAngle = 0;
@@ -118,7 +118,7 @@ void Robot::driveRobotForward(Point2D delta) {
 
 }
 
-void Robot::resetServoArm(Arm::ServoMotor motor) {
+void Robot::resetServoArm(ServoMotor motor) {
 	bool limitSwitch = false;
 	// TODO: read limit switch values servo motor
 	// TODO: figure out direction
@@ -134,7 +134,7 @@ void Robot::resetServoArm(Arm::ServoMotor motor) {
 	servoArm[motor].resetElapsedDistance();
 }
 
-void Robot::moveServoArm(Arm::ServoMotor motor, double pos) {
+void Robot::moveServoArm(ServoMotor motor, double pos) {
 	double delta = pos - armPosition[pos];
 	// TODO: how to figure ideal v?
 	double idealSpeed = IDEAL_LINEAR_SPEED;
