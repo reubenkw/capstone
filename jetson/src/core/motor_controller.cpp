@@ -2,22 +2,18 @@
 
 #include <math.h>
 
-MotorController::MotorController(double pterm, double iterm, double dterm, double integratorClamp, double radius, double idealSpeed) :
-	ctrller(pterm, iterm, dterm, integratorClamp), idealSpeed(idealSpeed), radius(radius) {
+MotorController::MotorController(double pterm, double iterm, double dterm, double integratorClamp, 
+		double radius, double idealSpeed, int mc, int reg, int encoderVal, int file) :
+	ctrller(pterm, iterm, dterm, integratorClamp), idealSpeed(idealSpeed), radius(radius), mc(mc), reg(reg), lastEncoderVal(encoderVal), file(file){
 	lastUpdateTime = std::chrono::system_clock::now();
 	elapsedDistance = 0;
-	lastEncoderVal = 0;
-	// TODO: read encoder val
 }
 
 void MotorController::setIdealSpeed(double idealSpeed) {
 	idealSpeed = idealSpeed;
 }
 
-void MotorController::update() {
-	double encoderVal;
-	// TODO: read encoder value
-	
+void MotorController::update(uint16_t encoderVal) {	
 	std::chrono::time_point<std::chrono::system_clock> currentTime = std::chrono::system_clock::now();
 	double deltaT = (std::chrono::duration_cast<std::chrono::seconds>(currentTime - lastUpdateTime)).count();
 	lastUpdateTime = currentTime;
@@ -31,8 +27,17 @@ void MotorController::update() {
 	lastEncoderVal = encoderVal;
 
 	double motorSignal = ctrller.update_ctrl_signal(idealSpeed - currentSpeed, deltaT);
-	
-	// TODO: write motorSignal to mcu1
+	int8_t saturatedMotorSignal;
+	if (motorSignal > 127){
+		saturatedMotorSignal = 127;
+	} else if (motorSignal < -128){
+		saturatedMotorSignal = -128;
+	} else {
+		saturatedMotorSignal = motorSignal;
+	}
+	uint16_t data = mc << 12 | reg << 8 | saturatedMotorSignal;
+	write_i2c(file, MCU_1, data);
+
 }
 
 void MotorController::resetElapsedDistance() {

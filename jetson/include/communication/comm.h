@@ -3,26 +3,14 @@
 
 #include <cstdint>
 
-#define DRIVE_L_F 0x1000
-#define DRIVE_L_B 0x1000
-#define DRIVE_R_F 0x1000
-#define DRIVE_R_B 0x1000
+#define MCU_1 0x01
+#define MCU_ENCODER 0x10
 
-#define SERVO_X 0x1000
-#define SERVO_Y 0x1000
-#define SERVO_Z 0x1000
-
-#define ENCODER_L_F 0x1000
-#define ENCODER_L_B 0x1000
-#define ENCODER_R_F 0x1000
-#define ENCODER_R_B 0x1000
-
-#define ENCODER_X 0x1000
-#define ENCODER_Y 0x1000
-#define ENCODER_Z 0x1000
+#define DRIVE_MC 0x1
+#define SERVO_MC 0x2
 
 int open_i2c();
-uint16_t read_i2c(int file, uint8_t dev_address, uint8_t reg);
-void write_i2c(int file, uint8_t dev_address, uint8_t reg, uint16_t data);
+void read_i2c(int file, uint8_t mcu_addr, uint8_t * data, uint8_t len);
+void write_i2c(int file, uint8_t mcu_addr, uint16_t data);
 
 #endif //h

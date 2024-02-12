@@ -4,12 +4,11 @@
 #include "motor_controller.h"
 #include "imaging.h"
 #include "point.h"
+#include "comm.h"
 
 enum DriveMotor { frontLeft, backLeft, frontRight, backRight };
 
-namespace Arm {
-	enum ServoMotor { x, y, z };
-};
+enum ServoMotor { x, y, z };
 
 class Robot {
 	double robotLength;
@@ -33,6 +32,8 @@ class Robot {
 
 	int i2c_bus_file;
 
+	uint16_t encoderVal[7];
+
 public:
 
 
@@ -45,9 +46,10 @@ public:
 
 	double calculate_wheel_speed(double v, double w);
 	void driveRobotForward(Point2D idealPos);
-	void resetServoArm(Arm::ServoMotor motor);
-	void moveServoArm(Arm::ServoMotor motor, double pos);
+	void resetServoArm(ServoMotor motor);
+	void moveServoArm(ServoMotor motor, double pos);
 	void pollinate();
+	void readEncoderVals();
 	// TODO: add logging somewhere
 };
 

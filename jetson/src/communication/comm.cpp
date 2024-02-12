@@ -18,27 +18,33 @@ int open_i2c() {
     return file;
 }
 
-uint16_t read_i2c(int file, uint8_t dev_address, uint8_t reg) {
-    if (ioctl(file, I2C_SLAVE, dev_address) < 0) {
-        log(std::string("ERROR: failed to read from i2c bus address:" + dev_address));
+#define READ 2
+#define WRITE 1
+
+void read_i2c(int file, uint8_t mcu_addr, uint8_t * data, uint8_t len) {
+    if (ioctl(file, I2C_SLAVE, mcu_addr) < 0) {
+        log(std::string("ERROR: failed to read from i2c bus address:" + mcu_addr));
     }
-    uint16_t data = i2c_smbus_read_word_data(file, reg);
-    log(std::string("INFO: read from i2c bus address:" + dev_address) + std::string("data: " + data));
-    return data;
+    i2c_smbus_read_i2c_block_data(file, READ, len, data);
+    log(std::string("INFO: read from i2c bus address:" + mcu_addr) + std::string("data: "));
+
+    for (int i = 0; i < len; i++){
+        log(std::to_string(data[i]));
+    }
 }
 
-void write_i2c(int file, uint8_t dev_address, uint8_t reg, uint16_t data) {
-    if (ioctl(file, I2C_SLAVE, dev_address) < 0) {
-        log(std::string("ERROR: failed to write to i2c bus address:" + dev_address));
+void write_i2c(int file, uint8_t mcu_addr, uint16_t data){
+    if (ioctl(file, I2C_SLAVE, mcu_addr) < 0) {
+        log(std::string("ERROR: failed to write to i2c bus address:" + mcu_addr));
     }
-    int ret = i2c_smbus_write_word_data(file, reg, data);
+    int ret = i2c_smbus_write_word_data(file, WRITE, data);
     if (ret < 0) {
-        log(  std::string("ERROR: failed to write to i2c bus address:" + dev_address) 
-            + std::string("reg: " + reg) 
+        log(  std::string("ERROR: failed to write to i2c bus address:" + mcu_addr) 
+            + std::string("cmd: " + WRITE) 
             + std::string("data: " + data));
     } else {
-        log(  std::string("INFO: wrote to i2c bus address:" + dev_address) 
-            + std::string("reg: " + reg) 
+        log(  std::string("INFO: wrote to i2c bus address:" + mcu_addr) 
+            + std::string("cmd: " + WRITE) 
             + std::string("data: " + data));
     }
 }

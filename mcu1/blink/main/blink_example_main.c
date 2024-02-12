@@ -14,8 +14,12 @@
 #include "freertos/portmacro.h"
 #include "constants.h"
 
+#define WRITE 0
+#define READ 1
+
 void app_main(void)
 {
+    uint8_t reg_addr_map[4] = {PWM_1, PWM_2, PWM_3, PWM_4};
     // Initialize spi bus as master
     // default transfer size is 64 bytes when DMA disabled
     spi_bus_config_t spi_config = {
@@ -33,8 +37,8 @@ void app_main(void)
     spi_bus_initialize(SPI1_HOST, &spi_config, SPI_DMA_DISABLED);
 
     spi_device_interface_config_t dc_mc_config = {
-        .command_bits = 8, 
-        .address_bits = 8, 
+        .command_bits = 2, 
+        .address_bits = 6, 
         .mode = 0,
         .clock_speed_hz = 100000, 
         .spics_io_num = 25
@@ -87,7 +91,7 @@ void app_main(void)
     i2c_driver_install(I2C_NUM_1, I2C_MODE_MASTER, 32, 32, ESP_INTR_FLAG_LOWMED );
 
     // some sort of indication mcu1 is set up 
-    int DATA_LENGTH = 4;
+    int DATA_LENGTH = 2;
     uint8_t *data = (uint8_t *)malloc(DATA_LENGTH);
     uint8_t *rx_buf = (uint8_t *)malloc(DATA_LENGTH);
     uint8_t *error_msg = (uint8_t *)malloc(DATA_LENGTH);
@@ -100,15 +104,15 @@ void app_main(void)
 
         // check if command is complete
         if (readBytes >= DATA_LENGTH ){
-            uint8_t tx = data[2];
-            uint16_t device = data[0] << 4 | data[1];
+            uint8_t tx = data[1];
+            uint8_t device = data[0] & 0xF0;
+            uint8_t reg = data[0] & 0xF;
             switch (device) {
                 case DRIVE_MC: 
-                    // TODO: update command and address once electronics are completed
                     spi_transaction_t spi_dc_tx = {
-                        .cmd = 1, 
-                        .addr = 1, 
-                        .length = 3, 
+                        .cmd = WRITE, 
+                        .addr = reg_addr_map[reg], 
+                        .length = 8, 
                         .tx_buffer = &tx
                     };
                     err = spi_device_transmit(dc_mc_spi, &spi_dc_tx);
@@ -122,10 +126,10 @@ void app_main(void)
 
                     // TODO: update command and addresses to read from the status register
                     spi_transaction_t spi_dc_rx = {
-                        .cmd = 1, 
-                        .addr = 1, 
-                        .length = 3,
-                        .rxlength = DATA_LENGTH,
+                        .cmd = READ, 
+                        .addr = STAT_REG, 
+                        .length = 8,
+                        .rxlength = 8,
                         .rx_buffer = rx_buf
                     };
                     err = spi_device_transmit(dc_mc_spi, &spi_dc_rx);
@@ -147,9 +151,9 @@ void app_main(void)
                 case SERVO_MC:
                     // TODO: update command and address once electronics are completed
                     spi_transaction_t spi_stp_tx = {
-                        .cmd = 1, 
-                        .addr = 1, 
-                        .length = 3, 
+                        .cmd = WRITE, 
+                        .addr = reg_addr_map[reg], 
+                        .length = 8, 
                         .tx_buffer = &tx
                     };
                     err = spi_device_transmit(stp_mc_spi, &spi_stp_tx);
@@ -163,10 +167,10 @@ void app_main(void)
 
                     // TODO: update command and addresses to read from the status register
                     spi_transaction_t spi_servo_rx = {
-                        .cmd = 1, 
-                        .addr = 1, 
-                        .length = 3,
-                        .rxlength = DATA_LENGTH,
+                        .cmd = READ, 
+                        .addr = STAT_REG, 
+                        .length = 8,
+                        .rxlength = 8,
                         .rx_buffer = rx_buf
                     };
 
