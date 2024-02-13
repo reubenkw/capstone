@@ -1,6 +1,6 @@
 #include "frame_transform.h"
 #include "point.h"
-#include "dimensions.h"
+#include "constants.h"
 
 /*
 reference frames :
@@ -11,11 +11,19 @@ reference frames :
 
 // made easier because the camera gives depth to the camera plane (ie z = depth)
 Point3D camera2robot(Point3D camera_point, double arm_x, double arm_y) {
-    double x = arm_x + CAMERA_X_OFFSET + camera_point.x;
-    double y = arm_y + CAMERA_Y_OFFSET + camera_point.y;
-    double z = FLOOR2CAM - camera_point.z;
+    double x = arm_x + CAMERA_2_EFFECTOR_X + camera_point.x;
+    double y = arm_y + CAMERA_2_EFFECTOR_Y + camera_point.y;
+    double z = FLOOR_2_CAM - camera_point.z;
 
     return Point3D(x,y,z);
+}
+
+std::vector<Point3D> camera2robot(std::vector<Point3D> camera_points, double arm_x, double arm_y) {
+    std::vector<Point3D> robotPoints;
+    for (auto camera_point : camera_points){
+        robotPoints.push_back(camera2robot(camera_point, arm_x, arm_y));
+    }
+    return robotPoints;
 }
 
 Point3D robot2global(Point3D robot_point, double robot_x, double robot_y, double robot_angle) {

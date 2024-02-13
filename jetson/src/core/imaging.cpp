@@ -70,7 +70,6 @@ cv::Mat colorMask(cv::Mat& image, double brightest, Pixel ideal, double tol) {
 	return thresholded;
 }
 
-// TODO: Fancy schmancy image processing
 std::vector<Point2D> findFlowerCenters(cv::Mat& image){
 	std::vector<Point2D> yellowBlobs;
 
@@ -95,11 +94,7 @@ std::vector<Point2D> findFlowerCenters(cv::Mat& image){
 			yellowBlobs.push_back({ centroids.at<double>(i, 0), centroids.at<double>(i, 1) });
 		}
 	}
-
-	// TODO: clustering algo
-
 	return yellowBlobs;
-
 }
 
 // TODO: Find center of row
@@ -175,4 +170,12 @@ Point3D Camera::getDeprojection(Point2D color_pixel) {
 	rs2_deproject_pixel_to_point(point, &intrinsic, pixel, d);
 
 	return Point3D(point[0], point[1], point[2]);
+}
+
+std::vector<Point3D> Camera::getDeprojection(std::vector<Point2D> const & color_pixels){
+	std::vector<Point3D> cameraPoints;
+	for (auto pixel: color_pixels){
+		cameraPoints.push_back(getDeprojection(pixel));
+	}
+	return cameraPoints;
 }

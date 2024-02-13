@@ -1,11 +1,16 @@
 #include "robot.h"
 
+#include "log.h"
+#include "cluster.h"
+#include "constants.h"
+#include "frame_transform.h"
+
 #include <cmath>
 
 #define IDEAL_LINEAR_SPEED 0.1
 
-Robot::Robot(double robotLength, double robotWidth, double wheelRadius, Camera & camera, double robotPosTol, double armPosTol) 
-    : robotLength(robotLength), robotWidth(robotWidth), wheelRadius(wheelRadius), camera(camera), robotPosTol(robotPosTol), armPosTol(armPosTol) {
+Robot::Robot(Camera & camera) 
+    : camera(camera){
     
 	readEncoderVals();
 	i2c_bus_file = open_i2c();
@@ -25,7 +30,7 @@ Robot::Robot(double robotLength, double robotWidth, double wheelRadius, Camera &
 	robotAngle = 0;
 	armPosition = Point3D(0, 0, 0);
 
-	
+	clear_log();
 }
 
 Point2D Robot::getRobotPosition() {
@@ -50,7 +55,7 @@ void Robot::updateRobotOrientation() {
 	double d_right = (drive[frontRight].getElapsedDistance() + drive[backRight].getElapsedDistance()) / 2.0;
 	double d_avg = (d_left + d_right)/2;
 
-	double rotation = (d_right - d_left)/robotWidth;
+	double rotation = (d_right - d_left)/CARTESIAN_X_MAX;
 
 	robotAngle += rotation;
 	robotPosition.x += d_avg*cos(robotAngle);
@@ -74,7 +79,7 @@ double calculate_radius(double delta_x, double delta_y) {
 // Pass in -w for left wheel
 // Assume positive w is CCW orientation
 double Robot::calculate_wheel_speed(double v, double w) {
-	return 1 / wheelRadius * (v + robotWidth * w / 2 + std::pow(robotLength * w / 2, 2) / (v + robotWidth * w / 2));
+	return 1 / WHEEL_RADIUS * (v + CARTESIAN_X_MAX * w / 2 + std::pow(CARTESIAN_Y_MAX * w / 2, 2) / (v + CARTESIAN_X_MAX * w / 2));
 }
 
 void Robot::driveRobotForward(Point2D delta) {
@@ -84,7 +89,7 @@ void Robot::driveRobotForward(Point2D delta) {
 	drive[frontRight].resetElapsedDistance();
 	drive[backRight].resetElapsedDistance();
 
-	while (delta.mag() < robotPosTol) {
+	while (delta.mag() < ROBOT_TOL) {
 
 		double r = calculate_radius(delta.x, delta.y);
 
@@ -142,7 +147,7 @@ void Robot::moveServoArm(ServoMotor motor, double pos) {
 	// TODO: do we need PID controllers ideal speed of servo arm position? 
 	servoArm[motor].setIdealSpeed(idealSpeed);
 
-	while (delta < armPosTol) {
+	while (delta < ARM_TOL) {
 		readEncoderVals();
 
 		// 4 bc 4 drive motors
@@ -153,7 +158,66 @@ void Robot::moveServoArm(ServoMotor motor, double pos) {
 	servoArm[motor].setIdealSpeed(0);
 }
 
-// TODO: perform pollination pattern
-void Robot::pollinate() { }
+void Robot::pollinate() { 
+	double delta = 2.5;
+	Point3D currPos = getArmPosition();
+	moveServoArm(x, currPos.x - delta);
+	moveServoArm(y, currPos.y - delta);
+	moveServoArm(x, currPos.x + delta);
+	moveServoArm(y, currPos.y + delta);
+	moveServoArm(x, currPos.x);
+	moveServoArm(y, currPos.y);
+}
+
+std::vector<Point3D> Robot::scan() {
+	std::vector<Point3D> flowersToVisit;
+	for (int i = 1; i < 4; i++){
+		for (int j = 1; j < 3; j++){
+			moveServoArm(x, CARTESIAN_X_MAX*i/4);
+			moveServoArm(y, CARTESIAN_Y_MAX*j/3);
+			std::vector<Point3D> newFlowers = findFlowers();
+			flowersToVisit.insert(flowersToVisit.end(), newFlowers.begin(), newFlowers.end());
+			flowersToVisit = avgClusterCenters(flowersToVisit, 10);
+		}
+	}
+	return flowersToVisit;
+}
+
+std::vector<Point3D> Robot::findFlowers(){
+	camera.storeSnapshot();
+	cv::Mat image = camera.getColorImage();
+	if (DEBUG) {
+		cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
+		cv::imwrite(std::string("./plots/") + getFormattedTimeStamp() + std::string("_image.png"), image);
+		cv::cvtColor(image, image, cv::COLOR_BGR2RGB);
+	}
+	std::vector<Point2D> flowerCenters = findFlowerCenters(image);
+	if (DEBUG) {
+		for (Point2D const& blob : flowerCenters) {
+			cv::circle(image, cv::Point((int)blob.x, (int)blob.y), 5, { 255, 0, 255 }, 5);
+			log(std::string("depth val: ") + std::to_string(camera.getDepthVal(x, y)));
+		}
+
+		cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
+		cv::imwrite(std::string("./plots/") + getFormattedTimeStamp() + std::string("_yellow_blobs.png"), image);
+		cv::cvtColor(image, image, cv::COLOR_BGR2RGB);
+	}
+	flowerCenters = avgClusterCenters(flowerCenters, 10);
+	if (DEBUG) {
+		for (Point2D const& blob : flowerCenters) {
+			cv::circle(image, cv::Point((int)blob.x, (int)blob.y), 5, { 255, 0, 255 }, 5);
+		}
+		cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
+		cv::imwrite(std::string("./plots/") + getFormattedTimeStamp() + std::string("_clustered.png"), image);
+		cv::cvtColor(image, image, cv::COLOR_BGR2RGB);
+	}
+	
+	std::vector<Point3D> cam3DPoints = camera.getDeprojection(flowerCenters);
+	Point3D armPosition = getArmPosition();
+	return camera2robot(cam3DPoints, armPosition.x, armPosition.y);
+}
+
+
+
 
 

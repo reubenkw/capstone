@@ -16,4 +16,9 @@ const float CAMERA_2_EFFECTOR_Y = 999;  // [m]
 const float DRIVE_ENC_2_DIST = 999; // [m/count]
 const float XY_ENC_2_DIST = 999;    // [m/count]
 
+const float WHEEL_RADIUS = 0.0762; // [m]
+
+const float ARM_TOL = 0.01; // [m]
+const float ROBOT_TOL = 0.05; // [m]
+
 #endif //h 

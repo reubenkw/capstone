@@ -11,10 +11,6 @@ enum DriveMotor { frontLeft, backLeft, frontRight, backRight };
 enum ServoMotor { x, y, z };
 
 class Robot {
-	double robotLength;
-	double robotWidth;
-	double wheelRadius;
-
 	double robotPosTol;
 	double armPosTol;
 
@@ -37,7 +33,7 @@ class Robot {
 public:
 
 
-	Robot(double robotLength, double robotWidth, double wheelRadius, Camera& camera, double robotPosTol, double armPosTol);
+	Robot(Camera& camera);
 	Point2D getRobotPosition();
 	double getRobotAngle();
 	void updateRobotOrientation();
@@ -49,8 +45,9 @@ public:
 	void resetServoArm(ServoMotor motor);
 	void moveServoArm(ServoMotor motor, double pos);
 	void pollinate();
+	std::vector<Point3D> scan();
+	std::vector<Point3D> findFlowers();
 	void readEncoderVals();
-	// TODO: add logging somewhere
 };
 
 #endif // h
