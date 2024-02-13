@@ -156,8 +156,16 @@ void Robot::moveServoArm(ServoMotor motor, double pos) {
 	servoArm[motor].setIdealSpeed(0);
 }
 
-// TODO: perform pollination pattern
-void Robot::pollinate() { }
+void Robot::pollinate() { 
+	double delta = 2.5;
+	Point3D currPos = getArmPosition();
+	moveServoArm(x, currPos.x - delta);
+	moveServoArm(y, currPos.y - delta);
+	moveServoArm(x, currPos.x + delta);
+	moveServoArm(y, currPos.y + delta);
+	moveServoArm(x, currPos.x);
+	moveServoArm(y, currPos.y);
+}
 
 bool debug = false;
 std::vector<Point3D> Robot::scan() {
