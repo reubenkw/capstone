@@ -174,21 +174,31 @@ std::vector<Point3D> Robot::scan() {
 		for (int j = 1; j < 3; j++){
 			moveServoArm(x, robotWidth*i/4);
 			moveServoArm(y, robotLength*j/3);
-			camera.storeSnapshot();
-			cv::Mat image = camera.getColorImage();
-			if (debug) {
-				cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
-				cv::imwrite(std::string("./plots/") + getFormattedTimeStamp() + std::string("image.png"), image);
-				cv::cvtColor(image, image, cv::COLOR_BGR2RGB);
-			}
-			std::vector<Point2D> flowerCenters = findFlowerCenters(image);
-			// std::vector<Point3D> cam3DPoints = getDProjection(flowerCenters);
-			// std::vector<Point3D> robotPoints = camera2robot(cam3DPoints, Point2D(robotWidth*i/4, robotLength*j/3));
-			// flowersToVisit.insert(flowersToVisit.end(), robotPoints.begin(), robotPoints.end());
+			std::vector<Point3D> newFlowers = findFlowers();
+			flowersToVisit.insert(flowersToVisit.end(), newFlowers.begin(), newFlowers.end());
 			flowersToVisit = avgClusterCenters(flowersToVisit, 10);
 		}
 	}
 	return flowersToVisit;
 }
+
+std::vector<Point3D> Robot::findFlowers(){
+	camera.storeSnapshot();
+	cv::Mat image = camera.getColorImage();
+	if (debug) {
+		cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
+		cv::imwrite(std::string("./plots/") + getFormattedTimeStamp() + std::string("image.png"), image);
+		cv::cvtColor(image, image, cv::COLOR_BGR2RGB);
+	}
+	std::vector<Point2D> flowerCenters = findFlowerCenters(image);
+	flowerCenters = avgClusterCenters(flowerCenters, 10);
+	// std::vector<Point3D> cam3DPoints = getDProjection(flowerCenters);
+	// return camera2robot(cam3DPoints, getArmPosition());
+	std::vector<Point3D> newFlowers;
+	return newFlowers;
+}
+
+
+
 
 

@@ -52,6 +52,7 @@ public:
 	void moveServoArm(ServoMotor motor, double pos);
 	void pollinate();
 	std::vector<Point3D> scan();
+	std::vector<Point3D> findFlowers();
 	void readEncoderVals();
 	// TODO: add logging somewhere
 };

@@ -1,6 +1,5 @@
 #include "imaging.h"
 #include "log.h"
-#include "cluster.h"
 
 #include <stdexcept>
 #include <iostream>
@@ -71,7 +70,6 @@ cv::Mat colorMask(cv::Mat& image, double brightest, Pixel ideal, double tol) {
 	return thresholded;
 }
 
-// TODO: Fancy schmancy image processing
 std::vector<Point2D> findFlowerCenters(cv::Mat& image){
 	std::vector<Point2D> yellowBlobs;
 
@@ -96,7 +94,7 @@ std::vector<Point2D> findFlowerCenters(cv::Mat& image){
 			yellowBlobs.push_back({ centroids.at<double>(i, 0), centroids.at<double>(i, 1) });
 		}
 	}
-	return avgClusterCenters(yellowBlobs, 10);
+	return yellowBlobs;
 }
 
 // TODO: Find center of row
