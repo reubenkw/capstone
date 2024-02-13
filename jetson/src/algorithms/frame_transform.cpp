@@ -18,6 +18,14 @@ Point3D camera2robot(Point3D camera_point, double arm_x, double arm_y) {
     return Point3D(x,y,z);
 }
 
+std::vector<Point3D> camera2robot(std::vector<Point3D> camera_points, double arm_x, double arm_y) {
+    std::vector<Point3D> robotPoints;
+    for (auto camera_point : camera_points){
+        robotPoints.push_back(camera2robot(camera_point, arm_x, arm_y));
+    }
+    return robotPoints;
+}
+
 Point3D robot2global(Point3D robot_point, double robot_x, double robot_y, double robot_angle) {
     double mag = sqrt(robot_point.x * robot_point.x + robot_point.y * robot_point.y);
     double x = robot_x + mag * cos(robot_angle);

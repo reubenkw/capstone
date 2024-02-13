@@ -78,7 +78,7 @@ vector<Point3D> avgClusterCenters(vector<Point3D> points, float d){
     vector<Point3D> avgClusterCenters;
     vector<vector<Point3D>> clusters = cluster(points, d);
     for(auto cluster : clusters){
-        Point3D sum = (0, 0);
+        Point3D sum = (0, 0, 0);
         for (auto point : cluster){
             sum = sum + point;
         }

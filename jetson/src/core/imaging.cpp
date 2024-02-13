@@ -171,3 +171,11 @@ Point3D Camera::getDeprojection(Point2D color_pixel) {
 
 	return Point3D(point[0], point[1], point[2]);
 }
+
+std::vector<Point3D> Camera::getDeprojection(std::vector<Point2D> const & color_pixels){
+	std::vector<Point3D> cameraPoints;
+	for (auto pixel: color_pixels){
+		cameraPoints.push_back(getDeprojection(pixel));
+	}
+	return cameraPoints;
+}

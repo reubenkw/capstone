@@ -2,13 +2,15 @@
 
 #include "log.h"
 #include "cluster.h"
+#include "dimensions.h"
+#include "frame_transform.h"
 
 #include <cmath>
 
 #define IDEAL_LINEAR_SPEED 0.1
 
-Robot::Robot(double robotLength, double robotWidth, double cameraHeight, double wheelRadius, Camera & camera, double robotPosTol, double armPosTol) 
-    : robotLength(robotLength), robotWidth(robotWidth), cameraHeight(cameraHeight), wheelRadius(wheelRadius), camera(camera), robotPosTol(robotPosTol), armPosTol(armPosTol) {
+Robot::Robot(Camera & camera, double robotPosTol, double armPosTol) 
+    : camera(camera), robotPosTol(robotPosTol), armPosTol(armPosTol) {
     
 	readEncoderVals();
 	i2c_bus_file = open_i2c();
@@ -53,7 +55,7 @@ void Robot::updateRobotOrientation() {
 	double d_right = (drive[frontRight].getElapsedDistance() + drive[backRight].getElapsedDistance()) / 2.0;
 	double d_avg = (d_left + d_right)/2;
 
-	double rotation = (d_right - d_left)/robotWidth;
+	double rotation = (d_right - d_left)/CARTESIAN_X_MAX;
 
 	robotAngle += rotation;
 	robotPosition.x += d_avg*cos(robotAngle);
@@ -77,7 +79,7 @@ double calculate_radius(double delta_x, double delta_y) {
 // Pass in -w for left wheel
 // Assume positive w is CCW orientation
 double Robot::calculate_wheel_speed(double v, double w) {
-	return 1 / wheelRadius * (v + robotWidth * w / 2 + std::pow(robotLength * w / 2, 2) / (v + robotWidth * w / 2));
+	return 1 / WHEEL_RADIUS * (v + CARTESIAN_X_MAX * w / 2 + std::pow(CARTESIAN_Y_MAX * w / 2, 2) / (v + CARTESIAN_X_MAX * w / 2));
 }
 
 void Robot::driveRobotForward(Point2D delta) {
@@ -167,13 +169,12 @@ void Robot::pollinate() {
 	moveServoArm(y, currPos.y);
 }
 
-bool debug = false;
 std::vector<Point3D> Robot::scan() {
 	std::vector<Point3D> flowersToVisit;
 	for (int i = 1; i < 4; i++){
 		for (int j = 1; j < 3; j++){
-			moveServoArm(x, robotWidth*i/4);
-			moveServoArm(y, robotLength*j/3);
+			moveServoArm(x, CARTESIAN_X_MAX*i/4);
+			moveServoArm(y, CARTESIAN_Y_MAX*j/3);
 			std::vector<Point3D> newFlowers = findFlowers();
 			flowersToVisit.insert(flowersToVisit.end(), newFlowers.begin(), newFlowers.end());
 			flowersToVisit = avgClusterCenters(flowersToVisit, 10);
@@ -185,17 +186,16 @@ std::vector<Point3D> Robot::scan() {
 std::vector<Point3D> Robot::findFlowers(){
 	camera.storeSnapshot();
 	cv::Mat image = camera.getColorImage();
-	if (debug) {
+	if (DEBUG) {
 		cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
 		cv::imwrite(std::string("./plots/") + getFormattedTimeStamp() + std::string("image.png"), image);
 		cv::cvtColor(image, image, cv::COLOR_BGR2RGB);
 	}
 	std::vector<Point2D> flowerCenters = findFlowerCenters(image);
 	flowerCenters = avgClusterCenters(flowerCenters, 10);
-	// std::vector<Point3D> cam3DPoints = getDProjection(flowerCenters);
-	// return camera2robot(cam3DPoints, getArmPosition());
-	std::vector<Point3D> newFlowers;
-	return newFlowers;
+	std::vector<Point3D> cam3DPoints = camera.getDeprojection(flowerCenters);
+	Point3D armPosition = getArmPosition();
+	return camera2robot(cam3DPoints, armPosition.x, armPosition.y);
 }
 
 

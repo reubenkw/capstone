@@ -11,12 +11,6 @@ enum DriveMotor { frontLeft, backLeft, frontRight, backRight };
 enum ServoMotor { x, y, z };
 
 class Robot {
-	double robotLength;
-	double robotWidth;
-	double cameraHeight;
-
-	double wheelRadius;
-
 	double robotPosTol;
 	double armPosTol;
 
@@ -39,7 +33,7 @@ class Robot {
 public:
 
 
-	Robot(double robotLength, double robotWidth, double cameraHeight, double wheelRadius, Camera& camera, double robotPosTol, double armPosTol);
+	Robot(Camera& camera, double robotPosTol, double armPosTol);
 	Point2D getRobotPosition();
 	double getRobotAngle();
 	void updateRobotOrientation();

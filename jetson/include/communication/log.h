@@ -3,6 +3,8 @@
 
 #include <string>
 
+const bool DEBUG = false;
+
 void log(std::string message);
 void clear_log();
 std::string getFormattedTimeStamp();

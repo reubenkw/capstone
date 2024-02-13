@@ -23,7 +23,6 @@ std::string getFormattedTimeStamp(){
     auto tm = *std::localtime(&t_c);
     std::ostringstream oss;
     oss << std::put_time(&tm, "%d-%m-%Y_%H-%M-%S");
-    auto str = oss.str();
 
-    return str;
+    return oss.str();
 }

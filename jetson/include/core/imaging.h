@@ -30,6 +30,7 @@ public:
 	cv::Mat getDepthImage();
 	double getDepthVal(float x, float y);
 	Point3D getDeprojection(Point2D color_pixel);
+	std::vector<Point3D> getDeprojection(std::vector<Point2D> const & color_pixels);
 };
 
 #endif // h
