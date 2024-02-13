@@ -2,15 +2,15 @@
 
 #include "log.h"
 #include "cluster.h"
-#include "dimensions.h"
+#include "constants.h"
 #include "frame_transform.h"
 
 #include <cmath>
 
 #define IDEAL_LINEAR_SPEED 0.1
 
-Robot::Robot(Camera & camera, double robotPosTol, double armPosTol) 
-    : camera(camera), robotPosTol(robotPosTol), armPosTol(armPosTol) {
+Robot::Robot(Camera & camera) 
+    : camera(camera){
     
 	readEncoderVals();
 	i2c_bus_file = open_i2c();
@@ -89,7 +89,7 @@ void Robot::driveRobotForward(Point2D delta) {
 	drive[frontRight].resetElapsedDistance();
 	drive[backRight].resetElapsedDistance();
 
-	while (delta.mag() < robotPosTol) {
+	while (delta.mag() < ROBOT_TOL) {
 
 		double r = calculate_radius(delta.x, delta.y);
 
@@ -147,7 +147,7 @@ void Robot::moveServoArm(ServoMotor motor, double pos) {
 	// TODO: do we need PID controllers ideal speed of servo arm position? 
 	servoArm[motor].setIdealSpeed(idealSpeed);
 
-	while (delta < armPosTol) {
+	while (delta < ARM_TOL) {
 		readEncoderVals();
 
 		// 4 bc 4 drive motors

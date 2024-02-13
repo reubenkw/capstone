@@ -33,7 +33,7 @@ class Robot {
 public:
 
 
-	Robot(Camera& camera, double robotPosTol, double armPosTol);
+	Robot(Camera& camera);
 	Point2D getRobotPosition();
 	double getRobotAngle();
 	void updateRobotOrientation();
