@@ -192,7 +192,26 @@ std::vector<Point3D> Robot::findFlowers(){
 		cv::cvtColor(image, image, cv::COLOR_BGR2RGB);
 	}
 	std::vector<Point2D> flowerCenters = findFlowerCenters(image);
+	if (DEBUG) {
+		for (Point2D const& blob : flowerCenters) {
+			cv::circle(image, cv::Point((int)blob.x, (int)blob.y), 5, { 255, 0, 255 }, 5);
+			log(std::string("depth val: ") + std::to_string(camera.getDepthVal(x, y)));
+		}
+
+		cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
+		cv::imwrite(std::string("./plots/") + getFormattedTimeStamp() + std::string("yellow_blobs.png"), image);
+		cv::cvtColor(image, image, cv::COLOR_BGR2RGB);
+	}
 	flowerCenters = avgClusterCenters(flowerCenters, 10);
+	if (DEBUG) {
+		for (Point2D const& blob : flowerCenters) {
+			cv::circle(image, cv::Point((int)blob.x, (int)blob.y), 5, { 255, 0, 255 }, 5);
+		}
+		cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
+		cv::imwrite(std::string("./plots/") + getFormattedTimeStamp() + std::string("clustered.png"), image);
+		cv::cvtColor(image, image, cv::COLOR_BGR2RGB);
+	}
+	
 	std::vector<Point3D> cam3DPoints = camera.getDeprojection(flowerCenters);
 	Point3D armPosition = getArmPosition();
 	return camera2robot(cam3DPoints, armPosition.x, armPosition.y);
