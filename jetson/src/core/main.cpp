@@ -76,11 +76,20 @@ int test_camera_image() {
 	return 0;
 }
 
+int test_limit_switch(){
+	unsigned int pin = 15;
+	initialize_gpio(pin);
+	int val = read_gpio(pin);
+	log(std::string("gpio val: ") + std::to_string(val));
+	return 0;
+}
+
 int main(int argc, char** argv)
 {
 	clear_log();
 	log(std::string("Starting Program!"));
 	// return test_camera_image();
 	// return image_processing_test();
-	test_clustering();
+	// test_clustering();
+	return test_limit_switch();
 }

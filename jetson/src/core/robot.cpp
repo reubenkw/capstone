@@ -14,6 +14,9 @@ Robot::Robot(Camera & camera)
     
 	readEncoderVals();
 	i2c_bus_file = open_i2c();
+	initialize_gpio(LIMIT_X);
+	initialize_gpio(LIMIT_Y);
+	initialize_gpio(LIMIT_Z);
 	
 	// TODO: pid terms need to be determined experimentally
     drive[frontLeft] = MotorController(10, 1, 1, 5, 0, 0, DRIVE_MC, frontLeft, encoderVal[frontLeft], i2c_bus_file);
@@ -123,7 +126,9 @@ void Robot::driveRobotForward(Point2D delta) {
 
 }
 
+
 void Robot::resetServoArm(ServoMotor motor) {
+	unsigned int limit_switch_gpio[3] = {LIMIT_X, LIMIT_Y, LIMIT_Z};
 	bool limitSwitch = false;
 	// TODO: read limit switch values servo motor
 	// TODO: figure out direction
@@ -132,7 +137,7 @@ void Robot::resetServoArm(ServoMotor motor) {
 	servoArm[motor].setIdealSpeed(idealSpeed);
 
 	while (!limitSwitch) {
-		// TODO: limitSwitch = read from limit switch 
+		limitSwitch = read_gpio(limit_switch_gpio[motor]);
 	}
 	servoArm[motor].setIdealSpeed(0);
 	armPosition[motor] = 0;
