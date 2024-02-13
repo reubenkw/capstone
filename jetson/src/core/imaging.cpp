@@ -102,14 +102,19 @@ double findYCenterOfPlant(cv::Mat& image) {
 	return 0;
 }
 
-// TODO: Camera Initialization
 Camera::Camera() : color{rs2::frame()}, depth{rs2::frame()} {
+	log(std::string("INFO Camera: starting init"));
 	p.start();
 
 	// Block program until frames arrive
-	log(std::string("Waiting for camera init."));
 	storeSnapshot();
-	log(std::string("Camera initialized successfully"));
+	log(std::string("INFO Camera: first frame read"));
+
+	// set camera intrinsic properties
+	rs2_error *e = 0;
+	rs2::video_stream_profile profile(depth.get_profile());
+	intrinsic = profile.get_intrinsics();
+	log(std::string("INFO Camera: init done"));
 }
 
 // returns the most recent snapshot
@@ -144,6 +149,7 @@ void Camera::storeSnapshot() {
 
 // Read depth val at a point in the image
 double Camera::getDepthVal(float x, float y) {
+	// x,y are percent
 	// Get the depth frame's dimensions
 	float width = depth.get_width();
 	float height = depth.get_height();
@@ -151,4 +157,17 @@ double Camera::getDepthVal(float x, float y) {
 	// perhaps some alignment should be done? 
 	// https://github.com/IntelRealSense/librealsense/blob/master/examples/align/rs-align.cpp
 	return depth.get_distance(std::floor(width * x), std::floor(height * y));
+}
+
+Point3D Camera::getDeprojection(Point2D color_pixel) {
+	float width = color.get_width();
+	float height = color.get_height();
+
+	double d = this->getDepthVal(color_pixel.x / width, color_pixel.y / height);
+
+	float point[3];
+	float pixel[2] = {float(color_pixel.x), float(color_pixel.y)};
+	rs2_deproject_pixel_to_point(point, &intrinsic, pixel, d);
+
+	return Point3D(point[0], point[1], point[2]);
 }

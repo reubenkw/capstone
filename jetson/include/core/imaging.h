@@ -21,6 +21,7 @@ class Camera {
 	rs2::pipeline p;
 	rs2::video_frame color;
 	rs2::depth_frame depth;
+	rs2_intrinsics intrinsic;
 
 public:
 	Camera();
@@ -28,6 +29,7 @@ public:
 	cv::Mat getColorImage();
 	cv::Mat getDepthImage();
 	double getDepthVal(float x, float y);
+	Point3D getDeprojection(Point2D color_pixel);
 };
 
 #endif // h
