@@ -6,6 +6,8 @@
 
 std::vector<std::vector<Point2D>> cluster(std::vector<Point2D> points, float d);
 std::vector<std::vector<Point3D>> cluster(std::vector<Point3D> points, float d);
+std::vector<Point3D> avgClusterCenters(std::vector<Point3D> points, float d);
+std::vector<Point2D> avgClusterCenters(std::vector<Point2D> points, float d);
 void test_clustering();
 
 #endif //h 

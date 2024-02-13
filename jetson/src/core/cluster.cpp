@@ -74,6 +74,32 @@ vector<vector<Point2D>> cluster(vector<Point2D> points, float d) {
     return clustered2d;
 }
 
+vector<Point3D> avgClusterCenters(vector<Point3D> points, float d){
+    vector<Point3D> avgClusterCenters;
+    vector<vector<Point3D>> clusters = cluster(points, d);
+    for(auto cluster : clusters){
+        Point3D sum = (0, 0);
+        for (auto point : cluster){
+            sum = sum + point;
+        }
+        avgClusterCenters.push_back(Point3D{sum.x/cluster.size(), sum.y/cluster.size(), sum.z/cluster.size()});
+    }
+    return avgClusterCenters;
+}
+
+vector<Point2D> avgClusterCenters(vector<Point2D> points, float d){
+    vector<Point2D> avgClusterCenters;
+    vector<vector<Point2D>> clusters = cluster(points, d);
+    for(auto cluster : clusters){
+        Point2D sum = (0, 0);
+        for (auto point : cluster){
+            sum = sum + point;
+        }
+        avgClusterCenters.push_back(Point2D{sum.x/cluster.size(), sum.y/cluster.size()});
+    }
+    return avgClusterCenters;
+}
+
 void test_clustering() {
     vector<Point2D> points{Point2D{.1, .1}, Point2D{.1, .2}, Point2D{.2, .3}, Point2D{0, 1}, Point2D{0, .9}, Point2D{1, 1}};
     vector<vector<Point2D>> expected{{Point2D{1, 1}}, {Point2D{0, .9}, Point2D{0, 1}}, {Point2D{.1, .1}, Point2D{.1, .2}, Point2D{.2, .3}}};

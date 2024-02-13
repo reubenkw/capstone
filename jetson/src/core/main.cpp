@@ -78,6 +78,7 @@ int test_camera_image() {
 
 int main(int argc, char** argv)
 {
+	clear_log();
 	log(std::string("Starting Program!"));
 	// return test_camera_image();
 	// return image_processing_test();

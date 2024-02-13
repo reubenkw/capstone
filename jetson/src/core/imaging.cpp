@@ -1,5 +1,6 @@
 #include "imaging.h"
 #include "log.h"
+#include "cluster.h"
 
 #include <stdexcept>
 #include <iostream>
@@ -95,11 +96,7 @@ std::vector<Point2D> findFlowerCenters(cv::Mat& image){
 			yellowBlobs.push_back({ centroids.at<double>(i, 0), centroids.at<double>(i, 1) });
 		}
 	}
-
-	// TODO: clustering algo
-
-	return yellowBlobs;
-
+	return avgClusterCenters(yellowBlobs, 10);
 }
 
 // TODO: Find center of row
