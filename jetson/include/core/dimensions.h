@@ -7,7 +7,8 @@ const float CARTESIAN_Y_MAX = 999;  // [m]
 const float CARTESIAN_Z_MAX = 999;  // [m]
 const float FLOOR2CAM = 999;        // [m]
 
-
+const float CAMERA_X_OFFSET = 999;  // [m]
+const float CAMERA_Y_OFFSET = 999;  // [m]
 
 const float DRIVE_ENC_2_DIST = 999; // [m/count]
 const float XY_ENC_2_DIST = 999;    // [m/count]
