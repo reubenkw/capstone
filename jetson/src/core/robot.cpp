@@ -188,7 +188,7 @@ std::vector<Point3D> Robot::findFlowers(){
 	cv::Mat image = camera.getColorImage();
 	if (DEBUG) {
 		cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
-		cv::imwrite(std::string("./plots/") + getFormattedTimeStamp() + std::string("image.png"), image);
+		cv::imwrite(std::string("./plots/") + getFormattedTimeStamp() + std::string("_image.png"), image);
 		cv::cvtColor(image, image, cv::COLOR_BGR2RGB);
 	}
 	std::vector<Point2D> flowerCenters = findFlowerCenters(image);
@@ -199,7 +199,7 @@ std::vector<Point3D> Robot::findFlowers(){
 		}
 
 		cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
-		cv::imwrite(std::string("./plots/") + getFormattedTimeStamp() + std::string("yellow_blobs.png"), image);
+		cv::imwrite(std::string("./plots/") + getFormattedTimeStamp() + std::string("_yellow_blobs.png"), image);
 		cv::cvtColor(image, image, cv::COLOR_BGR2RGB);
 	}
 	flowerCenters = avgClusterCenters(flowerCenters, 10);
@@ -208,7 +208,7 @@ std::vector<Point3D> Robot::findFlowers(){
 			cv::circle(image, cv::Point((int)blob.x, (int)blob.y), 5, { 255, 0, 255 }, 5);
 		}
 		cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
-		cv::imwrite(std::string("./plots/") + getFormattedTimeStamp() + std::string("clustered.png"), image);
+		cv::imwrite(std::string("./plots/") + getFormattedTimeStamp() + std::string("_clustered.png"), image);
 		cv::cvtColor(image, image, cv::COLOR_BGR2RGB);
 	}
 	
