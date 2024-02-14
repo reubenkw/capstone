@@ -50,6 +50,7 @@ public:
 	std::vector<Point3D> findFlowers();
 	void readEncoderVals();
 	void readLimitVals();
+	void pollinate_row(int n = 1);
 };
 
 #endif // h

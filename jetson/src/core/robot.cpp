@@ -6,6 +6,7 @@
 #include "frame_transform.h"
 
 #include <cmath>
+#include <unistd.h> // linux sleep
 
 #define IDEAL_LINEAR_SPEED 0.1
 
@@ -29,7 +30,8 @@ Robot::Robot(Camera & camera)
 
 	robotPosition = Point2D(0, 0);
 	robotAngle = 0;
-	armPosition = Point3D(0, 0, 0);
+	// arm starts in upright position
+	armPosition = Point3D(0, 0, CARTESIAN_Z_MAX);
 }
 
 Point2D Robot::getRobotPosition() {
@@ -182,10 +184,9 @@ std::vector<Point3D> Robot::scan() {
 			moveServoArm(y, CARTESIAN_Y_MAX*j/3);
 			std::vector<Point3D> newFlowers = findFlowers();
 			flowersToVisit.insert(flowersToVisit.end(), newFlowers.begin(), newFlowers.end());
-			flowersToVisit = avgClusterCenters(flowersToVisit, 10);
 		}
 	}
-	return flowersToVisit;
+	return avgClusterCenters(flowersToVisit, 10);
 }
 
 std::vector<Point3D> Robot::findFlowers(){
@@ -222,7 +223,48 @@ std::vector<Point3D> Robot::findFlowers(){
 	return camera2robot(cam3DPoints, armPosition.x, armPosition.y);
 }
 
+void Robot::pollinate_row(int n) {
+	log(std::string("INFO robot: starting row."));
+	for (int i = 0; i < n; i++) {
+		log(std::string("INFO robot: driving forward one robot length."));
+		// drive forward one robot length
+		driveRobotForward(Point2D{-robotPosition.x, CARTESIAN_Y_MAX});
+		
+		// scan for flowers
+		std::vector<Point3D> flowers = scan();
+		for ( Point3D flower : flowers ) {
+			// check if point is within bounds
+			if (flower.x > CARTESIAN_X_MAX || flower.x < CARTESIAN_X_MIN ||
+				flower.y > CARTESIAN_Y_MAX || flower.y < CARTESIAN_Y_MIN ||
+				flower.z > CARTESIAN_Z_MAX || flower.z < CARTESIAN_Z_MIN) {
+				std::stringstream ss;
+				ss << "INFO robot: ignoring out of bound flower at: (" 
+				   << flower.x << ", " << flower.y << ", " << flower.x << ").";
+				log(ss.str());
+				continue;
+			}
+			// move above plant
+			moveServoArm(x, flower.x);
+			moveServoArm(y, flower.y);
 
+			// take another picture for precision?
 
+			std::stringstream ss;
+			ss << "INFO robot: polinating flower at: (" << flower.x 
+			   << ", " << flower.y << ", " << flower.x << ").";
+			log(ss.str());
+			// move down and pollinate
+			moveServoArm(z, flower.z);
+			pollinate();
 
+			// move back up
+			moveServoArm(z, CARTESIAN_Z_MAX);
+		}
 
+		// move arm back to 0,0,high
+		moveServoArm(x, 0);
+		moveServoArm(y, 0);
+		moveServoArm(z, CARTESIAN_Z_MAX);
+	}
+	log(std::string("INFO robot: done row!"));
+}
