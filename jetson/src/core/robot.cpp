@@ -13,6 +13,7 @@
 Robot::Robot(Camera & camera) 
     : camera(camera){
     
+	initialize_log();
 	readEncoderVals();
 	i2c_bus_file = open_i2c();
 	
@@ -31,8 +32,6 @@ Robot::Robot(Camera & camera)
 	robotAngle = 0;
 	// arm starts in upright position
 	armPosition = Point3D(0, 0, CARTESIAN_Z_MAX);
-
-	clear_log();
 }
 
 Point2D Robot::getRobotPosition() {
@@ -49,6 +48,10 @@ Point3D Robot::getArmPosition() {
 
 void Robot::readEncoderVals(){
 	read_i2c(i2c_bus_file, MCU_ENCODER, (uint8_t * )encoderVal, 14);
+}
+
+void Robot::readLimitVals(){
+	read_i2c(i2c_bus_file, MCU_1, (uint8_t * )encoderVal, 1);
 }
 
 // Based on MTE 544 Localization I and II 
@@ -125,6 +128,7 @@ void Robot::driveRobotForward(Point2D delta) {
 
 }
 
+
 void Robot::resetServoArm(ServoMotor motor) {
 	bool limitSwitch = false;
 	// TODO: read limit switch values servo motor
@@ -134,7 +138,8 @@ void Robot::resetServoArm(ServoMotor motor) {
 	servoArm[motor].setIdealSpeed(idealSpeed);
 
 	while (!limitSwitch) {
-		// TODO: limitSwitch = read from limit switch 
+		readLimitVals();
+		limitSwitch = limitVal & (0x1 << motor * 2);
 	}
 	servoArm[motor].setIdealSpeed(0);
 	armPosition[motor] = 0;

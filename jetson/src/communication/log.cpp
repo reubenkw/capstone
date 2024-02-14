@@ -6,14 +6,20 @@
 #include <iomanip>
 #include <ctime>
 
+std::string file_name;
+void initialize_log(){
+    file_name = std::string("log_") + getFormattedTimeStamp() + std::string(".txt");
+    clear_log();
+}
+
 void log(std::string message) {
-    std::ofstream log_file("log.txt", std::ios::app);
+    std::ofstream log_file(file_name, std::ios::app);
     log_file << getFormattedTimeStamp() << " " << message << std::endl;
     log_file.close();
 }
 
 void clear_log(){
-    std::ofstream log_file("log.txt", std::ios::trunc);
+    std::ofstream log_file(file_name, std::ios::trunc);
     log_file.close();
 }
 

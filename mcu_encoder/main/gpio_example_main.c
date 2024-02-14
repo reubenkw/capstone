@@ -126,7 +126,7 @@ void app_main(void)
 
 
     while(true) {
-        i2c_slave_write_buffer(I2C_NUM_0, encoderCounts, 14, portMAX_DELAY);
+        i2c_slave_write_buffer(I2C_NUM_0, &encoderCounts, sizeof(encoderCounts)*8, portMAX_DELAY);
 
         for(int i = 0; i < 7; i++){
             int aState = gpio_get_level(encoders[i].pin_a);
