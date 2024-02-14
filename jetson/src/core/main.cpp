@@ -12,7 +12,7 @@
 
 std::string const HOME = std::getenv("HOME") ? std::getenv("HOME") : ".";
 
-int image_processing_test() {
+void image_processing_test() {
 	Camera cam;
 
 	cv::Mat image = cam.getColorImage();
@@ -37,11 +37,9 @@ int image_processing_test() {
 	
 	cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
 	cv::imwrite("plots/flowers.jpg", image);
-
-	return 0;
 }
 
-int pid_motor_ctrl_test() {
+void pid_motor_ctrl_test() {
 	PID_Ctrl pid_ctrl(10, 1, 2, 5);
     
     std::ofstream myfile;
@@ -50,11 +48,9 @@ int pid_motor_ctrl_test() {
         myfile << pid_ctrl.update_ctrl_signal(i, 0.1) << ",";
     }
     myfile.close();
-
-	return 0;
 }
 
-int test_camera_image() {
+void test_camera_image() {
 	log(std::string("Starting test_camera_image"));
 	Camera cam;
 
@@ -73,23 +69,20 @@ int test_camera_image() {
 	log(std::string("wrote depth image"));
 
 	log(std::string("saved color and depth image under jetson/plots/"));
-	return 0;
 }
 
-int test_limit_switch(){
-	unsigned int pin = 15;
-	initialize_gpio(pin);
-	int val = read_gpio(pin);
-	log(std::string("gpio val: ") + std::to_string(val));
-	return 0;
+void test_i2c() {
+	int i2c_bus_file = open_i2c();
+	log(std::string("bus file: ") + std::to_string(i2c_bus_file));
 }
 
 int main(int argc, char** argv)
 {
-	clear_log();
+	initialize_log();
 	log(std::string("Starting Program!"));
-	// return test_camera_image();
-	// return image_processing_test();
+	// test_camera_image();
+	// image_processing_test();
 	// test_clustering();
-	return test_limit_switch();
+	test_i2c();
+	return 0;
 }

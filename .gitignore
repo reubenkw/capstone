@@ -1,5 +1,5 @@
 # vscode-python
-**/log.txt
+**/log_*.txt
 .DS_Store
 .huskyrc.json
 out

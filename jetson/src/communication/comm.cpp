@@ -9,7 +9,6 @@ extern "C" {
 #include <fcntl.h>    
 #include <unistd.h>
 #include <sys/ioctl.h>
-#include <cstring>
 
 int open_i2c() {
     int file = open("/dev/i2c-0", O_RDWR);
@@ -48,88 +47,4 @@ void write_i2c(int file, uint8_t mcu_addr, uint16_t data){
             + std::string("cmd: " + WRITE) 
             + std::string("data: " + data));
     }
-}
-
-#define MAX_BUF 64
-
-void initialize_gpio(unsigned int gpio){
-    int fd;
-	char buf[MAX_BUF];
- 
-    // export
-	fd = open(SYSFS_GPIO_DIR "/export", O_WRONLY);
-	if (fd < 0) {
-		perror("gpio/export");
-        log(std::string("gpio/export failed"));
-	}
- 
-	int len = snprintf(buf, sizeof(buf), "%d", gpio);
-	write(fd, buf, len);
-	close(fd);
-
-    // set direction
-    snprintf(buf, sizeof(buf), SYSFS_GPIO_DIR  "/gpio%d/direction", gpio);
- 
-	fd = open(buf, O_WRONLY);
-	if (fd < 0) {
-		perror("gpio/direction");
-        log(std::string("gpio/direction failed"));
-	}
-	write(fd, "in", 3);
-    close(fd);
-
-    // set edge
-    snprintf(buf, sizeof(buf), SYSFS_GPIO_DIR "/gpio%d/edge", gpio);
- 
-	fd = open(buf, O_WRONLY);
-	if (fd < 0) {
-		perror("gpio/set-edge");
-        log(std::string("gpio/set-edge failed"));
-	}
- 
-	write(fd, "rising", strlen("rising") + 1); 
-	close(fd);
-}
-
-int read_gpio(unsigned int gpio){
-    int fd;
-	char buf[MAX_BUF];
-	char ch;
-
-    snprintf(buf, sizeof(buf), SYSFS_GPIO_DIR "/gpio%d/value", gpio);
- 
-	fd = open(buf, O_RDONLY);
-	if (fd < 0) {
-		perror("gpio/get-value");
-        log(std::string("gpio/get-value failed"));
-		return fd;
-	}
- 
-	read(fd, &ch, 1);
-    close(fd);
-	if (ch != '0') {
-		return 1;
-	} else {
-		return 0;
-	}
-}
-
-void write_gpio(unsigned int gpio, unsigned int val){
-    int fd;
-	char buf[MAX_BUF];
- 
-	snprintf(buf, sizeof(buf), SYSFS_GPIO_DIR "/gpio%d/value", gpio);
- 
-	fd = open(buf, O_WRONLY);
-	if (fd < 0) {
-		perror("gpio/set-value");
-        log(std::string("gpio/set-value failed"));
-	}
- 
-	if (val)
-		write(fd, "1", 2);
-	else
-		write(fd, "0", 2);
- 
-	close(fd);
 }

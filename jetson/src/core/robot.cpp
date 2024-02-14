@@ -12,11 +12,9 @@
 Robot::Robot(Camera & camera) 
     : camera(camera){
     
+	initialize_log();
 	readEncoderVals();
 	i2c_bus_file = open_i2c();
-	initialize_gpio(LIMIT_X);
-	initialize_gpio(LIMIT_Y);
-	initialize_gpio(LIMIT_Z);
 	
 	// TODO: pid terms need to be determined experimentally
     drive[frontLeft] = MotorController(10, 1, 1, 5, 0, 0, DRIVE_MC, frontLeft, encoderVal[frontLeft], i2c_bus_file);
@@ -32,8 +30,6 @@ Robot::Robot(Camera & camera)
 	robotPosition = Point2D(0, 0);
 	robotAngle = 0;
 	armPosition = Point3D(0, 0, 0);
-
-	clear_log();
 }
 
 Point2D Robot::getRobotPosition() {
@@ -50,6 +46,10 @@ Point3D Robot::getArmPosition() {
 
 void Robot::readEncoderVals(){
 	read_i2c(i2c_bus_file, MCU_ENCODER, (uint8_t * )encoderVal, 14);
+}
+
+void Robot::readLimitVals(){
+	read_i2c(i2c_bus_file, MCU_1, (uint8_t * )encoderVal, 1);
 }
 
 // Based on MTE 544 Localization I and II 
@@ -128,7 +128,6 @@ void Robot::driveRobotForward(Point2D delta) {
 
 
 void Robot::resetServoArm(ServoMotor motor) {
-	unsigned int limit_switch_gpio[3] = {LIMIT_X, LIMIT_Y, LIMIT_Z};
 	bool limitSwitch = false;
 	// TODO: read limit switch values servo motor
 	// TODO: figure out direction
@@ -137,7 +136,8 @@ void Robot::resetServoArm(ServoMotor motor) {
 	servoArm[motor].setIdealSpeed(idealSpeed);
 
 	while (!limitSwitch) {
-		limitSwitch = read_gpio(limit_switch_gpio[motor]);
+		readLimitVals();
+		limitSwitch = limitVal & (0x1 << motor * 2);
 	}
 	servoArm[motor].setIdealSpeed(0);
 	armPosition[motor] = 0;

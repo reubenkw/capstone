@@ -29,6 +29,7 @@ class Robot {
 	int i2c_bus_file;
 
 	uint16_t encoderVal[7];
+	uint8_t limitVal;
 
 public:
 
@@ -48,6 +49,7 @@ public:
 	std::vector<Point3D> scan();
 	std::vector<Point3D> findFlowers();
 	void readEncoderVals();
+	void readLimitVals();
 };
 
 #endif // h
