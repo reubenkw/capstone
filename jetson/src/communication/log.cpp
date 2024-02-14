@@ -5,6 +5,7 @@
 #include <chrono>
 #include <iomanip>
 #include <ctime>
+#include <sstream>
 
 std::string file_name;
 void initialize_log(){
