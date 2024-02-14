@@ -51,7 +51,7 @@ void Robot::readEncoderVals(){
 }
 
 void Robot::readLimitVals(){
-	read_i2c(i2c_bus_file, MCU_1, (uint8_t * )encoderVal, 1);
+	read_i2c(i2c_bus_file, MCU_1, &limitVal, 1);
 }
 
 // Based on MTE 544 Localization I and II 
@@ -128,6 +128,20 @@ void Robot::driveRobotForward(Point2D delta) {
 
 }
 
+uint16_t Robot::getServoMotorEncoderVal(ServoMotor motor) {
+	readEncoderVals();
+	return encoderVal[4 + motor];
+}
+
+uint16_t Robot::getDriveMotorEncoderVal(DriveMotor motor) {
+	readEncoderVals();
+	return encoderVal[motor];
+}
+
+uint8_t Robot::getLimitVal() {
+	readLimitVals();
+	return limitVal;
+}
 
 void Robot::resetServoArm(ServoMotor motor) {
 	bool limitSwitch = false;
@@ -156,6 +170,8 @@ void Robot::moveServoArm(ServoMotor motor, double pos) {
 
 	while (delta < ARM_TOL) {
 		readEncoderVals();
+
+		// TOOD: read limit switches
 
 		// 4 bc 4 drive motors
 		servoArm[motor].update(encoderVal[4 + motor]);

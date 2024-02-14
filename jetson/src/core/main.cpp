@@ -3,6 +3,8 @@
 #include "log.h"
 #include "comm.h"
 #include "cluster.h"
+#include "robot.h"
+#include "constants.h"
 
 #include <stdio.h>
 #include <iostream>
@@ -74,6 +76,76 @@ void test_camera_image() {
 void test_i2c() {
 	int i2c_bus_file = open_i2c();
 	log(std::string("bus file: ") + std::to_string(i2c_bus_file));
+}
+
+void test_scan() {
+	log(std::string("INFO: starting test_scan."));
+	Camera cam;
+	Robot r(cam);
+	r.scan();
+	log(std::string("INFO: done test_scan."));
+}
+
+void test_pollinate() {
+	log(std::string("INFO: starting test_pollinate."));
+	Camera cam;
+	Robot r(cam);
+	r.pollinate();
+	log(std::string("INFO: done test_pollinate."));
+}
+
+void test_drive() {
+	log(std::string("INFO: starting test_drive."));
+	Camera cam;
+	Robot r(cam);
+	Point2D delta{0, CARTESIAN_X_MAX};
+	r.driveRobotForward(delta);
+	log(std::string("INFO: done test_drive."));
+}
+
+void test_arm_x() {
+	log(std::string("INFO: starting test_arm_x"));
+	Camera cam;
+	Robot r(cam);
+	r.resetServoArm(x);
+	r.moveServoArm(x, CARTESIAN_X_MAX);
+	log(std::string("done testing test_arm_x"));
+}
+
+void test_arm_y() {
+	log(std::string("INFO: starting test_arm_y"));
+	Camera cam;
+	Robot r(cam);
+	r.resetServoArm(y);
+	r.moveServoArm(y, CARTESIAN_Y_MAX);
+	log(std::string("done testing test_arm_y"));
+}
+
+void test_arm_z() {
+	log(std::string("INFO: starting test_arm_z"));
+	Camera cam;
+	Robot r(cam);
+	r.resetServoArm(z); 
+	r.moveServoArm(z, CARTESIAN_Z_MIN);
+	log(std::string("done testing test_arm_z"));
+}
+
+void test_limit_switches() {
+	log(std::string("INFO: starting test_limit_switches (expecting user input)."));
+	Camera cam;
+	Robot r(cam);
+	int n_state_changes = 10;
+	int8_t limits = 0;
+	int8_t limits_prev = 0;
+	while(true) {
+		limits = r.getLimitVal();
+		if (limits != limits_prev) {
+			log(std::string("INFO: limit state changed. Value: " + limits));
+		}
+		limits_prev = limits;
+	}
+
+	log(std::string("INFO: done test_limit_switches (check log)."));
 }
 
 int main(int argc, char** argv)
