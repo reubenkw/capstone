@@ -181,8 +181,7 @@ std::vector<Point3D> Robot::scan() {
 			flowersToVisit.insert(flowersToVisit.end(), newFlowers.begin(), newFlowers.end());
 		}
 	}
-	flowersToVisit = avgClusterCenters(flowersToVisit, 10);
-	return flowersToVisit;
+	return avgClusterCenters(flowersToVisit, 10);
 }
 
 std::vector<Point3D> Robot::findFlowers(){
@@ -233,7 +232,10 @@ void Robot::pollinate_row(int n) {
 			if (flower.x > CARTESIAN_X_MAX || flower.x < CARTESIAN_X_MIN ||
 				flower.y > CARTESIAN_Y_MAX || flower.y < CARTESIAN_Y_MIN ||
 				flower.z > CARTESIAN_Z_MAX || flower.z < CARTESIAN_Z_MIN) {
-				log(std::string("INFO robot: ignoring out of bound flower."));
+				std::stringstream ss;
+				ss << "INFO robot: ignoring out of bound flower at: (" 
+				   << flower.x << ", " << flower.y << ", " << flower.x << ").";
+				log(ss.str());
 				continue;
 			}
 			// move above plant
@@ -243,7 +245,8 @@ void Robot::pollinate_row(int n) {
 			// take another picture for precision?
 
 			std::stringstream ss;
-			ss << "INFO robot: polinating flower at (" << flower.x << ", " << flower.y << ", " << flower.x << ").";
+			ss << "INFO robot: polinating flower at: (" << flower.x 
+			   << ", " << flower.y << ", " << flower.x << ").";
 			log(ss.str());
 			// move down and pollinate
 			moveServoArm(z, flower.z);
