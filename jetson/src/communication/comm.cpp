@@ -23,13 +23,15 @@ int open_i2c() {
 
 void read_i2c(int file, uint8_t mcu_addr, uint8_t * data, uint8_t len) {
     if (ioctl(file, I2C_SLAVE, mcu_addr) < 0) {
-        log(std::string("ERROR: failed to read from i2c bus address:" + mcu_addr));
-    }
-    i2c_smbus_read_i2c_block_data(file, READ, len, data);
-    log(std::string("INFO: read from i2c bus address:" + mcu_addr) + std::string("data: "));
+        log(std::string("ERROR: failed to read from i2c bus address: ") + std::to_string(mcu_addr));
+    } else {
+        i2c_smbus_read_i2c_block_data(file, READ, len, data);
+        log(std::string("INFO: read from i2c bus address: ") + std::to_string(mcu_addr));
+        log(std::string("INFO: data: "));
 
-    for (int i = 0; i < len; i++){
-        log(std::to_string(data[i]));
+        for (int i = 0; i < len; i++){
+            log(std::to_string(data[i]));
+        }
     }
 }
 

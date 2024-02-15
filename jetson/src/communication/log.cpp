@@ -9,7 +9,7 @@
 
 std::string file_name;
 void initialize_log(){
-    file_name = std::string("log_") + getFormattedTimeStamp() + std::string(".txt");
+    file_name = std::string("log/log_") + getFormattedTimeStamp() + std::string(".txt");
     clear_log();
 }
 
