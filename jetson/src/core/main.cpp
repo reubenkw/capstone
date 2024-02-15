@@ -82,7 +82,11 @@ void test_scan() {
 	log(std::string("INFO: starting test_scan."));
 	Camera cam;
 	Robot r(cam);
-	r.scan();
+	std::vector<Point3D> flowers = r.scan();
+	for ( Point3D flower : flowers ) {
+		log(std::string("flower detected: " + std::to_string(flower.x) + ", " 
+			+ std::to_string(flower.y) + ", " + std::to_string(flower.z)));
+	}
 	log(std::string("INFO: done test_scan."));
 }
 
