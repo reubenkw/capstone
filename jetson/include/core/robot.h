@@ -40,6 +40,9 @@ public:
 	void updateRobotOrientation();
 	Point3D getArmPosition();
 	void updateArmPosition();
+	uint16_t getServoMotorEncoderVal(ServoMotor motor);
+	uint16_t getDriveMotorEncoderVal(DriveMotor motor);
+	uint8_t getLimitVal();
 
 	double calculate_wheel_speed(double v, double w);
 	void driveRobotForward(Point2D idealPos);
