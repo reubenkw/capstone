@@ -98,7 +98,7 @@ void test_drive() {
 	log(std::string("INFO: starting test_drive."));
 	Camera cam;
 	Robot r(cam);
-	Point2D delta{0, CARTESIAN_X_MAX};
+	Point2D delta{0, CARTESIAN_Y_MAX};
 	r.driveRobotForward(delta);
 	log(std::string("INFO: done test_drive."));
 }
