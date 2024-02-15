@@ -74,6 +74,11 @@ void test_camera_image() {
 void test_i2c() {
 	int i2c_bus_file = open_i2c();
 	log(std::string("bus file: ") + std::to_string(i2c_bus_file));
+	uint8_t data[2] = {0, 0};
+	while(true){
+		read_i2c(i2c_bus_file, MCU_ENCODER, (uint8_t * )data, 2);
+		log(std::string("read: ") + std::to_string(data[0]) + std::to_string(data[1]));
+	}
 }
 
 int main(int argc, char** argv)
