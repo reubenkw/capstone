@@ -59,8 +59,33 @@ struct encoder_t {
     unsigned int pin_b;
 };
 
+void test_i2c(){
+    i2c_config_t i2c_jetson_config = {
+        .mode = I2C_MODE_SLAVE, 
+        .sda_io_num = 18, 
+        .scl_io_num = 17, 
+        .sda_pullup_en = true, 
+        .scl_pullup_en = true, 
+        .slave = {
+            .addr_10bit_en = 0, 
+            .slave_addr = 0x2000, 
+            .maximum_speed = 100000
+        }
+    };
+    i2c_param_config(I2C_NUM_0, &i2c_jetson_config);
+    i2c_driver_install(I2C_NUM_0, I2C_MODE_SLAVE,  32, 32, ESP_INTR_FLAG_LOWMED);
+
+    uint16_t data[2] = {0xCA, 0xFE};
+
+    while(true){
+        i2c_slave_write_buffer(I2C_NUM_0, &data, sizeof(data)*8, portMAX_DELAY);
+    }
+    
+}
+
 void app_main(void)
 {
+    test_i2c();
     // Initialize i2c bus as slave to listen to jetson nano
     i2c_config_t i2c_jetson_config = {
         .mode = I2C_MODE_SLAVE, 
