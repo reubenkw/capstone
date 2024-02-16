@@ -73,13 +73,6 @@ void Robot::updateArmPosition() {
 	armPosition[2] = servoArm[2].getElapsedDistance();
 }
 
-// From MTE 544 Control Lecture Slide 9
-double calculate_radius(double delta_x, double delta_y) {
-	double L = sqrt(delta_x * delta_x + delta_y * delta_y);
-
-	return L * L / 2 * std::abs(delta_y);
-}
-
 // From MTE 544 Modeling III IV Lecture Slide 16
 // Pass in -w for left wheel
 // Assume positive w is CCW orientation
@@ -87,20 +80,25 @@ double Robot::calculate_wheel_speed(double v, double w) {
 	return 1 / WHEEL_RADIUS * (v + CARTESIAN_X_MAX * w / 2 + std::pow(CARTESIAN_Y_MAX * w / 2, 2) / (v + CARTESIAN_X_MAX * w / 2));
 }
 
-void Robot::driveRobotForward(Point2D delta) {
+void Robot::driveRobotForward(Point2D goal) {
+	double angular_error_gain = 2;
 	robotPosition = Point2D(0, 0);
 	drive[frontLeft].resetElapsedDistance();
 	drive[backLeft].resetElapsedDistance();
 	drive[frontRight].resetElapsedDistance();
 	drive[backRight].resetElapsedDistance();
+	Point2D delta = goal - robotPosition;
 
 	while (delta.mag() < ROBOT_TOL) {
-
-		double r = calculate_radius(delta.x, delta.y);
-
 		// TODO: how to figure ideal v?
 		double v = IDEAL_LINEAR_SPEED;
-		double w = v / r;
+
+		double goal_orientation = atan2(delta.y, delta.x);
+            
+		double error_angular = std::abs(std::fmod(goal_orientation - robotAngle, M_PI));
+
+		double w = angular_error_gain * error_angular;
+	
 		double leftWheelSpeed = calculate_wheel_speed(v, -1 * w);
 		double rightWheelSpeed = calculate_wheel_speed(v, w);
 
@@ -118,7 +116,7 @@ void Robot::driveRobotForward(Point2D delta) {
 
 		updateRobotOrientation();
 
-		delta = delta - robotPosition;
+		delta = goal - robotPosition;
 	}
 
 	drive[frontLeft].setIdealSpeed(0);
