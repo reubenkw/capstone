@@ -89,13 +89,18 @@ void Robot::driveRobotForward(Point2D goal) {
 	drive[backRight].resetElapsedDistance();
 	Point2D delta = goal - robotPosition;
 
-	while (delta.mag() < ROBOT_TOL) {
+	while (delta.y > ROBOT_TOL) {
 		// TODO: how to figure ideal v?
 		double v = IDEAL_LINEAR_SPEED;
 
-		double goal_orientation = atan2(delta.y, delta.x);
+		double goal_orientation = atan2(-delta.x, delta.y);
             
-		double error_angular = std::abs(std::fmod(goal_orientation - robotAngle, M_PI));
+		double error_angular = goal_orientation - robotAngle;
+		if (error_angular > 0){
+			error_angular = std::fmod(error_angular, M_PI);
+		} else {
+			error_angular = std::fmod(error_angular, -1*M_PI);
+		}
 
 		double w = angular_error_gain * error_angular;
 	
