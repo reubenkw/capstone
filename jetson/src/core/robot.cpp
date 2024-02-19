@@ -8,8 +8,6 @@
 #include <cmath>
 #include <unistd.h> // linux sleep
 
-#define IDEAL_LINEAR_SPEED 0.1
-
 Robot::Robot(Camera & camera) 
     : camera(camera){
     
@@ -18,15 +16,16 @@ Robot::Robot(Camera & camera)
 	i2c_bus_file = open_i2c();
 	
 	// TODO: pid terms need to be determined experimentally
-    drive[frontLeft] = MotorController(10, 1, 1, 5, 0, 0, DRIVE_MC, frontLeft, encoderVal[frontLeft], i2c_bus_file);
-	drive[backLeft] = MotorController(10, 1, 1, 5, 0, 0, DRIVE_MC, backLeft, encoderVal[backLeft], i2c_bus_file);
-    drive[frontRight] = MotorController(10, 1, 1, 5, 0, 0, DRIVE_MC, frontRight, encoderVal[frontRight], i2c_bus_file);
-    drive[backRight] = MotorController(10, 1, 1, 5, 0, 0, DRIVE_MC, backRight, encoderVal[backRight], i2c_bus_file);
+	// TODO: not possitive about the DRIVE_ENC_2_DIST signs so test
+    drive[frontLeft] 	= MotorController(10, 1, 1, 5, 0,  DRIVE_ENC_2_DIST, DRIVE_MC, frontLeft, 	encoderVal[frontLeft], 	i2c_bus_file);
+	drive[backLeft] 	= MotorController(10, 1, 1, 5, 0,  DRIVE_ENC_2_DIST, DRIVE_MC, backLeft, 	encoderVal[backLeft],	i2c_bus_file);
+    drive[frontRight]	= MotorController(10, 1, 1, 5, 0, -DRIVE_ENC_2_DIST, DRIVE_MC, frontRight, 	encoderVal[frontRight], i2c_bus_file);
+    drive[backRight] 	= MotorController(10, 1, 1, 5, 0, -DRIVE_ENC_2_DIST, DRIVE_MC, backRight, 	encoderVal[backRight], 	i2c_bus_file);
 
 	// 4 bc 4 drive motors
-	servoArm[x] = MotorController(10, 1, 1, 5, 0, 0, SERVO_MC, x, encoderVal[4 + x], i2c_bus_file);
-	servoArm[y] = MotorController(10, 1, 1, 5, 0, 0, SERVO_MC, y, encoderVal[4 + y], i2c_bus_file);
-	servoArm[z] = MotorController(10, 1, 1, 5, 0, 0, SERVO_MC, z, encoderVal[4 + z], i2c_bus_file);
+	servoArm[x] = MotorController(10, 1, 1, 5, 0, XY_ENC_2_DIST, SERVO_MC, x, encoderVal[4 + x], i2c_bus_file);
+	servoArm[y] = MotorController(10, 1, 1, 5, 0, XY_ENC_2_DIST, SERVO_MC, y, encoderVal[4 + y], i2c_bus_file);
+	servoArm[z] = MotorController(10, 1, 1, 5, 0, XY_ENC_2_DIST, SERVO_MC, z, encoderVal[4 + z], i2c_bus_file);
 
 	robotPosition = Point2D(0, 0);
 	robotAngle = 0;
@@ -51,7 +50,7 @@ void Robot::readEncoderVals(){
 }
 
 void Robot::readLimitVals(){
-	read_i2c(i2c_bus_file, MCU_1, &limitVal, 1);
+	read_i2c(i2c_bus_file, MCU_1, &limitVals, 1);
 }
 
 // Based on MTE 544 Localization I and II 
@@ -91,7 +90,7 @@ void Robot::driveRobotForward(Point2D goal) {
 
 	while (delta.y > ROBOT_TOL) {
 		// TODO: how to figure ideal v?
-		double v = IDEAL_LINEAR_SPEED;
+		double v = IDEAL_SPEED_DRIVE;
 
 		double goal_orientation = atan2(-delta.x, delta.y);
             
@@ -141,22 +140,53 @@ uint16_t Robot::getDriveMotorEncoderVal(DriveMotor motor) {
 	return encoderVal[motor];
 }
 
-uint8_t Robot::getLimitVal() {
+uint8_t Robot::getLimitVals() {
 	readLimitVals();
-	return limitVal;
+	return limitVals;
+}
+
+bool Robot::getLimitVal(LimitSwitch s) {
+	if (s == z_min) {
+		// z_min has no limit switch
+		return false;
+	}
+	readLimitVals();
+	return ((limitVals & (1 << s)) != 0);
+}
+
+// ugly but required by our confusing (for this) conventions
+LimitSwitch Robot::determineLimitSwitch(ServoMotor m, bool positive) {
+	switch (m) {
+		case x:
+			if (positive) {return x_max;}
+			return x_min;
+		case y:
+			if (positive) {return y_max;}
+			return y_min;
+		default:
+			// z
+			if (positive) {return z_max;}
+			return z_min;
+	}
 }
 
 void Robot::resetServoArm(ServoMotor motor) {
-	bool limitSwitch = false;
-	// TODO: read limit switch values servo motor
-	// TODO: figure out direction
-	double idealSpeed = IDEAL_LINEAR_SPEED;
+	// waits to hit the limit switch
 
-	servoArm[motor].setIdealSpeed(idealSpeed);
+	// use minimum limit switch for xy and max for z
+	LimitSwitch limit = determineLimitSwitch(motor, (motor == z));
 
-	while (!limitSwitch) {
-		readLimitVals();
-		limitSwitch = limitVal & (0x1 << motor * 2);
+	// negative for xy, positive for z
+	double speed = IDEAL_SPEED_ARM;
+	if (motor == z) {
+		speed = -speed;
+	}
+	servoArm[motor].setIdealSpeed(speed);
+
+	while (!getLimitVal(limit)) {
+		// controller update
+		servoArm[motor].update(encoderVal[4 + motor]);
+		updateArmPosition();
 	}
 	servoArm[motor].setIdealSpeed(0);
 	armPosition[motor] = 0;
@@ -165,16 +195,24 @@ void Robot::resetServoArm(ServoMotor motor) {
 
 void Robot::moveServoArm(ServoMotor motor, double pos) {
 	double delta = pos - armPosition[pos];
-	// TODO: how to figure ideal v?
-	double idealSpeed = IDEAL_LINEAR_SPEED;
+	
+	LimitSwitch limit = determineLimitSwitch(motor, (delta > 0));
 
-	// TODO: do we need PID controllers ideal speed of servo arm position? 
-	servoArm[motor].setIdealSpeed(idealSpeed);
+	// negative for xy, positive for z
+	double speed = IDEAL_SPEED_ARM;
+	if (motor == z) {
+		speed = -speed;
+	}
+
 
 	while (delta < ARM_TOL) {
 		readEncoderVals();
 
-		// TOOD: read limit switches
+		// read limit switch
+		if (getLimitVal(limit)) {
+			log(std::string("DEBUG: Hit limit switch in moveServoArm()."));
+			break;
+		}
 
 		// 4 bc 4 drive motors
 		servoArm[motor].update(encoderVal[4 + motor]);

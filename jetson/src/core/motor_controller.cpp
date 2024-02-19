@@ -3,8 +3,8 @@
 #include <math.h>
 
 MotorController::MotorController(double pterm, double iterm, double dterm, double integratorClamp, 
-		double radius, double idealSpeed, int mc, int reg, int encoderVal, int file) :
-	ctrller(pterm, iterm, dterm, integratorClamp), idealSpeed(idealSpeed), radius(radius), mc(mc), reg(reg), lastEncoderVal(encoderVal), file(file){
+		double enc_2_dist, double idealSpeed, int mc, int reg, int encoderVal, int file) :
+	ctrller(pterm, iterm, dterm, integratorClamp), idealSpeed(idealSpeed), enc_2_dist(enc_2_dist), mc(mc), reg(reg), lastEncoderVal(encoderVal), file(file){
 	lastUpdateTime = std::chrono::system_clock::now();
 	elapsedDistance = 0;
 }
@@ -20,7 +20,7 @@ void MotorController::update(uint16_t encoderVal) {
 
 	// TODO: update based on pulses per rotation
 	// TODO: need to deal with encoder overflow somehow
-	double distance = (encoderVal-lastEncoderVal)*2*M_PI/8*2*M_PI*radius;
+	double distance = (encoderVal-lastEncoderVal)*enc_2_dist;
 	elapsedDistance += distance;
 
 	double currentSpeed =  distance / deltaT;

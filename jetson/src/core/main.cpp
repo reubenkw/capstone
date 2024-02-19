@@ -146,7 +146,7 @@ void test_limit_switches() {
 	int8_t limits = 0;
 	int8_t limits_prev = 0;
 	while(true) {
-		limits = r.getLimitVal();
+		limits = r.getLimitVals();
 		if (limits != limits_prev) {
 			log(std::string("INFO: limit state changed. Value: " + limits));
 		}
