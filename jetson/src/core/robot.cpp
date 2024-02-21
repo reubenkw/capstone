@@ -7,6 +7,7 @@
 
 #include <cmath>
 #include <unistd.h> // linux sleep
+#include <optional>
 
 Robot::Robot(Camera & camera) 
     : camera(camera){
@@ -146,27 +147,23 @@ uint8_t Robot::getLimitVals() {
 }
 
 bool Robot::getLimitVal(LimitSwitch s) {
-	if (s == z_min) {
-		// z_min has no limit switch
-		return false;
-	}
 	readLimitVals();
 	return ((limitVals & (1 << s)) != 0);
 }
 
 // ugly but required by our confusing (for this) conventions
-LimitSwitch Robot::determineLimitSwitch(ServoMotor m, bool positive) {
+std::optional<LimitSwitch> Robot::determineLimitSwitch(ServoMotor m, bool positive) {
 	switch (m) {
 		case x:
-			if (positive) {return x_max;}
-			return x_min;
+			if (positive) {return {x_max};}
+			return {x_min};
 		case y:
-			if (positive) {return y_max;}
-			return y_min;
+			if (positive) {return {y_max};}
+			return {y_min};
 		default:
 			// z
-			if (positive) {return z_max;}
-			return z_min;
+			if (positive) {return {z_max};}
+			return {};
 	}
 }
 
@@ -174,7 +171,7 @@ void Robot::resetServoArm(ServoMotor motor) {
 	// waits to hit the limit switch
 
 	// use minimum limit switch for xy and max for z
-	LimitSwitch limit = determineLimitSwitch(motor, (motor == z));
+	std::optional<LimitSwitch> limit = determineLimitSwitch(motor, (motor == z));
 
 	// negative for xy, positive for z
 	double speed = IDEAL_SPEED_ARM;
@@ -183,7 +180,7 @@ void Robot::resetServoArm(ServoMotor motor) {
 	}
 	servoArm[motor].setIdealSpeed(speed);
 
-	while (!getLimitVal(limit)) {
+	while (!getLimitVal(*limit)) {
 		// controller update
 		servoArm[motor].update(encoderVal[4 + motor]);
 		updateArmPosition();
@@ -196,7 +193,7 @@ void Robot::resetServoArm(ServoMotor motor) {
 void Robot::moveServoArm(ServoMotor motor, double pos) {
 	double delta = pos - armPosition[pos];
 	
-	LimitSwitch limit = determineLimitSwitch(motor, (delta > 0));
+	std::optional<LimitSwitch> limit = determineLimitSwitch(motor, (delta > 0));
 
 	// negative for xy, positive for z
 	double speed = IDEAL_SPEED_ARM;
@@ -208,8 +205,8 @@ void Robot::moveServoArm(ServoMotor motor, double pos) {
 	while (delta < ARM_TOL) {
 		readEncoderVals();
 
-		// read limit switch
-		if (getLimitVal(limit)) {
+		// limit is some (not z min) and the value is true
+		if (limit && getLimitVal(*limit)) {
 			log(std::string("DEBUG: Hit limit switch in moveServoArm()."));
 			break;
 		}

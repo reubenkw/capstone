@@ -19,7 +19,7 @@ const float IDEAL_SPEED_DRIVE = 0.1;    // [m/s]
 const float IDEAL_SPEED_ARM = 0.05;     // [m/s]
 
 const float WHEEL_RADIUS = 0.0762;                              // [m]
-const float DRIVE_ENC_2_DIST = 2*M_PI/8*2*M_PI*WHEEL_RADIUS;    // [m/count]
+const float DRIVE_ENC_2_DIST = (2 * M_PI * WHEEL_RADIUS) / 8;   // [m/count]
 const float XY_ENC_2_DIST = 999;                                // [m/count]
 // TODO: something more complicated for z. probably a linear function.
 

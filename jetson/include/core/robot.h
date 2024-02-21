@@ -6,6 +6,8 @@
 #include "point.h"
 #include "comm.h"
 
+#include <optional>
+
 enum DriveMotor { frontLeft, backLeft, frontRight, backRight };
 
 enum ServoMotor { x, y, z };
@@ -16,8 +18,7 @@ enum LimitSwitch {
 	x_max,
 	y_min,
 	y_max,
-	z_max,
-	z_min	// no switch, always inactive
+	z_max
 };
 
 class Robot {
@@ -55,7 +56,7 @@ public:
 	uint8_t getLimitVals();
 	bool getLimitVal(LimitSwitch s);
 
-	LimitSwitch determineLimitSwitch(ServoMotor m, bool positive);
+	std::optional<LimitSwitch> determineLimitSwitch(ServoMotor m, bool positive);
 	double calculate_wheel_speed(double v, double w);
 	void driveRobotForward(Point2D idealPos);
 	void resetServoArm(ServoMotor motor);
