@@ -104,3 +104,11 @@ The example adds five watch points, events will be triggered when counter reache
 ## Troubleshooting
 
 For any technical queries, please open an [issue] (https://github.com/espressif/esp-idf/issues) on GitHub. We will get back to you soon.
+
+```
+su - $USER
+```
+
+```
+/home/elin/.espressif/python_env/idf5.1_py3.10_env/bin/python /home/elin/esp/v5.1.2/esp-idf/tools/idf.py flash
+```
