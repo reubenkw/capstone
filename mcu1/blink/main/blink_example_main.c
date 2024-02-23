@@ -86,9 +86,62 @@ void test_mc() {
     }
 }
 
+void test_i2c_write(){
+    // Initialize i2c bus as slave to listen to jetson nano
+    i2c_config_t i2c_jetson_config = {
+        .mode = I2C_MODE_SLAVE, 
+        .sda_io_num = 6, 
+        .scl_io_num = 5, 
+        .sda_pullup_en = true, 
+        .scl_pullup_en = true, 
+        .slave = {
+            .addr_10bit_en = 0, 
+            .slave_addr = 0x42, 
+            .maximum_speed = 100000
+        }
+    };
+    i2c_param_config(I2C_NUM_0, &i2c_jetson_config);
+    
+    esp_err_t err = i2c_driver_install(I2C_NUM_0, I2C_MODE_SLAVE, 128, 128, ESP_INTR_FLAG_LOWMED);
+
+    uint8_t data[5] = {0xCA, 0xFE, 0xBA, 0xBE, 0x0};
+    while (1){
+        int data_trans = i2c_slave_write_buffer(I2C_NUM_0, data, 5, portMAX_DELAY);
+        printf("data trans: %d\n", data_trans);
+    }
+}
+
+void test_i2c_read(){
+    i2c_config_t i2c_jetson_config = {
+        .mode = I2C_MODE_SLAVE, 
+        .sda_io_num = 6, 
+        .scl_io_num = 5, 
+        .sda_pullup_en = true, 
+        .scl_pullup_en = true, 
+        .slave = {
+            .addr_10bit_en = 0, 
+            .slave_addr = 0x42, 
+            .maximum_speed = 100000
+        }
+    };
+    i2c_param_config(I2C_NUM_0, &i2c_jetson_config);
+    i2c_driver_install(I2C_NUM_0, I2C_MODE_SLAVE, 128, 128, ESP_INTR_FLAG_LOWMED);
+
+    uint8_t data[5] = {0, 0, 0, 0, 0};
+    while(1){
+        i2c_slave_read_buffer(I2C_NUM_0, data, 5, portMAX_DELAY);
+        for (int i = 1; i < 5; i++){
+            printf("%x", data[i]);
+        }
+        printf("\n");
+    }
+}
+
 void app_main(void)
 {
-    test_mc();
+    test_i2c_read();
+    // test_i2c_write();
+    // test_mc();
     uint8_t reg_addr_map[4] = {PWM_1, PWM_2, PWM_3, PWM_4};
     // Initialize spi bus as master
     // default transfer size is 64 bytes when DMA disabled
@@ -191,7 +244,6 @@ void app_main(void)
             limitVal = limitVal | (level << i);
         }
         i2c_slave_write_buffer(I2C_NUM_0, &limitVal, 8, portMAX_DELAY);
-
 
         // wait until jetson nano reads from mcu1 over i2c 
         // based on jetson nano command, do different tasks
