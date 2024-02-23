@@ -20,21 +20,21 @@ static const char *TAG = "example";
 
 #define DRIVE_LF_A 11
 #define DRIVE_LF_B 12
-#define DRIVE_LB_A 11
-#define DRIVE_LB_B 12
-#define DRIVE_RF_A 11
-#define DRIVE_RF_B 12
-#define DRIVE_RB_A 11
-#define DRIVE_RB_B 12
+#define DRIVE_LB_A 7
+#define DRIVE_LB_B 7
+#define DRIVE_RF_A 7
+#define DRIVE_RF_B 7
+#define DRIVE_RB_A 7
+#define DRIVE_RB_B 7
 
-#define SERVO_X_A 11
-#define SERVO_X_B 12
-#define SERVO_Y_A 11
-#define SERVO_Y_B 12
-#define SERVO_Z_A 11
-#define SERVO_Z_B 12
+#define SERVO_X_A 7
+#define SERVO_X_B 7
+#define SERVO_Y_A 7
+#define SERVO_Y_B 7
+#define SERVO_Z_A 7
+#define SERVO_Z_B 7
 
-#define NUM_MOTORS 7
+#define NUM_MOTORS 4
 
 static bool example_pcnt_on_reach(pcnt_unit_handle_t unit, const pcnt_watch_event_data_t *edata, void *user_ctx)
 {
@@ -52,20 +52,12 @@ void app_main(void)
         {.high_limit = PCNT_HIGH_LIMIT, .low_limit = PCNT_LOW_LIMIT}, 
         {.high_limit = PCNT_HIGH_LIMIT, .low_limit = PCNT_LOW_LIMIT}, 
         {.high_limit = PCNT_HIGH_LIMIT, .low_limit = PCNT_LOW_LIMIT}, 
-        {.high_limit = PCNT_HIGH_LIMIT, .low_limit = PCNT_LOW_LIMIT}, 
-        {.high_limit = PCNT_HIGH_LIMIT, .low_limit = PCNT_LOW_LIMIT}, 
-        {.high_limit = PCNT_HIGH_LIMIT, .low_limit = PCNT_LOW_LIMIT}, 
-        {.high_limit = PCNT_HIGH_LIMIT, .low_limit = PCNT_LOW_LIMIT}, 
+        {.high_limit = PCNT_HIGH_LIMIT, .low_limit = PCNT_LOW_LIMIT}
     };
-    pcnt_unit_handle_t pcnt_unit[NUM_MOTORS] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL };
-
-    
+    pcnt_unit_handle_t pcnt_unit[NUM_MOTORS] = { NULL, NULL, NULL, NULL };
 
     for (int i = 0; i < NUM_MOTORS; i++){
         ESP_ERROR_CHECK(pcnt_new_unit(&unit_config[i], &pcnt_unit[i]));
-        for (int j = 0; j < 100; j++){
-            ESP_LOGI(TAG, "%d", i);
-        }
     }
 
     ESP_LOGI(TAG, "set glitch filter");
@@ -73,15 +65,8 @@ void app_main(void)
         {.max_glitch_ns = 1000},
         {.max_glitch_ns = 1000},
         {.max_glitch_ns = 1000},
-        {.max_glitch_ns = 1000},
-        {.max_glitch_ns = 1000},
-        {.max_glitch_ns = 1000},
-        {.max_glitch_ns = 1000},
+        {.max_glitch_ns = 1000}
     };
-
-    for (int i = 0; i < 100; i++){
-        ESP_LOGI(TAG, "3");
-    }
 
     for(int i = 0; i < NUM_MOTORS; i++){
         ESP_ERROR_CHECK(pcnt_unit_set_glitch_filter(pcnt_unit[i], &filter_config[i]));
@@ -92,12 +77,9 @@ void app_main(void)
         {.edge_gpio_num = DRIVE_LF_A, .level_gpio_num = DRIVE_LF_B}, 
         {.edge_gpio_num = DRIVE_LB_A, .level_gpio_num = DRIVE_LB_B}, 
         {.edge_gpio_num = DRIVE_RF_A, .level_gpio_num = DRIVE_RF_B}, 
-        {.edge_gpio_num = DRIVE_RB_A, .level_gpio_num = DRIVE_RB_B}, 
-        {.edge_gpio_num = SERVO_X_A, .level_gpio_num = SERVO_X_B}, 
-        {.edge_gpio_num = SERVO_Y_A, .level_gpio_num = SERVO_Y_B}, 
-        {.edge_gpio_num = SERVO_Z_A, .level_gpio_num = SERVO_Z_B},   
+        {.edge_gpio_num = DRIVE_RB_A, .level_gpio_num = DRIVE_RB_B} 
     };
-    pcnt_channel_handle_t pcnt_chan_a[NUM_MOTORS] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL };
+    pcnt_channel_handle_t pcnt_chan_a[NUM_MOTORS] = { NULL, NULL, NULL, NULL};
 
     for (int i = 0; i < NUM_MOTORS; i++){
         ESP_ERROR_CHECK(pcnt_new_channel(pcnt_unit[i], &chan_a_config[i], &pcnt_chan_a[i]));
@@ -107,18 +89,16 @@ void app_main(void)
         {.edge_gpio_num = DRIVE_LF_B, .level_gpio_num = DRIVE_LF_A}, 
         {.edge_gpio_num = DRIVE_LB_B, .level_gpio_num = DRIVE_LB_A}, 
         {.edge_gpio_num = DRIVE_RF_B, .level_gpio_num = DRIVE_RF_A}, 
-        {.edge_gpio_num = DRIVE_RB_B, .level_gpio_num = DRIVE_RB_A}, 
-        {.edge_gpio_num = SERVO_X_B, .level_gpio_num = SERVO_X_A}, 
-        {.edge_gpio_num = SERVO_Y_B, .level_gpio_num = SERVO_Y_A}, 
-        {.edge_gpio_num = SERVO_Z_B, .level_gpio_num = SERVO_Z_A}
+        {.edge_gpio_num = DRIVE_RB_B, .level_gpio_num = DRIVE_RB_A}
     };
 
-    pcnt_channel_handle_t pcnt_chan_b[NUM_MOTORS] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL };
+    pcnt_channel_handle_t pcnt_chan_b[NUM_MOTORS] = { NULL, NULL, NULL, NULL};
 
     for (int i = 0; i < NUM_MOTORS; i++) {
         ESP_ERROR_CHECK(pcnt_new_channel(pcnt_unit[i], &chan_b_config[i], &pcnt_chan_b[i]));
     }
     
+    // TODO: deallocate pcnt channels when not in use
 
     ESP_LOGI(TAG, "set edge and level actions for pcnt channels");
     for (int i = 0; i < NUM_MOTORS; i++){
@@ -130,9 +110,6 @@ void app_main(void)
     }
     
     pcnt_event_callbacks_t cbs[NUM_MOTORS] = {
-        {.on_reach = example_pcnt_on_reach,},
-        {.on_reach = example_pcnt_on_reach,},
-        {.on_reach = example_pcnt_on_reach,},
         {.on_reach = example_pcnt_on_reach,},
         {.on_reach = example_pcnt_on_reach,},
         {.on_reach = example_pcnt_on_reach,},
