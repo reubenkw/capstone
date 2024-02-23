@@ -29,8 +29,66 @@
     (1ULL<<LIMIT_Z) \
 )
 
+void test_mc() {
+
+    spi_bus_config_t spi_config = {
+        .mosi_io_num = 16, 
+        .miso_io_num = 17, 
+        .sclk_io_num = 8, 
+        .data2_io_num = -1, 
+        .data3_io_num = -1, 
+        .data4_io_num = -1, 
+        .data5_io_num = -1, 
+        .data6_io_num = -1, 
+        .data7_io_num = -1, 
+        .intr_flags = ESP_INTR_FLAG_LOWMED
+    }; 
+
+    spi_bus_initialize(SPI2_HOST, &spi_config, SPI_DMA_DISABLED);
+
+    spi_device_interface_config_t dc_mc_config = {
+        .command_bits = 2, 
+        .address_bits = 6, 
+        .mode = 0,
+        .clock_speed_hz = (20 * 1000 * 1000), 
+        .queue_size = 1,
+        .spics_io_num = 18
+    }; 
+
+    spi_device_handle_t dc_mc_spi;
+
+    spi_bus_add_device(SPI2_HOST, &dc_mc_config, &dc_mc_spi);
+
+    uint8_t rx_buf;
+    uint8_t tx_buf = 1;
+    uint8_t reg_addr_map[4] = {PWM_1, PWM_2, PWM_3, PWM_4};
+    while (1){
+        spi_transaction_t spi_dc_tx = {
+            .cmd = WRITE, 
+            .addr = 0x07, 
+            .length = 8, 
+            .tx_buffer = &tx_buf
+        };
+        esp_err_t err = spi_device_transmit(dc_mc_spi, &spi_dc_tx);
+        printf("err write: %d\n", err);
+
+        spi_transaction_t spi_dc_rx = {
+            .cmd = READ, 
+            .addr = STAT_REG, 
+            .length = 8,
+            .rxlength = 8,
+            .rx_buffer = &rx_buf
+        };
+        err = spi_device_transmit(dc_mc_spi, &spi_dc_rx);
+
+        printf("err read: %d\n", err);
+        printf("data: %d\n", rx_buf);
+    }
+}
+
 void app_main(void)
 {
+    test_mc();
     uint8_t reg_addr_map[4] = {PWM_1, PWM_2, PWM_3, PWM_4};
     // Initialize spi bus as master
     // default transfer size is 64 bytes when DMA disabled
