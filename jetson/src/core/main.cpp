@@ -87,7 +87,7 @@ void test_i2c_write() {
 	log(std::string("INFO: bus file: ") + std::to_string(i2c_bus_file));
 	uint8_t data[4] = {0xDE, 0xAD, 0xBE, 0xEF};
 	for (int i = 0; i < 4; i++) {
-		write_i2c(i2c_bus_file, 0x42, data[i]);
+		write_i2c(i2c_bus_file, 0x42, data, 4);
 	}
 }
 
@@ -172,7 +172,7 @@ int main(int argc, char** argv)
 	// test_camera_image();
 	// image_processing_test();
 	// test_clustering();
-	test_i2c_read();
+	// test_i2c_read();
 	test_i2c_write();
 	return 0;
 }

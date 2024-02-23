@@ -12,6 +12,6 @@
 
 int open_i2c();
 void read_i2c(int file, uint8_t mcu_addr, uint8_t * data, uint8_t len);
-void write_i2c(int file, uint8_t mcu_addr, uint8_t data);
+void write_i2c(int file, uint8_t mcu_addr, uint8_t * data, uint8_t len);
 
 #endif //h
