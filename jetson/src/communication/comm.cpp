@@ -30,7 +30,7 @@ void read_i2c(int file, uint8_t mcu_addr, uint8_t * data, uint8_t len) {
 	    log(std::string("ERROR: failed to read from i2c bus address: "));
         return;
     }
-    
+
     i2c_smbus_read_i2c_block_data(file, READ, len, data);
     log(std::string("INFO: read from i2c bus address: ") + std::to_string(mcu_addr));
     log(std::string("INFO: data: "));
@@ -42,7 +42,7 @@ void read_i2c(int file, uint8_t mcu_addr, uint8_t * data, uint8_t len) {
     }
 }
 
-void write_i2c(int file, uint8_t mcu_addr, uint16_t data){
+void write_i2c(int file, uint8_t mcu_addr, uint8_t data){
     if (ioctl(file, I2C_SLAVE, mcu_addr) < 0) {
         log(std::string("ERROR: failed to write to i2c bus address:" + mcu_addr));
     }
