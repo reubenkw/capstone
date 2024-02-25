@@ -29,8 +29,19 @@
     (1ULL<<LIMIT_Z) \
 )
 
-void test_mc() {
+#define SPI_HOST SPI2_HOST
+#define I2C_HOST I2C_NUM_0
+#define DATA_LENGTH 4
 
+const uint8_t reg_addr_map[4] = {PWM_1, PWM_2, PWM_3, PWM_4};
+const uint8_t limit_pins[5] = {LIMIT_X_MIN, LIMIT_X_MAX, LIMIT_Y_MIN, LIMIT_Y_MAX, LIMIT_Z};
+uint8_t error[4] = {0};
+
+#define SPI_INIT_ERROR 0
+#define SPI_TX_ERROR 1
+#define SPI_RX_ERROR 2 
+
+void initialize_spi() {
     spi_bus_config_t spi_config = {
         .mosi_io_num = 16, 
         .miso_io_num = 17, 
@@ -43,51 +54,53 @@ void test_mc() {
         .data7_io_num = -1, 
         .intr_flags = ESP_INTR_FLAG_LOWMED
     }; 
+    esp_err_t err = spi_bus_initialize(SPI_HOST, &spi_config, SPI_DMA_DISABLED);
+    if (err != ESP_OK){
+        printf("err spi init: %d\n", err);  
+        error[SPI_INIT_ERROR] = 1;
+    }
+}
 
-    spi_bus_initialize(SPI2_HOST, &spi_config, SPI_DMA_DISABLED);
-
-    spi_device_interface_config_t dc_mc_config = {
-        .command_bits = 2, 
-        .address_bits = 6, 
-        .mode = 0,
-        .clock_speed_hz = (20 * 1000 * 1000), 
-        .queue_size = 1,
-        .spics_io_num = 18
-    }; 
-
-    spi_device_handle_t dc_mc_spi;
-
-    spi_bus_add_device(SPI2_HOST, &dc_mc_config, &dc_mc_spi);
-
-    uint8_t rx_buf;
-    uint8_t tx_buf = 1;
-    uint8_t reg_addr_map[4] = {PWM_1, PWM_2, PWM_3, PWM_4};
-    while (1){
-        spi_transaction_t spi_dc_tx = {
+void write_spi(spi_device_handle_t device, uint addr, uint8_t * tx_data){
+    spi_transaction_t spi_tx = {
             .cmd = WRITE, 
-            .addr = 0x07, 
+            .addr = addr, 
             .length = 8, 
-            .tx_buffer = &tx_buf
+            .tx_buffer = tx_data
         };
-        esp_err_t err = spi_device_transmit(dc_mc_spi, &spi_dc_tx);
-        printf("err write: %d\n", err);
+    esp_err_t err = spi_device_transmit(device, &spi_tx);
+    if (err != ESP_OK){
+        printf("err spi write: %d\n", err);  
+        error[SPI_TX_ERROR] = 1;
+    }
+}
 
-        spi_transaction_t spi_dc_rx = {
+uint8_t read_spi(spi_device_handle_t device, uint addr) {
+    uint8_t rx_buf;
+    spi_transaction_t spi_rx = {
             .cmd = READ, 
-            .addr = STAT_REG, 
+            .addr = addr, 
             .length = 8,
             .rxlength = 8,
             .rx_buffer = &rx_buf
         };
-        err = spi_device_transmit(dc_mc_spi, &spi_dc_rx);
-
-        printf("err read: %d\n", err);
-        printf("data: %d\n", rx_buf);
+    esp_err_t err = spi_device_transmit(device, &spi_rx);
+    if (err != ESP_OK){
+        printf("err spi read: %d\n", err);  
+        error[SPI_RX_ERROR] = 1;
     }
+
+    printf("data: %d\n", rx_buf);
+    return rx_buf;
 }
 
-void test_i2c_write(){
-    // Initialize i2c bus as slave to listen to jetson nano
+void clear_errors(){
+    error[SPI_INIT_ERROR] = 0;
+    error[SPI_TX_ERROR] = 0;
+    error[SPI_RX_ERROR] = 0;
+}
+
+void initialize_i2c_jetson() {
     i2c_config_t i2c_jetson_config = {
         .mode = I2C_MODE_SLAVE, 
         .sda_io_num = 6, 
@@ -100,119 +113,17 @@ void test_i2c_write(){
             .maximum_speed = 100000
         }
     };
-    i2c_param_config(I2C_NUM_0, &i2c_jetson_config);
+    i2c_param_config(I2C_HOST, &i2c_jetson_config);
     
-    esp_err_t err = i2c_driver_install(I2C_NUM_0, I2C_MODE_SLAVE, 128, 128, ESP_INTR_FLAG_LOWMED);
+    esp_err_t err = i2c_driver_install(I2C_HOST, I2C_MODE_SLAVE, 128, 128, ESP_INTR_FLAG_LOWMED);
 
-    uint8_t data[5] = {0xCA, 0xFE, 0xBA, 0xBE, 0x0};
-    while (1){
-        int data_trans = i2c_slave_write_buffer(I2C_NUM_0, data, 5, portMAX_DELAY);
-        printf("data trans: %d\n", data_trans);
+    if (err != ESP_OK){
+        printf("err driver install: %d\n", err);  
     }
+
 }
 
-void test_i2c_read(){
-    i2c_config_t i2c_jetson_config = {
-        .mode = I2C_MODE_SLAVE, 
-        .sda_io_num = 6, 
-        .scl_io_num = 5, 
-        .sda_pullup_en = true, 
-        .scl_pullup_en = true, 
-        .slave = {
-            .addr_10bit_en = 0, 
-            .slave_addr = 0x42, 
-            .maximum_speed = 100000
-        }
-    };
-    i2c_param_config(I2C_NUM_0, &i2c_jetson_config);
-    i2c_driver_install(I2C_NUM_0, I2C_MODE_SLAVE, 128, 128, ESP_INTR_FLAG_LOWMED);
-
-    uint8_t data[5] = {0, 0, 0, 0, 0};
-    while(1){
-        i2c_slave_read_buffer(I2C_NUM_0, data, 5, portMAX_DELAY);
-        for (int i = 1; i < 5; i++){
-            printf("%x", data[i]);
-        }
-        printf("\n");
-    }
-}
-
-void app_main(void)
-{
-    test_i2c_read();
-    // test_i2c_write();
-    // test_mc();
-    uint8_t reg_addr_map[4] = {PWM_1, PWM_2, PWM_3, PWM_4};
-    // Initialize spi bus as master
-    // default transfer size is 64 bytes when DMA disabled
-    spi_bus_config_t spi_config = {
-        .mosi_io_num = 19, 
-        .miso_io_num = 21, 
-        .sclk_io_num = 20, 
-        .data2_io_num = -1, 
-        .data3_io_num = -1, 
-        .data4_io_num = -1, 
-        .data5_io_num = -1, 
-        .data6_io_num = -1, 
-        .data7_io_num = -1, 
-        .intr_flags = ESP_INTR_FLAG_LOWMED
-    }; 
-    spi_bus_initialize(SPI1_HOST, &spi_config, SPI_DMA_DISABLED);
-
-    spi_device_interface_config_t dc_mc_config = {
-        .command_bits = 2, 
-        .address_bits = 6, 
-        .mode = 0,
-        .clock_speed_hz = 100000, 
-        .spics_io_num = 25
-    }; 
-
-    spi_device_handle_t dc_mc_spi;
-
-    spi_bus_add_device(SPI1_HOST, &dc_mc_config, &dc_mc_spi);
-
-     spi_device_interface_config_t stp_mc_config = {
-        .command_bits = 8, 
-        .address_bits = 8, 
-        .mode = 0,
-        .clock_speed_hz = 100000, 
-        .spics_io_num = 30
-    }; 
-
-    spi_device_handle_t stp_mc_spi;
-
-    spi_bus_add_device(SPI1_HOST, &stp_mc_config, &stp_mc_spi);
-    
-    // Initialize i2c bus as slave to listen to jetson nano
-    i2c_config_t i2c_jetson_config = {
-        .mode = I2C_MODE_SLAVE, 
-        .sda_io_num = 18, 
-        .scl_io_num = 17, 
-        .sda_pullup_en = true, 
-        .scl_pullup_en = true, 
-        .slave = {
-            .addr_10bit_en = 0, 
-            .slave_addr = 0x1000, 
-            .maximum_speed = 100000
-        }
-    };
-    i2c_param_config(I2C_NUM_0, &i2c_jetson_config);
-    i2c_driver_install(I2C_NUM_0, I2C_MODE_SLAVE,  32, 32, ESP_INTR_FLAG_LOWMED);
-
-    // Initialize i2c bus as master to buck converter and imu
-    i2c_config_t i2c_periph_config = {
-        .mode = I2C_MODE_MASTER, 
-        .sda_io_num = 29, 
-        .scl_io_num = 28, 
-        .sda_pullup_en = true, 
-        .scl_pullup_en = true, 
-        .master = {
-            .clk_speed = 100000
-        }
-    };
-    i2c_param_config(I2C_NUM_1, &i2c_periph_config);
-    i2c_driver_install(I2C_NUM_1, I2C_MODE_MASTER, 32, 32, ESP_INTR_FLAG_LOWMED );
-
+void initialize_limit_gpio() {
     //zero-initialize the config structure.
     gpio_config_t io_conf = {};
     //disable interrupt
@@ -227,122 +138,129 @@ void app_main(void)
     io_conf.pull_up_en = 0;
     //configure GPIO with the given settings
     gpio_config(&io_conf);
+}
 
-    // some sort of indication mcu1 is set up 
-    int DATA_LENGTH = 2;
-    uint8_t *data = (uint8_t *)malloc(DATA_LENGTH);
-    uint8_t *rx_buf = (uint8_t *)malloc(DATA_LENGTH);
-    uint8_t *error_msg = (uint8_t *)malloc(DATA_LENGTH);
-    esp_err_t err;
-    uint8_t limit_pins[5] = {LIMIT_X_MIN, LIMIT_X_MAX, LIMIT_Y_MIN, LIMIT_Y_MAX, LIMIT_Z};
-    while(true){
-        bool stat_ok = true;
-        // read from limit switch and put info in Tx buffer
-        uint8_t limitVal = 0;
-        for(uint8_t i = 0; i < sizeof(limit_pins)/sizeof(limit_pins[0]); i++){
-            uint8_t level = gpio_get_level(limit_pins[i]);
-            limitVal = limitVal | (level << i);
+void test_mc() {
+    initialize_spi();
+
+    spi_device_interface_config_t dc_mc_config = {
+        .command_bits = 2, 
+        .address_bits = 6, 
+        .mode = 0,
+        .clock_speed_hz = (20 * 1000 * 1000), 
+        .queue_size = 1,
+        .spics_io_num = 18
+    }; 
+    spi_device_handle_t dc_mc_spi;
+    spi_bus_add_device(SPI_HOST, &dc_mc_config, &dc_mc_spi);
+
+    uint8_t tx_buf = 1;
+    while (1){
+        write_spi(dc_mc_spi, 0x07, &tx_buf);
+        read_spi(dc_mc_spi, 0x0);
+    }
+}
+
+void test_i2c_write(){
+    // Initialize i2c bus as slave to listen to jetson nano
+    initialize_i2c_jetson();
+    uint8_t data[5] = {0xCA, 0xFE, 0xBA, 0xBE, 0x0};
+    while (1){
+        int data_trans = i2c_slave_write_buffer(I2C_HOST, data, 5, portMAX_DELAY);
+        printf("data trans: %d\n", data_trans);
+    }
+}
+
+void test_i2c_read(){
+    initialize_i2c_jetson();
+    uint8_t data[5] = {0, 0, 0, 0, 0};
+    while(1){
+        i2c_slave_read_buffer(I2C_HOST, data, 5, portMAX_DELAY);
+        for (int i = 1; i < 5; i++){
+            printf("%x", data[i]);
         }
-        i2c_slave_write_buffer(I2C_NUM_0, &limitVal, 8, portMAX_DELAY);
+        printf("\n");
+    }
+}
 
+void app_main(void)
+{
+    // Initialize spi bus as master
+    initialize_spi();
+
+    // Add DC motor controller as spi device
+    spi_device_interface_config_t dc_mc_config = {
+        .command_bits = 2, 
+        .address_bits = 6, 
+        .mode = 0,
+        .clock_speed_hz = (20 * 1000 * 1000), 
+        .queue_size = 1,
+        .spics_io_num = 18
+    }; 
+    spi_device_handle_t dc_mc_spi;
+    spi_bus_add_device(SPI_HOST, &dc_mc_config, &dc_mc_spi);
+
+    // Add stepper motor controller as spi device
+    spi_device_interface_config_t stp_mc_config = {
+        .command_bits = 2, 
+        .address_bits = 6, 
+        .mode = 0,
+        .clock_speed_hz = (20 * 1000 * 1000), 
+        .queue_size = 1,
+        .spics_io_num = 30
+    }; 
+    spi_device_handle_t stp_mc_spi;
+    spi_bus_add_device(SPI_HOST, &stp_mc_config, &stp_mc_spi);
+    
+    // Initialize i2c bus as slave to listen to jetson nano
+    initialize_i2c_jetson();
+    initialize_limit_gpio();
+
+    // TODO: some sort of indication mcu1 is set up 
+
+    // ignore initial byte
+    uint8_t rx_data[DATA_LENGTH + 1] = {0};
+    while(true){
         // wait until jetson nano reads from mcu1 over i2c 
         // based on jetson nano command, do different tasks
-        int readBytes = i2c_slave_read_buffer(I2C_NUM_0, data, DATA_LENGTH*8, portMAX_DELAY);
+        i2c_slave_read_buffer(I2C_HOST, rx_data, DATA_LENGTH + 1, portMAX_DELAY);
 
-        // check if command is complete
-        if (readBytes >= DATA_LENGTH ){
-            uint8_t tx = data[1];
-            uint8_t device = data[0] & 0xF0;
-            uint8_t reg = data[0] & 0xF;
-            switch (device) {
-                case DRIVE_MC: 
-                    spi_transaction_t spi_dc_tx = {
-                        .cmd = WRITE, 
-                        .addr = reg_addr_map[reg], 
-                        .length = 8, 
-                        .tx_buffer = &tx
-                    };
-                    err = spi_device_transmit(dc_mc_spi, &spi_dc_tx);
-
-                    if (stat_ok && err != ESP_OK){
-                        stat_ok = false;
-                        error_msg[0] = SPI_TX_ERR;
-                        error_msg[1] = err;
-                        i2c_slave_write_buffer(I2C_NUM_0, error_msg, sizeof(uint32_t)*2*8, portMAX_DELAY);
-                    }
-
-                    // TODO: update command and addresses to read from the status register
-                    spi_transaction_t spi_dc_rx = {
-                        .cmd = READ, 
-                        .addr = STAT_REG, 
-                        .length = 8,
-                        .rxlength = 8,
-                        .rx_buffer = rx_buf
-                    };
-                    err = spi_device_transmit(dc_mc_spi, &spi_dc_rx);
-
-                    if (stat_ok && err != ESP_OK){
-                        stat_ok = false;
-                        error_msg[0] = SPI_RX_ERR;
-                        error_msg[1] = err;
-                        i2c_slave_write_buffer(I2C_NUM_0, error_msg, sizeof(uint8_t)*2*8, portMAX_DELAY);
-                    }
-
-                    if (stat_ok && rx_buf[0]!=MC_STAT_OK) {
-                        stat_ok = false;
-                        error_msg[0] = DRIVE_MC_ERR;
-                        error_msg[1] = rx_buf[1];
-                        i2c_slave_write_buffer(I2C_NUM_0, error_msg, sizeof(uint8_t)*2*8, portMAX_DELAY);
-                    }
-                break;
-                case SERVO_MC:
-                    // TODO: update command and address once electronics are completed
-                    spi_transaction_t spi_stp_tx = {
-                        .cmd = WRITE, 
-                        .addr = reg_addr_map[reg], 
-                        .length = 8, 
-                        .tx_buffer = &tx
-                    };
-                    err = spi_device_transmit(stp_mc_spi, &spi_stp_tx);
-
-                    if (stat_ok && err != ESP_OK){
-                        stat_ok = false;
-                        error_msg[0] = SPI_TX_ERR;
-                        error_msg[1] = err;
-                        i2c_slave_write_buffer(I2C_NUM_0, error_msg, sizeof(uint32_t)*2*8, portMAX_DELAY);
-                    }
-
-                    // TODO: update command and addresses to read from the status register
-                    spi_transaction_t spi_servo_rx = {
-                        .cmd = READ, 
-                        .addr = STAT_REG, 
-                        .length = 8,
-                        .rxlength = 8,
-                        .rx_buffer = rx_buf
-                    };
-
-                    err = spi_device_transmit(stp_mc_spi, &spi_servo_rx);
-
-                    if (stat_ok && err != ESP_OK){
-                        stat_ok = false;
-                        error_msg[0] = SPI_RX_ERR;
-                        error_msg[1] = err;
-                        i2c_slave_write_buffer(I2C_NUM_0, error_msg, sizeof(uint8_t)*2*8, portMAX_DELAY);
-                    }
-
-                    if (stat_ok && rx_buf[0]!=MC_STAT_OK) {
-                        stat_ok = false;
-                        error_msg[0] = SERVO_MC_ERR;
-                        error_msg[1] = rx_buf[1];
-                        i2c_slave_write_buffer(I2C_NUM_0, error_msg, sizeof(uint8_t)*2*8, portMAX_DELAY);
-                    }
-                    
-                break;
-            }
-        }
-
-        if (stat_ok) {
-            i2c_slave_write_buffer(I2C_NUM_0, STAT_OK, DATA_LENGTH*8, portMAX_DELAY);
+        switch (rx_data[ADDR_INDEX]) {
+            case DRIVE_MC: 
+                if (rx_data[COMMAND_INDEX] == WRITE_CMD){
+                    write_spi(dc_mc_spi, rx_data[REG_INDEX], &rx_data[DATA_INDEX]);
+                } else {
+                    uint8_t read_data = read_spi(dc_mc_spi, rx_data[REG_INDEX]);
+                    // need to pad an extra zero
+                    uint8_t tx_data[2] = {read_data, 0x0};
+                    i2c_slave_write_buffer(I2C_HOST, tx_data, 2, portMAX_DELAY);
+                }
+            break;
+            case SERVO_MC:
+                if (rx_data[COMMAND_INDEX] == WRITE_CMD){
+                    write_spi(stp_mc_spi, rx_data[REG_INDEX], &rx_data[DATA_INDEX]);
+                } else {
+                    uint8_t read_data = read_spi(stp_mc_spi, rx_data[REG_INDEX]);
+                    // need to pad an extra zero
+                    uint8_t tx_data[2] = {read_data, 0x0};
+                    i2c_slave_write_buffer(I2C_HOST, tx_data, 2, portMAX_DELAY);
+                }
+            break;
+            case LIMIT: 
+                uint8_t limitVal = 0;
+                for(uint8_t i = 0; i < sizeof(limit_pins)/sizeof(limit_pins[0]); i++){
+                    uint8_t level = gpio_get_level(limit_pins[i]);
+                    limitVal = limitVal | (level << i);
+                }
+                // need to pad an extra zero
+                uint8_t tx_data[2] = {limitVal, 0x0};
+                i2c_slave_write_buffer(I2C_HOST, tx_data, 2, portMAX_DELAY);
+            break;
+            case STATUS:
+                i2c_slave_write_buffer(I2C_HOST, error, 4, portMAX_DELAY);
+                // clear the errors after transmitting
+                clear_errors();
+            break;
         }
     }
 }
