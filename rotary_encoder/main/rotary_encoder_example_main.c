@@ -12,8 +12,17 @@
 #include "driver/pulse_cnt.h"
 #include "driver/gpio.h"
 #include "esp_sleep.h"
+#include "driver/i2c.h"
 
 static const char *TAG = "example";
+
+// i2c interface: recieves 1 byte command (only first bit used). 
+// first bit describes if the request is a clear counters (1) or data (0)
+// clear: all other bits are ignored and all counters reset
+// data: all counters put into send q
+#define I2C_HOST I2C_NUM_0
+#define I2C_READ_DATA_LENGTH 1
+#define I2C_WRITE_DATA_LENGTH 8 // 4 int16
 
 // pcnt counter registers are 16-bit signed integer
 // -32,768 to +32,767
@@ -116,22 +125,61 @@ void clear_all_pcnt(pcnt_unit_handle_t pcnt_units[]) {
     }
 }
 
+void init_i2c() {
+    i2c_config_t i2c_jetson_config = {
+        .mode = I2C_MODE_SLAVE, 
+        .sda_io_num = -1, 
+        .scl_io_num = -1, 
+        .sda_pullup_en = true, 
+        .scl_pullup_en = true, 
+        .slave = {
+            .addr_10bit_en = 0, 
+            .slave_addr = 0x16, 
+            .maximum_speed = 100000
+        }
+    };
+    i2c_param_config(I2C_HOST, &i2c_jetson_config);
+
+    ESP_ERROR_CHECK(i2c_driver_install(I2C_HOST, I2C_MODE_SLAVE, 128, 128, ESP_INTR_FLAG_LOWMED));
+}
+
 // TODO: configure esp logger verbosity
 void app_main(void)
-{
+{   
+    // init i2c
+    init_i2c();
+
+    // init pcnt 
     pcnt_unit_handle_t units[NUM_PCNT_UNITS] = {NULL};
+    init_pcnt(units);
 
     // Report counter value
-    int pulse_counts[NUM_PCNT_UNITS] = {0};
+    int16_t pulse_counts[NUM_PCNT_UNITS] = {0};
     while (true) {
+        // read i2c. blocks for like 7 days
+        uint8_t command = 0;
+        if (i2c_slave_read_buffer(I2C_HOST, &command, I2C_READ_DATA_LENGTH, portMAX_DELAY) > 0) {
+            // data read
+            ESP_LOGI(TAG, "Command: %d", command);
+            if (command) {
+                // reset counters
+                for (int i = 0; i < NUM_PCNT_UNITS; i++) {
+                    pcnt_unit_clear_count(units[i]);
+                }
+            } else {
+                // send data
+                // overflow not considered due to physical limitations of arm and small drive distance
+                for (int i = 0; i < NUM_PCNT_UNITS; i++) {
+                    ESP_ERROR_CHECK(pcnt_unit_get_count(units[i], &pulse_counts[i]));
+                }
 
-        // overflow not considered due to physical limitations of arm and small drive distance
-        for (int i = 0; i < NUM_PCNT_UNITS; i++) {
-            ESP_ERROR_CHECK(pcnt_unit_get_count(units[i], &pulse_counts[i]));
+                // is this how typecasting works? compiler does give some warnings but idk
+                i2c_slave_write_buffer(I2C_HOST, (int *)pulse_counts, I2C_WRITE_DATA_LENGTH, portMAX_DELAY);
+                
+                ESP_LOGI(TAG, "Pulse counts: (%d, %d, %d, %d)", pulse_counts[0], pulse_counts[1], pulse_counts[2], pulse_counts[3]);
+            }
         }
-        
-        ESP_LOGI(TAG, "Pulse counts: (%d, %d, %d, %d)", pulse_counts[0], pulse_counts[1], pulse_counts[2], pulse_counts[3]);
-        // TODO: handle commands recieved via i2c
+
 
     }
 }
