@@ -143,7 +143,7 @@ void init_i2c() {
     ESP_ERROR_CHECK(i2c_driver_install(I2C_HOST, I2C_MODE_SLAVE, 128, 128, ESP_INTR_FLAG_LOWMED));
 }
 
-// TODO: configure esp logger verbosity
+// TODO: configure esp logger verbosity after tested
 void app_main(void)
 {   
     // init i2c
@@ -154,7 +154,7 @@ void app_main(void)
     init_pcnt(units);
 
     // Report counter value
-    int16_t pulse_counts[NUM_PCNT_UNITS] = {0};
+    int pulse_counts[NUM_PCNT_UNITS] = {0};
     while (true) {
         // read i2c. blocks for like 7 days
         uint8_t command = 0;
@@ -173,13 +173,10 @@ void app_main(void)
                     ESP_ERROR_CHECK(pcnt_unit_get_count(units[i], &pulse_counts[i]));
                 }
 
-                // is this how typecasting works? compiler does give some warnings but idk
-                i2c_slave_write_buffer(I2C_HOST, (int *)pulse_counts, I2C_WRITE_DATA_LENGTH, portMAX_DELAY);
+                i2c_slave_write_buffer(I2C_HOST,  (uint8_t *)pulse_counts, I2C_WRITE_DATA_LENGTH, portMAX_DELAY);
                 
                 ESP_LOGI(TAG, "Pulse counts: (%d, %d, %d, %d)", pulse_counts[0], pulse_counts[1], pulse_counts[2], pulse_counts[3]);
             }
         }
-
-
     }
 }
