@@ -23,6 +23,7 @@ static const char *TAG = "example";
 #define I2C_HOST I2C_NUM_0
 #define I2C_READ_DATA_LENGTH 1
 #define I2C_WRITE_DATA_LENGTH 8 // 4 int16
+#define I2C_COMMAND_MASK 1
 
 // pcnt counter registers are 16-bit signed integer
 // -32,768 to +32,767
@@ -157,11 +158,13 @@ void app_main(void)
     int pulse_counts[NUM_PCNT_UNITS] = {0};
     while (true) {
         // read i2c. blocks for like 7 days
-        uint8_t command = 0;
-        if (i2c_slave_read_buffer(I2C_HOST, &command, I2C_READ_DATA_LENGTH, portMAX_DELAY) > 0) {
+        uint8_t command[I2C_READ_DATA_LENGTH + 1] = {0};
+        // read an extra byte and ignore first (apply mask for first bit)
+        if (i2c_slave_read_buffer(I2C_HOST, command, I2C_READ_DATA_LENGTH + 1, portMAX_DELAY) > 0) {
             // data read
-            ESP_LOGI(TAG, "Command: %d", command);
-            if (command) {
+            ESP_LOGI(TAG, "Command: %d", command[I2C_READ_DATA_LENGTH] & I2C_COMMAND_MASK);
+            // last bit is command
+            if (command[I2C_READ_DATA_LENGTH] & I2C_COMMAND_MASK) {
                 // reset counters
                 for (int i = 0; i < NUM_PCNT_UNITS; i++) {
                     pcnt_unit_clear_count(units[i]);
@@ -174,6 +177,8 @@ void app_main(void)
                 }
 
                 i2c_slave_write_buffer(I2C_HOST,  (uint8_t *)pulse_counts, I2C_WRITE_DATA_LENGTH, portMAX_DELAY);
+                // write an extra byte
+                i2c_slave_write_buffer(I2C_HOST,  0, I2C_WRITE_DATA_LENGTH, portMAX_DELAY);
                 
                 ESP_LOGI(TAG, "Pulse counts: (%d, %d, %d, %d)", pulse_counts[0], pulse_counts[1], pulse_counts[2], pulse_counts[3]);
             }
