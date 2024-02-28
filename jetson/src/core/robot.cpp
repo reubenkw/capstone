@@ -32,26 +32,49 @@ Robot::Robot(Camera & camera)
 	robotAngle = 0;
 	// arm starts in upright position
 	armPosition = Point3D(0, 0, CARTESIAN_Z_MAX);
+	debug_log("Initialized Robot");
 }
 
 Point2D Robot::getRobotPosition() {
+	debug_log(std::string("Robot Position - x:") 
+	+ std::to_string(robotPosition.x) 
+	+ std::string(", y: ")
+	+ std::to_string(robotPosition.y));
 	return robotPosition;
 }
 
 double Robot::getRobotAngle() {
+	debug_log(std::string("Robot Angle: ") + std::to_string(robotAngle));
 	return robotAngle;
 }
 
 Point3D Robot::getArmPosition() {
+	debug_log(std::string("Arm Position - x:") 
+	+ std::to_string(armPosition.x) 
+	+ std::string(", y: ")
+	+ std::to_string(armPosition.y)
+	+ std::string(", z: ")
+	+ std::to_string(armPosition.z));
 	return armPosition;
 }
 
 void Robot::readEncoderVals(){
 	read_i2c(i2c_bus_file, MCU_ENCODER, (uint8_t * )encoderVal, 14);
+	std::string encoderString = std::string("");
+	for (int i = 0; i < 7; i++){
+		encoderString = std::to_string(encoderVal[i]) + std::string(" ");
+	}
+	debug_log(std::string("Encoders: ") + encoderString);
+	
 }
 
 void Robot::readLimitVals(){
 	read_i2c(i2c_bus_file, MCU_1, &limitVals, 1);
+	std::string limitString = std::string("");
+	for (int i = 0; i < 7; i++){
+		limitString = std::to_string((limitVals & (1<<i)) >> i) + std::string(" ");
+	}
+	debug_log(std::string("Limit: ") + limitString);
 }
 
 // Based on MTE 544 Localization I and II 
@@ -65,12 +88,25 @@ void Robot::updateRobotOrientation() {
 	robotAngle += rotation;
 	robotPosition.x += d_avg*cos(robotAngle);
 	robotPosition.y += d_avg*sin(robotAngle);
+
+	debug_log(std::string("Updated Robot Position - x:") 
+	+ std::to_string(robotPosition.x) 
+	+ std::string(", y: ")
+	+ std::to_string(robotPosition.y)
+	+ std::string(", angle: ")
+	+ std::to_string(robotAngle));
 }
 
 void Robot::updateArmPosition() {
 	armPosition[0] = servoArm[0].getElapsedDistance();
 	armPosition[1] = servoArm[1].getElapsedDistance();
 	armPosition[2] = servoArm[2].getElapsedDistance();
+	debug_log(std::string("Updated Arm Position - x:") 
+	+ std::to_string(armPosition.x) 
+	+ std::string(", y: ")
+	+ std::to_string(armPosition.y)
+	+ std::string(", z: ")
+	+ std::to_string(armPosition.z));
 }
 
 // From MTE 544 Modeling III IV Lecture Slide 16
@@ -107,6 +143,11 @@ void Robot::driveRobotForward(Point2D goal) {
 		double leftWheelSpeed = calculate_wheel_speed(v, -1 * w);
 		double rightWheelSpeed = calculate_wheel_speed(v, w);
 
+		debug_log(std::string("Left wheel speed:") 
+		+ std::to_string(leftWheelSpeed) 
+		+ std::string(", right wheel speed: ")
+		+ std::to_string(rightWheelSpeed));
+
 		drive[frontLeft].setIdealSpeed(leftWheelSpeed);
 		drive[backLeft].setIdealSpeed(leftWheelSpeed);
 		drive[frontRight].setIdealSpeed(rightWheelSpeed);
@@ -129,6 +170,7 @@ void Robot::driveRobotForward(Point2D goal) {
 	drive[frontRight].setIdealSpeed(0);
 	drive[backRight].setIdealSpeed(0);
 
+	debug_log(std::string("Robot Reached Goal"));
 }
 
 uint16_t Robot::getServoMotorEncoderVal(ServoMotor motor) {
@@ -188,6 +230,7 @@ void Robot::resetServoArm(ServoMotor motor) {
 	servoArm[motor].setIdealSpeed(0);
 	armPosition[motor] = 0;
 	servoArm[motor].resetElapsedDistance();
+	debug_log(std::string("Arm Reached Goal"));
 }
 
 void Robot::moveServoArm(ServoMotor motor, double pos) {
