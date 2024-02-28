@@ -12,6 +12,8 @@
 #include "driver/spi_common.h"
 #include "driver/spi_master.h"
 #include "freertos/portmacro.h"
+#include "led_strip.h"
+
 #include "constants.h"
 
 #define WRITE 0
@@ -41,6 +43,15 @@ uint8_t error[4] = {0};
 #define SPI_TX_ERROR 1
 #define SPI_RX_ERROR 2 
 
+// LED for debugging
+#define BLINK_GPIO CONFIG_BLINK_GPIO
+static led_strip_handle_t led_strip;
+
+void led_set_color(int r, int g, int b){
+    led_strip_set_pixel(led_strip, 0, r, g, b);
+    led_strip_refresh(led_strip);
+}
+
 void initialize_spi() {
     spi_bus_config_t spi_config = {
         .mosi_io_num = 16, 
@@ -58,6 +69,7 @@ void initialize_spi() {
     if (err != ESP_OK){
         printf("err spi init: %d\n", err);  
         error[SPI_INIT_ERROR] = 1;
+        led_set_color(255, 255, 0);
     }
 }
 
@@ -72,6 +84,7 @@ void write_spi(spi_device_handle_t device, uint addr, uint8_t * tx_data){
     if (err != ESP_OK){
         printf("err spi write: %d\n", err);  
         error[SPI_TX_ERROR] = 1;
+        led_set_color(255, 0, 255);
     }
 }
 
@@ -88,6 +101,7 @@ uint8_t read_spi(spi_device_handle_t device, uint addr) {
     if (err != ESP_OK){
         printf("err spi read: %d\n", err);  
         error[SPI_RX_ERROR] = 1;
+        led_set_color(0, 255, 255);
     }
 
     printf("data: %d\n", rx_buf);
@@ -155,6 +169,7 @@ void test_mc() {
     spi_bus_add_device(SPI_HOST, &dc_mc_config, &dc_mc_spi);
 
     uint8_t tx_buf = 1;
+    led_set_color(0, 255, 0);
     while (1){
         write_spi(dc_mc_spi, 0x07, &tx_buf);
         read_spi(dc_mc_spi, 0x0);
@@ -183,8 +198,27 @@ void test_i2c_read(){
     }
 }
 
+static void configure_led(void)
+{
+    /* LED strip initialization with the GPIO and pixels number*/
+    led_strip_config_t strip_config = {
+        .strip_gpio_num = BLINK_GPIO,
+        .max_leds = 1, // at least one LED on board
+    };
+    led_strip_rmt_config_t rmt_config = {
+        .resolution_hz = 10 * 1000 * 1000, // 10MHz
+    };
+    ESP_ERROR_CHECK(led_strip_new_rmt_device(&strip_config, &rmt_config, &led_strip));
+    /* Set all LED off to clear all pixels */
+    led_strip_clear(led_strip);
+}
+
 void app_main(void)
 {
+    // Initialize LED for debugging
+    configure_led();
+    led_set_color(255, 0, 0);
+
     // Initialize spi bus as master
     initialize_spi();
 
@@ -207,7 +241,7 @@ void app_main(void)
         .mode = 0,
         .clock_speed_hz = (20 * 1000 * 1000), 
         .queue_size = 1,
-        .spics_io_num = 30
+        .spics_io_num = 35
     }; 
     spi_device_handle_t stp_mc_spi;
     spi_bus_add_device(SPI_HOST, &stp_mc_config, &stp_mc_spi);
@@ -216,7 +250,7 @@ void app_main(void)
     initialize_i2c_jetson();
     initialize_limit_gpio();
 
-    // TODO: some sort of indication mcu1 is set up 
+    led_set_color(0, 128, 0);
 
     // ignore initial byte
     uint8_t rx_data[DATA_LENGTH + 1] = {0};
