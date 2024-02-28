@@ -15,8 +15,8 @@ class MotorController {
 	int lastEncoderVal;
 	std::chrono::time_point<std::chrono::system_clock>  lastUpdateTime;	
 	double enc_2_dist;
-	int mc;
-	int reg;
+	uint8_t mc;
+	uint8_t reg;
 	int file;
 
 public:
