@@ -35,11 +35,12 @@ void read_i2c(int file, uint8_t mcu_addr, uint8_t * data, uint8_t len) {
     log(std::string("INFO: read from i2c bus address: ") + std::to_string(mcu_addr));
     log(std::string("INFO: data: "));
 
+    std::string dataString = std::string("(uint8_t decimal) ");
     for (int i = 0; i < len; i++){
-        char temp[4];
-        snprintf(temp, sizeof temp, "%x", data[i]);
-        log(std::string(temp));
+        dataString = dataString + std::to_string(data[i]) + std::string(", ");
     }
+
+    debug_log(std::string(dataString));
 }
 
 void write_i2c(int file, uint8_t mcu_addr, uint8_t * data, uint8_t len){
@@ -47,7 +48,7 @@ void write_i2c(int file, uint8_t mcu_addr, uint8_t * data, uint8_t len){
         log(std::string("ERROR: failed to write to i2c bus address:" + mcu_addr));
     }
     int ret = i2c_smbus_write_i2c_block_data(file, WRITE, len, data);
-    std::string dataString = std::string("");
+    std::string dataString = std::string("(uint8_t decimal) ");
     for (int i = 0; i < len; i++){
         dataString = dataString + std::to_string(data[i]) + std::string(", ");
     }
@@ -56,7 +57,7 @@ void write_i2c(int file, uint8_t mcu_addr, uint8_t * data, uint8_t len){
             + std::string("cmd: " + WRITE) 
             + std::string("data: ") + dataString);
     } else {
-        log(  std::string("INFO: wrote to i2c bus address:" + mcu_addr) 
+        debug_log(  std::string("INFO: wrote to i2c bus address:" + mcu_addr) 
             + std::string("cmd: " + WRITE) 
             + std::string("data: ") + dataString);
     }

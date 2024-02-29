@@ -33,3 +33,11 @@ std::string getFormattedTimeStamp(){
 
     return oss.str();
 }
+
+void debug_log(std::string message) {
+    if (DEBUG){
+        std::ofstream log_file(file_name, std::ios::app);
+        log_file << getFormattedTimeStamp() << " " << message << std::endl;
+        log_file.close();
+    }
+}
