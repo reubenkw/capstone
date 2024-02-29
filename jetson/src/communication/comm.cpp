@@ -49,7 +49,7 @@ void write_i2c(int file, uint8_t mcu_addr, uint8_t * data, uint8_t len){
     int ret = i2c_smbus_write_i2c_block_data(file, WRITE, len, data);
     std::string dataString = std::string("");
     for (int i = 0; i < len; i++){
-        dataString = dataString + std::to_string(data[i]);
+        dataString = dataString + std::to_string(data[i]) + std::string(", ");
     }
     if (ret < 0) {
         log(  std::string("ERROR: failed to write to i2c bus address:" + mcu_addr) 
