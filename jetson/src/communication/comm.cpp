@@ -47,13 +47,17 @@ void write_i2c(int file, uint8_t mcu_addr, uint8_t * data, uint8_t len){
         log(std::string("ERROR: failed to write to i2c bus address:" + mcu_addr));
     }
     int ret = i2c_smbus_write_i2c_block_data(file, WRITE, len, data);
+    std::string dataString = std::string("");
+    for (int i = 0; i < len; i++){
+        dataString = dataString + std::to_string(data[i]);
+    }
     if (ret < 0) {
         log(  std::string("ERROR: failed to write to i2c bus address:" + mcu_addr) 
             + std::string("cmd: " + WRITE) 
-            + std::string("data: " + *data));
+            + std::string("data: ") + dataString);
     } else {
         log(  std::string("INFO: wrote to i2c bus address:" + mcu_addr) 
             + std::string("cmd: " + WRITE) 
-            + std::string("data: " + *data));
+            + std::string("data: ") + dataString);
     }
 }
