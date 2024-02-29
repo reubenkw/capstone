@@ -35,9 +35,8 @@ void MotorController::update(uint16_t encoderVal) {
 	} else {
 		saturatedMotorSignal = motorSignal;
 	}
-	uint16_t data = mc << 12 | reg << 8 | saturatedMotorSignal;
-	write_i2c(file, MCU_1, data);
-
+	uint8_t data[4] = {mc, reg, WRITE_CMD, (uint8_t) saturatedMotorSignal};
+	write_i2c(file, MCU_1, data, 4);
 }
 
 void MotorController::resetElapsedDistance() {
