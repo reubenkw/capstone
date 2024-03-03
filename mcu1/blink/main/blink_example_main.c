@@ -71,6 +71,7 @@ void initialize_spi() {
         error[SPI_INIT_ERROR] = 1;
         led_set_color(255, 255, 0);
     }
+    printf("spi initialized"); 
 }
 
 void write_spi(spi_device_handle_t device, uint addr, uint8_t * tx_data){
@@ -85,6 +86,8 @@ void write_spi(spi_device_handle_t device, uint addr, uint8_t * tx_data){
         printf("err spi write: %d\n", err);  
         error[SPI_TX_ERROR] = 1;
         led_set_color(255, 0, 255);
+    } else {
+        printf("spi write: %d\n", *tx_data);
     }
 }
 
@@ -102,6 +105,8 @@ uint8_t read_spi(spi_device_handle_t device, uint addr) {
         printf("err spi read: %d\n", err);  
         error[SPI_RX_ERROR] = 1;
         led_set_color(0, 255, 255);
+    } else {
+        printf("spi read: %d\n", rx_buf );
     }
 
     printf("data: %d\n", rx_buf);
@@ -134,7 +139,7 @@ void initialize_i2c_jetson() {
     if (err != ESP_OK){
         printf("err driver install: %d\n", err);  
     }
-
+    printf("jetson i2c init"); 
 }
 
 void initialize_limit_gpio() {
@@ -251,6 +256,7 @@ void app_main(void)
     initialize_limit_gpio();
 
     led_set_color(0, 128, 0);
+    printf("mcu initialized"); 
 
     // ignore initial byte
     uint8_t rx_data[DATA_LENGTH + 1] = {0};
@@ -258,29 +264,34 @@ void app_main(void)
         // wait until jetson nano reads from mcu1 over i2c 
         // based on jetson nano command, do different tasks
         i2c_slave_read_buffer(I2C_HOST, rx_data, DATA_LENGTH + 1, portMAX_DELAY);
-
+        printf("read from jetson: %d %d %d %d", rx_data[1], rx_data[2], rx_data[3], rx_data[4]); 
         switch (rx_data[ADDR_INDEX]) {
             case DRIVE_MC: 
+                printf("drive_mc"); 
                 if (rx_data[COMMAND_INDEX] == WRITE_CMD){
                     write_spi(dc_mc_spi, rx_data[REG_INDEX], &rx_data[DATA_INDEX]);
                 } else {
                     uint8_t read_data = read_spi(dc_mc_spi, rx_data[REG_INDEX]);
                     // need to pad an extra zero
                     uint8_t tx_data[2] = {read_data, 0x0};
+                    printf("jetson write: %d", read_data); 
                     i2c_slave_write_buffer(I2C_HOST, tx_data, 2, portMAX_DELAY);
                 }
             break;
             case SERVO_MC:
+                printf("servo_mc"); 
                 if (rx_data[COMMAND_INDEX] == WRITE_CMD){
                     write_spi(stp_mc_spi, rx_data[REG_INDEX], &rx_data[DATA_INDEX]);
                 } else {
                     uint8_t read_data = read_spi(stp_mc_spi, rx_data[REG_INDEX]);
                     // need to pad an extra zero
                     uint8_t tx_data[2] = {read_data, 0x0};
+                    printf("jetson write: %d", read_data); 
                     i2c_slave_write_buffer(I2C_HOST, tx_data, 2, portMAX_DELAY);
                 }
             break;
             case LIMIT: 
+                printf("limit"); 
                 uint8_t limitVal = 0;
                 for(uint8_t i = 0; i < sizeof(limit_pins)/sizeof(limit_pins[0]); i++){
                     uint8_t level = gpio_get_level(limit_pins[i]);
@@ -288,9 +299,12 @@ void app_main(void)
                 }
                 // need to pad an extra zero
                 uint8_t tx_data[2] = {limitVal, 0x0};
+                printf("jetson write: %d", limitVal); 
                 i2c_slave_write_buffer(I2C_HOST, tx_data, 2, portMAX_DELAY);
             break;
             case STATUS:
+                printf("status"); 
+                printf("jetson write: %d %d %d %d", error[0], error[1], error[2], error[3]); 
                 i2c_slave_write_buffer(I2C_HOST, error, 4, portMAX_DELAY);
                 // clear the errors after transmitting
                 clear_errors();
