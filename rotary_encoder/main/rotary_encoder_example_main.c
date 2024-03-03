@@ -149,11 +149,13 @@ void app_main(void)
 {   
     // init i2c
     init_i2c();
+    ESP_LOGI(TAG, "initialized i2c");
 
     // init pcnt 
     pcnt_unit_handle_t units[NUM_PCNT_UNITS] = {NULL};
     init_pcnt(units);
-
+    ESP_LOGI(TAG, "initialized pcnt");
+    
     // Report counter value
     int pulse_counts[NUM_PCNT_UNITS] = {0};
     while (true) {
