@@ -26,11 +26,17 @@
 #define LIMIT_Y_MAX 1
 #define LIMIT_Z 1
 
-#define GPIO_OUTPUT_PIN_SEL  ( \
+#define GPIO_LIMIT_PIN_SEL  ( \
     (1ULL<<LIMIT_X_MIN) | (1ULL<<LIMIT_X_MAX) | \
     (1ULL<<LIMIT_Y_MIN) | (1ULL<<LIMIT_Y_MAX) | \
     (1ULL<<LIMIT_Z) \
 )
+
+#define LED_1 15
+#define LED_2 16
+#define LED_3 17
+
+#define GPIO_LED_PIN_SEL ( (1ULL<<LED_1) | (1ULL<<LED_2) |(1ULL<<LED_3) )
 
 #define SPI_HOST SPI2_HOST
 #define I2C_HOST I2C_NUM_0
@@ -43,15 +49,6 @@ uint8_t error[4] = {0};
 #define SPI_INIT_ERROR 0
 #define SPI_TX_ERROR 1
 #define SPI_RX_ERROR 2 
-
-// LED for debugging
-#define BLINK_GPIO CONFIG_BLINK_GPIO
-static led_strip_handle_t led_strip;
-
-void led_set_color(int r, int g, int b){
-    led_strip_set_pixel(led_strip, 0, r, g, b);
-    led_strip_refresh(led_strip);
-}
 
 void initialize_spi() {
     spi_bus_config_t spi_config = {
@@ -151,7 +148,7 @@ void initialize_limit_gpio() {
     //set as input mode
     io_conf.mode = GPIO_MODE_INPUT;
     //bit mask of the pins that you want to set,e.g.GPIO18/19
-    io_conf.pin_bit_mask = GPIO_OUTPUT_PIN_SEL;
+    io_conf.pin_bit_mask = GPIO_LIMIT_PIN_SEL;
     //disable pull-down mode
     io_conf.pull_down_en = 1;
     //disable pull-up mode
@@ -204,21 +201,6 @@ void test_i2c_read(){
     }
 }
 
-static void configure_led(void)
-{
-    /* LED strip initialization with the GPIO and pixels number*/
-    led_strip_config_t strip_config = {
-        .strip_gpio_num = BLINK_GPIO,
-        .max_leds = 1, // at least one LED on board
-    };
-    led_strip_rmt_config_t rmt_config = {
-        .resolution_hz = 10 * 1000 * 1000, // 10MHz
-    };
-    ESP_ERROR_CHECK(led_strip_new_rmt_device(&strip_config, &rmt_config, &led_strip));
-    /* Set all LED off to clear all pixels */
-    led_strip_clear(led_strip);
-}
-
 void test_hello_world(){
     while(1){
         ESP_LOGI("TEST", "hello world!\n");
@@ -227,13 +209,7 @@ void test_hello_world(){
     }
 }
 
-void app_main(void)
-{
-    // Initialize LED for debugging
-    // configure_led();
-    // led_set_color(10, 0, 0);
-    printf("something");
-    // led_set_color(100, 10, 0);
+void initialize_led(){
     // LED 
     //zero-initialize the config structure.
     gpio_config_t io_conf = {};
@@ -242,16 +218,19 @@ void app_main(void)
     //set as input mode
     io_conf.mode = GPIO_MODE_OUTPUT;
     //bit mask of the pins that you want to set,e.g.GPIO18/19
-    io_conf.pin_bit_mask = (1<<15);
+    io_conf.pin_bit_mask = GPIO_LED_PIN_SEL;
     //disable pull-down mode
     io_conf.pull_down_en = 1;
     //disable pull-up mode
     io_conf.pull_up_en = 0;
     //configure GPIO with the given settings
     gpio_config(&io_conf);
-    gpio_set_level(15, 1);
+}
 
-    test_hello_world();
+void app_main(void)
+{
+    initialize_led();
+    gpio_set_level(LED_1, 1);
 
     // Initialize spi bus as master
     initialize_spi();
@@ -286,6 +265,7 @@ void app_main(void)
 
     // led_set_color(0, 128, 0);
     printf("mcu initialized"); 
+    gpio_set_level(LED_1, 2);
 
     // ignore initial byte
     uint8_t rx_data[DATA_LENGTH + 1] = {0};
