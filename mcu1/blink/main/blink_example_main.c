@@ -230,10 +230,27 @@ void test_hello_world(){
 void app_main(void)
 {
     // Initialize LED for debugging
-    configure_led();
-    led_set_color(10, 0, 0);
+    // configure_led();
+    // led_set_color(10, 0, 0);
     printf("something");
-    led_set_color(0, 10, 0);
+    // led_set_color(100, 10, 0);
+    // LED 
+    //zero-initialize the config structure.
+    gpio_config_t io_conf = {};
+    //disable interrupt
+    io_conf.intr_type = GPIO_INTR_DISABLE;
+    //set as input mode
+    io_conf.mode = GPIO_MODE_OUTPUT;
+    //bit mask of the pins that you want to set,e.g.GPIO18/19
+    io_conf.pin_bit_mask = (1<<15);
+    //disable pull-down mode
+    io_conf.pull_down_en = 1;
+    //disable pull-up mode
+    io_conf.pull_up_en = 0;
+    //configure GPIO with the given settings
+    gpio_config(&io_conf);
+    gpio_set_level(15, 1);
+
     test_hello_world();
 
     // Initialize spi bus as master
