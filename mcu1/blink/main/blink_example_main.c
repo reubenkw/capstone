@@ -67,7 +67,7 @@ void initialize_spi() {
     if (err != ESP_OK){
         printf("err spi init: %d\n", err);  
         error[SPI_INIT_ERROR] = 1;
-        // led_set_color(255, 255, 0);
+        gpio_set_level(LED_3, 1);
     }
     printf("spi initialized"); 
 }
@@ -83,7 +83,7 @@ void write_spi(spi_device_handle_t device, uint addr, uint8_t * tx_data){
     if (err != ESP_OK){
         printf("err spi write: %d\n", err);  
         error[SPI_TX_ERROR] = 1;
-        // led_set_color(255, 0, 255);
+        gpio_set_level(LED_3, 1);
     } else {
         printf("spi write: %d\n", *tx_data);
     }
@@ -102,7 +102,7 @@ uint8_t read_spi(spi_device_handle_t device, uint addr) {
     if (err != ESP_OK){
         printf("err spi read: %d\n", err);  
         error[SPI_RX_ERROR] = 1;
-        // led_set_color(0, 255, 255);
+        gpio_set_level(LED_3, 1);
     } else {
         printf("spi read: %d\n", rx_buf );
     }
@@ -172,7 +172,7 @@ void test_mc() {
     spi_bus_add_device(SPI_HOST, &dc_mc_config, &dc_mc_spi);
 
     uint8_t tx_buf = 1;
-    // led_set_color(0, 255, 0);
+    gpio_set_level(LED_2, 1);
     while (1){
         write_spi(dc_mc_spi, 0x07, &tx_buf);
         read_spi(dc_mc_spi, 0x0);
@@ -263,7 +263,6 @@ void app_main(void)
     initialize_i2c_jetson();
     initialize_limit_gpio();
 
-    // led_set_color(0, 128, 0);
     printf("mcu initialized"); 
     gpio_set_level(LED_1, 2);
 
