@@ -227,6 +227,47 @@ void initialize_led(){
     gpio_config(&io_conf);
 }
 
+void test_pcb() {
+    /*
+    The code just needs to pull the boost and buck enable lines high (to turn them off). 
+    Then it will poll an input line (that I am adding rn). 
+    Then once the input line is high, it turns the buck and boost modules on. Driving the GPIOs low
+    */
+    // gpio pins
+    const uint8_t GPIO_BUCK = 0; // TODO
+    const uint8_t GPIO_BOOST = 0; // TODO
+    const uint8_t GPIO_INPUT_LINE = 0; // TODO
+    
+    // set boost and buck enable lines as GPIO output
+    gpio_config_t io_conf_output = {};
+    io_conf_output.intr_type = GPIO_INTR_DISABLE;
+    io_conf_output.mode = GPIO_MODE_OUTPUT;
+    io_conf_output.pin_bit_mask = GPIO_BUCK | GPIO_BOOST;
+    io_conf_output.pull_down_en = 1;
+    io_conf_output.pull_up_en = 0;
+    gpio_config(&io_conf_output);
+
+    // set input line as GPIO input
+    gpio_config_t io_conf_input = {};
+    io_conf_input.intr_type = GPIO_INTR_DISABLE;
+    io_conf_input.mode = GPIO_MODE_INPUT;
+    io_conf_input.pin_bit_mask = GPIO_INPUT_LINE;
+    io_conf_input.pull_down_en = 1;
+    io_conf_input.pull_up_en = 0;
+    gpio_config(&io_conf_input);
+
+    // set boost and buck high (turn off)
+    gpio_set_level(GPIO_BUCK, 1);
+    gpio_set_level(GPIO_BOOST, 1);
+
+    // wait for input line to be high
+    while (!gpio_get_level(GPIO_INPUT_LINE)) {}
+
+    // set boost and buck low (turn on)
+    gpio_set_level(GPIO_BUCK, 0);
+    gpio_set_level(GPIO_BOOST, 0);
+}
+
 void app_main(void)
 {
     initialize_led();
