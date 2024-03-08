@@ -1,12 +1,14 @@
 #define DRIVE_MC 0x1    // must be same as comm.h
 #define SERVO_MC 0x2    // must be same as comm.h
-#define LIMIT 0x03      // must be same as comm.h
-#define STATUS 0x4      // must be same as comm.h
+#define LED 0x5
 
 #define ADDR_INDEX 1
-#define REG_INDEX 2
-#define COMMAND_INDEX 3
+#define CMD_INDEX 2
+#define REG_INDEX 3
 #define DATA_INDEX 4 
+
+#define GO_CMD 1
+#define STOP_CMD 1
 
 #define WRITE_CMD 1
 #define READ_CMD 2

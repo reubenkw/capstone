@@ -85,10 +85,8 @@ void test_i2c_read() {
 void test_i2c_write() {
 	int i2c_bus_file = open_i2c();
 	log(std::string("INFO: bus file: ") + std::to_string(i2c_bus_file));
-	uint8_t data[4] = {0xDE, 0xAD, 0xBE, 0xEF};
-	for (int i = 0; i < 4; i++) {
-		write_i2c(i2c_bus_file, 0x42, data, 4);
-	}
+	uint8_t data[4] = {0x5, 0x0, 0x0, 0x0};
+	write_i2c(i2c_bus_file, 0x42, data, 4);
 }
 
 void test_scan() {
