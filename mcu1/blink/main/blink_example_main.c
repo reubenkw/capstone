@@ -191,6 +191,50 @@ void init_limit_gpio() {
     gpio_config(&io_conf);
 }
 
+void stepper_fwd_rotation(uint8_t OP_CTRL){
+    // A off, B off: 01100110
+    uint8_t op_ctrl_val = 0b01100110;
+    write_spi(spi_mc_stepper_handle, OP_CTRL, &op_ctrl_val);
+    usleep(1000);
+
+    // A on, B off: 10010110
+    op_ctrl_val = 0b10010110;
+    write_spi(spi_mc_stepper_handle, OP_CTRL, &op_ctrl_val);
+    usleep(1000);
+
+    // A on, B on: 10011001
+    op_ctrl_val = 0b10011001;
+    write_spi(spi_mc_stepper_handle, OP_CTRL, &op_ctrl_val);
+    usleep(1000);
+
+    // A off, B on: 01101001
+    op_ctrl_val = 0b01101001;
+    write_spi(spi_mc_stepper_handle, OP_CTRL, &op_ctrl_val);
+    usleep(1000);
+}
+
+void stepper_bkwd_rotation(uint8_t OP_CTRL){
+    // A off, B off: 01100110
+    uint8_t op_ctrl_val = 0b01100110;
+    write_spi(spi_mc_stepper_handle, OP_CTRL, &op_ctrl_val);
+    usleep(1000);
+
+    // A off, B on: 01101001
+    op_ctrl_val = 0b01101001;
+    write_spi(spi_mc_stepper_handle, OP_CTRL, &op_ctrl_val);
+    usleep(1000);
+
+    // A on, B on: 10011001
+    op_ctrl_val = 0b10011001;
+    write_spi(spi_mc_stepper_handle, OP_CTRL, &op_ctrl_val);
+    usleep(1000);
+
+    // A on, B off: 10010110
+    op_ctrl_val = 0b10010110;
+    write_spi(spi_mc_stepper_handle, OP_CTRL, &op_ctrl_val);
+    usleep(1000);
+}
+
 void test_mc() {
     init_spi();
 
@@ -251,12 +295,12 @@ void init_boost() {
         .mode = GPIO_MODE_OUTPUT,
         .pin_bit_mask = (1 << GPIO_BOOST),
         .pull_down_en = 1,
-        .pull_up_en = 0,      // pull high
+        .pull_up_en = 0,
     };
     gpio_config(&io_conf_output);
 
     // set boost low (turn on)
-    gpio_set_level(GPIO_BOOST, 0);
+    gpio_set_level(GPIO_BOOST, 1);
 }
 
 static void configure_led(void)
@@ -272,26 +316,6 @@ static void configure_led(void)
     ESP_ERROR_CHECK(led_strip_new_rmt_device(&strip_config, &rmt_config, &led_strip));
     /* Set all LED off to clear all pixels */
     led_strip_clear(led_strip);
-}
-
-void test_microstep_drive_i2c() {
-    configure_led();
-    // red means stop, green go, blue back
-    led_set_color(50, 0, 0);
-    init_i2c_jetson();
-
-    uint8_t rx_data[DATA_LENGTH + 1] = {0};
-    while(true){
-        // wait until jetson nano reads from mcu1 over i2c 
-        // based on jetson nano command, do different tasks
-        i2c_slave_read_buffer(I2C_HOST, rx_data, DATA_LENGTH + 1, portMAX_DELAY);
-        printf("read from jetson: %d %d %d %d", rx_data[1], rx_data[2], rx_data[3], rx_data[4]); 
-        switch (rx_data[ADDR_INDEX]) {
-            case LED:
-                led_set_color(0, 50, 0);
-            break;
-        }
-    }
 }
 
 void init_stepper_motor() {
@@ -317,48 +341,53 @@ void init_stepper_motor() {
     write_spi(spi_mc_stepper_handle, PWM_CTRL_2, &pwm_ctrl_2_val);
 }
 
-void stepper_fwd_rotation(uint8_t OP_CTRL){
-    // A off, B off: 01100110
-    uint8_t op_ctrl_val = 0b01100110;
-    write_spi(spi_mc_stepper_handle, OP_CTRL, &op_ctrl_val);
-    usleep(1000);
+#define MSTEP_DIR 17
+#define MSTEP_PULSE 18
 
-    // A on, B off: 10010110
-    op_ctrl_val = 0b10010110;
-    write_spi(spi_mc_stepper_handle, OP_CTRL, &op_ctrl_val);
-    usleep(1000);
+void test_microstep_drive_i2c() {
+    configure_led();
+    // red means stop, green go, blue back
+    led_set_color(50, 0, 0);
+    init_i2c_jetson();
 
-    // A on, B on: 10011001
-    op_ctrl_val = 0b10011001;
-    write_spi(spi_mc_stepper_handle, OP_CTRL, &op_ctrl_val);
-    usleep(1000);
-
-    // A off, B on: 01101001
-    op_ctrl_val = 0b01101001;
-    write_spi(spi_mc_stepper_handle, OP_CTRL, &op_ctrl_val);
-    usleep(1000);
-}
-
-void stepper_bkwd_rotation(uint8_t OP_CTRL){
-    // A off, B off: 01100110
-    uint8_t op_ctrl_val = 0b01100110;
-    write_spi(spi_mc_stepper_handle, OP_CTRL, &op_ctrl_val);
-    usleep(1000);
-
-    // A off, B on: 01101001
-    op_ctrl_val = 0b01101001;
-    write_spi(spi_mc_stepper_handle, OP_CTRL, &op_ctrl_val);
-    usleep(1000);
-
-    // A on, B on: 10011001
-    op_ctrl_val = 0b10011001;
-    write_spi(spi_mc_stepper_handle, OP_CTRL, &op_ctrl_val);
-    usleep(1000);
-
-    // A on, B off: 10010110
-    op_ctrl_val = 0b10010110;
-    write_spi(spi_mc_stepper_handle, OP_CTRL, &op_ctrl_val);
-    usleep(1000);
+    uint8_t rx_data[DATA_LENGTH + 1] = {0};
+    while(true){
+        // wait until jetson nano reads from mcu1 over i2c 
+        // based on jetson nano command, do different tasks
+        i2c_slave_read_buffer(I2C_HOST, rx_data, DATA_LENGTH + 1, portMAX_DELAY);
+        printf("read from jetson: %d %d %d %d", rx_data[1], rx_data[2], rx_data[3], rx_data[4]); 
+        switch (rx_data[ADDR_INDEX]) {
+            case DRIVE_MC: 
+                print("incorrect command requesting drive mc!\n");
+            break;
+            case SERVO_MC:
+                printf("servo_mc"); 
+                uint32_t delay = 10;
+                if (rx_data[STP_X] == GO_CMD){
+                    led_set_color(0, 50, 0);
+                    gpio_set_level(MSTEP_DIR, 1);
+                    while(i2c_slave_read_buffer(I2C_HOST, rx_data, DATA_LENGTH + 1, delay) == 0){
+                        gpio_set_level(MSTEP_PULSE, 1);
+                        usleep(1000);
+                        gpio_set_level(MSTEP_PULSE, 0);
+                        usleep(1000);
+                    }
+                } else if (rx_data[STP_X] == BKWD_CMD) {
+                    led_set_color(0, 0, 50);
+                    gpio_set_level(MSTEP_DIR, 0);
+                    while(i2c_slave_read_buffer(I2C_HOST, rx_data, DATA_LENGTH + 1, delay) == 0){
+                        gpio_set_level(MSTEP_PULSE, 1);
+                        usleep(1000);
+                        gpio_set_level(MSTEP_PULSE, 0);
+                        usleep(1000);
+                    }
+                }
+                else {
+                    print("incorrect command requesting not x step!\n");
+                }
+            break;
+        }
+    }
 }
 
 void test_stepper() {
