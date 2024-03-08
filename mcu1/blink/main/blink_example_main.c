@@ -347,7 +347,7 @@ void init_stepper_motor() {
 void test_microstep_drive_i2c() {
     configure_led();
     // red means stop, green go, blue back
-    led_set_color(50, 0, 0);
+    led_set_color(50, 0, 50);
     init_i2c_jetson();
 
     uint8_t rx_data[DATA_LENGTH + 1] = {0};
