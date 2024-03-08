@@ -66,9 +66,9 @@ spi_device_handle_t spi_mc_dc_handle;
 
 void init_spi() {
     spi_bus_config_t spi_config = {
-        .mosi_io_num = 16, 
-        .miso_io_num = 17, 
-        .sclk_io_num = 8, 
+        .mosi_io_num = 11, 
+        .miso_io_num = 13, 
+        .sclk_io_num = 12, 
         .data2_io_num = -1, 
         .data3_io_num = -1, 
         .data4_io_num = -1, 
@@ -87,10 +87,10 @@ void init_spi() {
     spi_device_interface_config_t spi_mc_stepper_config = {
         .command_bits = 2, 
         .address_bits = 6, 
-        .mode = 0,
-        .clock_speed_hz = (20 * 1000 * 1000), 
+        .mode = 1,
+        .clock_speed_hz = (5 * 1000 * 1000), 
         .queue_size = 1,
-        .spics_io_num = 18 // TODO
+        .spics_io_num = 37
     }; 
 
     // Add stepper motor controller as spi device
@@ -99,7 +99,7 @@ void init_spi() {
     spi_device_interface_config_t spi_mc_dc_config = {
         .command_bits = 2, 
         .address_bits = 6, 
-        .mode = 0,
+        .mode = 1,
         .clock_speed_hz = (20 * 1000 * 1000), 
         .queue_size = 1,
         .spics_io_num = 18
@@ -110,12 +110,12 @@ void init_spi() {
     printf("devices added.\n");
 }
 
-void write_spi(spi_device_handle_t device, uint addr, uint8_t * tx_data){
+void write_spi(spi_device_handle_t device, uint addr, uint8_t tx_data){
     spi_transaction_t spi_tx = {
             .cmd = WRITE, 
             .addr = addr, 
             .length = 8, 
-            .tx_buffer = tx_data
+            .tx_buffer = &tx_data
         };
     esp_err_t err = spi_device_transmit(device, &spi_tx);
     if (err != ESP_OK){
@@ -123,29 +123,27 @@ void write_spi(spi_device_handle_t device, uint addr, uint8_t * tx_data){
         error[SPI_TX_ERROR] = 1;
         gpio_set_level(LED_3, 1);
     } else {
-        printf("spi write: %d\n", *tx_data);
+        printf("spi write: %d\n", tx_data);
     }
 }
 
 uint8_t read_spi(spi_device_handle_t device, uint addr) {
     uint8_t rx_buf;
     spi_transaction_t spi_rx = {
-            .cmd = READ, 
-            .addr = addr, 
-            .length = 8,
-            .rxlength = 8,
-            .rx_buffer = &rx_buf
-        };
+        .cmd = READ, 
+        .addr = addr, 
+        .length = 8,
+        .rxlength = 8,
+        .rx_buffer = &rx_buf
+    };
     esp_err_t err = spi_device_transmit(device, &spi_rx);
     if (err != ESP_OK){
         printf("err spi read: %d\n", err);  
         error[SPI_RX_ERROR] = 1;
         gpio_set_level(LED_3, 1);
     } else {
-        printf("spi read: %d\n", rx_buf );
+        printf("spi read: %d\n", rx_buf & 0xFF );
     }
-
-    printf("data: %d\n", rx_buf);
     return rx_buf;
 }
 
@@ -194,44 +192,48 @@ void init_limit_gpio() {
 void stepper_fwd_rotation(uint8_t OP_CTRL){
     // A off, B off: 01100110
     uint8_t op_ctrl_val = 0b01100110;
-    write_spi(spi_mc_stepper_handle, OP_CTRL, &op_ctrl_val);
+    write_spi(spi_mc_stepper_handle, OP_CTRL, op_ctrl_val);
     usleep(1000);
+    read_spi(spi_mc_stepper_handle, OP_CTRL);
 
     // A on, B off: 10010110
     op_ctrl_val = 0b10010110;
-    write_spi(spi_mc_stepper_handle, OP_CTRL, &op_ctrl_val);
+    write_spi(spi_mc_stepper_handle, OP_CTRL, op_ctrl_val);
     usleep(1000);
+    read_spi(spi_mc_stepper_handle, OP_CTRL);
 
     // A on, B on: 10011001
     op_ctrl_val = 0b10011001;
-    write_spi(spi_mc_stepper_handle, OP_CTRL, &op_ctrl_val);
+    write_spi(spi_mc_stepper_handle, OP_CTRL, op_ctrl_val);
     usleep(1000);
+    read_spi(spi_mc_stepper_handle, OP_CTRL);
 
     // A off, B on: 01101001
     op_ctrl_val = 0b01101001;
-    write_spi(spi_mc_stepper_handle, OP_CTRL, &op_ctrl_val);
+    write_spi(spi_mc_stepper_handle, OP_CTRL, op_ctrl_val);
     usleep(1000);
+    read_spi(spi_mc_stepper_handle, OP_CTRL);
 }
 
 void stepper_bkwd_rotation(uint8_t OP_CTRL){
     // A off, B off: 01100110
     uint8_t op_ctrl_val = 0b01100110;
-    write_spi(spi_mc_stepper_handle, OP_CTRL, &op_ctrl_val);
+    write_spi(spi_mc_stepper_handle, OP_CTRL, op_ctrl_val);
     usleep(1000);
 
     // A off, B on: 01101001
     op_ctrl_val = 0b01101001;
-    write_spi(spi_mc_stepper_handle, OP_CTRL, &op_ctrl_val);
+    write_spi(spi_mc_stepper_handle, OP_CTRL, op_ctrl_val);
     usleep(1000);
 
     // A on, B on: 10011001
     op_ctrl_val = 0b10011001;
-    write_spi(spi_mc_stepper_handle, OP_CTRL, &op_ctrl_val);
+    write_spi(spi_mc_stepper_handle, OP_CTRL, op_ctrl_val);
     usleep(1000);
 
     // A on, B off: 10010110
     op_ctrl_val = 0b10010110;
-    write_spi(spi_mc_stepper_handle, OP_CTRL, &op_ctrl_val);
+    write_spi(spi_mc_stepper_handle, OP_CTRL, op_ctrl_val);
     usleep(1000);
 }
 
@@ -241,7 +243,7 @@ void test_mc() {
     uint8_t tx_buf = 1;
     gpio_set_level(LED_2, 1);
     while (1){
-        write_spi(spi_mc_dc_handle, 0x07, &tx_buf);
+        write_spi(spi_mc_dc_handle, 0x07, tx_buf);
         read_spi(spi_mc_dc_handle, 0x0);
     }
 }
@@ -338,7 +340,7 @@ void init_stepper_motor() {
     // for testing
     // uint8_t pwm_ctrl_1_val = 0b00001111;    // half bridges 1->8 set to chopping
     uint8_t pwm_ctrl_2_val = 0b11110000;    // PWM_CH4_DIS, half bridges 9-10 set to chopping
-    write_spi(spi_mc_stepper_handle, PWM_CTRL_2, &pwm_ctrl_2_val);
+    write_spi(spi_mc_stepper_handle, PWM_CTRL_2, pwm_ctrl_2_val);
 }
 
 #define MSTEP_DIR 17
@@ -394,6 +396,8 @@ void test_microstep_drive_i2c() {
     }
 }
 
+#define MC_CLEAR_FAULT 0x7
+
 void test_stepper() {
     init_boost();
     init_spi();
@@ -401,11 +405,15 @@ void test_stepper() {
 
     gpio_set_level(LED_1, 1);
 
-    uint8_t pwm_ctrl_2_val = 0b11110000;    // PWM_CH4_DIS, half bridges 9-10 set to chopping
-    write_spi(spi_mc_stepper_handle, PWM_CTRL_2, &pwm_ctrl_2_val);
-    
+    uint8_t reg = read_spi(spi_mc_stepper_handle, MC_CLEAR_FAULT);
+
+    // uint8_t pwm_ctrl_2_val = 0b11110000;    // PWM_CH4_DIS, half bridges 9-10 set to chopping
+    // write_spi(spi_mc_stepper_handle, PWM_CTRL_2, pwm_ctrl_2_val);
+    write_spi(spi_mc_stepper_handle, MC_CLEAR_FAULT, reg | 1);
+
     while(true) {
-        stepper_fwd_rotation(OP_CTRL_3);
+        // stepper_fwd_rotation(OP_CTRL_2);
+        read_spi(spi_mc_stepper_handle, 0);
     }
 }
 
@@ -431,7 +439,7 @@ void test_jetson_ctrl() {
 void jetson_i2c_execute_command(uint8_t rx_data[]) {
     switch (rx_data[ADDR_INDEX]) {
         case DRIVE_MC: 
-            write_spi(spi_mc_dc_handle, rx_data[REG_INDEX], &rx_data[DATA_INDEX]);
+            write_spi(spi_mc_dc_handle, rx_data[REG_INDEX], rx_data[DATA_INDEX]);
         break;
         case SERVO_MC:
             printf("servo_mc"); 
@@ -506,6 +514,5 @@ void final_main() {
 
 void app_main(void)
 {   
-    init_boost();
-    // test_microstep_drive_i2c();
+    test_stepper();
 }
