@@ -7,6 +7,7 @@
 #include "constants.h"
 
 #include <stdio.h>
+#include <unistd.h>
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
@@ -163,6 +164,29 @@ void test_limit_switches() {
 	log(std::string("INFO: done test_limit_switches (check log)."));
 }
 
+void test_mc() {
+	int file = open_i2c();
+	MotorController mc(0, 0, 0.01, 0, 0.01, 0, SERVO_MC, x, 0, file);
+
+	while(true) {
+		// forward 5 sec
+		mc.simple_go();
+		usleep(5000000);
+
+		// stop 2 sec
+		mc.simple_stop();
+		usleep(2000000);
+
+		// back 5 sec
+		mc.simple_bkwd();
+		usleep(5000000);
+
+		// stop 2 sec
+		mc.simple_stop();
+		usleep(2000000);
+	}
+}
+
 int main(int argc, char** argv)
 {
 	initialize_log();
@@ -171,6 +195,6 @@ int main(int argc, char** argv)
 	// image_processing_test();
 	// test_clustering();
 	// test_i2c_read();
-	test_i2c_write();
+	test_mc();
 	return 0;
 }
