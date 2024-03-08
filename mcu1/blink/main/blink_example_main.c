@@ -61,27 +61,10 @@ uint8_t error[4] = {0};
 #define SPI_TX_ERROR 1
 #define SPI_RX_ERROR 2 
 
-spi_device_interface_config_t spi_mc_stepper_config = {
-    .command_bits = 2, 
-    .address_bits = 6, 
-    .mode = 0,
-    .clock_speed_hz = (20 * 1000 * 1000), 
-    .queue_size = 1,
-    .spics_io_num = 18 // TODO
-};
 spi_device_handle_t spi_mc_stepper_handle;
-
-spi_device_interface_config_t spi_mc_dc_config = {
-    .command_bits = 2, 
-    .address_bits = 6, 
-    .mode = 0,
-    .clock_speed_hz = (20 * 1000 * 1000), 
-    .queue_size = 1,
-    .spics_io_num = 18
-};
 spi_device_handle_t spi_mc_dc_handle;
 
-void initialize_spi() {
+void init_spi() {
     spi_bus_config_t spi_config = {
         .mosi_io_num = 16, 
         .miso_io_num = 17, 
@@ -100,7 +83,31 @@ void initialize_spi() {
         error[SPI_INIT_ERROR] = 1;
         gpio_set_level(LED_3, 1);
     }
-    printf("spi initialized"); 
+    printf("spi initialized. adding devices.\n");
+    spi_device_interface_config_t spi_mc_stepper_config = {
+        .command_bits = 2, 
+        .address_bits = 6, 
+        .mode = 0,
+        .clock_speed_hz = (20 * 1000 * 1000), 
+        .queue_size = 1,
+        .spics_io_num = 18 // TODO
+    }; 
+
+    // Add stepper motor controller as spi device
+    spi_bus_add_device(SPI_HOST, &spi_mc_stepper_config, &spi_mc_stepper_handle);
+
+    spi_device_interface_config_t spi_mc_dc_config = {
+        .command_bits = 2, 
+        .address_bits = 6, 
+        .mode = 0,
+        .clock_speed_hz = (20 * 1000 * 1000), 
+        .queue_size = 1,
+        .spics_io_num = 18
+    };
+
+    // Add DC motor controller as spi device
+    spi_bus_add_device(SPI_HOST, &spi_mc_dc_config, &spi_mc_dc_handle);
+    printf("devices added.\n");
 }
 
 void write_spi(spi_device_handle_t device, uint addr, uint8_t * tx_data){
@@ -148,7 +155,7 @@ void clear_errors(){
     error[SPI_RX_ERROR] = 0;
 }
 
-void initialize_i2c_jetson() {
+void init_i2c_jetson() {
     i2c_config_t i2c_jetson_config = {
         .mode = I2C_MODE_SLAVE, 
         .sda_io_num = 6, 
@@ -171,28 +178,21 @@ void initialize_i2c_jetson() {
     printf("jetson i2c init"); 
 }
 
-void initialize_limit_gpio() {
+void init_limit_gpio() {
     //zero-initialize the config structure.
-    gpio_config_t io_conf = {};
-    //disable interrupt
-    io_conf.intr_type = GPIO_INTR_DISABLE;
-    //set as input mode
-    io_conf.mode = GPIO_MODE_INPUT;
-    //bit mask of the pins that you want to set,e.g.GPIO18/19
-    io_conf.pin_bit_mask = GPIO_LIMIT_PIN_SEL;
-    //disable pull-down mode
-    io_conf.pull_down_en = 1;
-    //disable pull-up mode
-    io_conf.pull_up_en = 0;
+    gpio_config_t io_conf = {
+        .intr_type = GPIO_INTR_DISABLE,     // disable interrupt
+        .mode = GPIO_MODE_INPUT,            //set as input mode
+        .pin_bit_mask = GPIO_LIMIT_PIN_SEL, //bit mask of the pins that you want to set,e.g.GPIO18/19
+        .pull_down_en = 1,                  //disable pull-down mode
+        .pull_up_en = 0,                    //disable pull-up mode
+    };
     //configure GPIO with the given settings
     gpio_config(&io_conf);
 }
 
 void test_mc() {
-    initialize_spi();
-
-    spi_device_handle_t dc_mc_spi;
-    spi_bus_add_device(SPI_HOST, &spi_mc_dc_config, &dc_mc_spi);
+    init_spi();
 
     uint8_t tx_buf = 1;
     gpio_set_level(LED_2, 1);
@@ -204,7 +204,7 @@ void test_mc() {
 
 void test_i2c_write(){
     // Initialize i2c bus as slave to listen to jetson nano
-    initialize_i2c_jetson();
+    init_i2c_jetson();
     uint8_t data[5] = {0xCA, 0xFE, 0xBA, 0xBE, 0x0};
     while (1){
         int data_trans = i2c_slave_write_buffer(I2C_HOST, data, 5, portMAX_DELAY);
@@ -213,7 +213,7 @@ void test_i2c_write(){
 }
 
 void test_i2c_read(){
-    initialize_i2c_jetson();
+    init_i2c_jetson();
     uint8_t data[5] = {0, 0, 0, 0, 0};
     while(1){
         i2c_slave_read_buffer(I2C_HOST, data, 5, portMAX_DELAY);
@@ -233,20 +233,14 @@ void test_hello_world(){
 }
 
 void initialize_led(){
-    // LED 
-    //zero-initialize the config structure.
-    gpio_config_t io_conf = {};
-    //disable interrupt
-    io_conf.intr_type = GPIO_INTR_DISABLE;
-    //set as input mode
-    io_conf.mode = GPIO_MODE_OUTPUT;
-    //bit mask of the pins that you want to set,e.g.GPIO18/19
-    io_conf.pin_bit_mask = GPIO_LED_PIN_SEL;
-    //disable pull-down mode
-    io_conf.pull_down_en = 1;
-    //disable pull-up mode
-    io_conf.pull_up_en = 0;
-    //configure GPIO with the given settings
+    // LED
+    gpio_config_t io_conf = {
+        .intr_type = GPIO_INTR_DISABLE,
+        .mode = GPIO_MODE_OUTPUT,
+        .pin_bit_mask = GPIO_LED_PIN_SEL,
+        .pull_down_en = 1,
+        .pull_up_en = 0,
+    };
     gpio_config(&io_conf);
 }
 
@@ -263,6 +257,41 @@ void init_boost() {
 
     // set boost low (turn on)
     gpio_set_level(GPIO_BOOST, 0);
+}
+
+static void configure_led(void)
+{
+    /* LED strip initialization with the GPIO and pixels number*/
+    led_strip_config_t strip_config = {
+        .strip_gpio_num = BLINK_GPIO,
+        .max_leds = 1, // at least one LED on board
+    };
+    led_strip_rmt_config_t rmt_config = {
+        .resolution_hz = 10 * 1000 * 1000, // 10MHz
+    };
+    ESP_ERROR_CHECK(led_strip_new_rmt_device(&strip_config, &rmt_config, &led_strip));
+    /* Set all LED off to clear all pixels */
+    led_strip_clear(led_strip);
+}
+
+void test_microstep_drive_i2c() {
+    configure_led();
+    // red means stop, green go, blue back
+    led_set_color(50, 0, 0);
+    init_i2c_jetson();
+
+    uint8_t rx_data[DATA_LENGTH + 1] = {0};
+    while(true){
+        // wait until jetson nano reads from mcu1 over i2c 
+        // based on jetson nano command, do different tasks
+        i2c_slave_read_buffer(I2C_HOST, rx_data, DATA_LENGTH + 1, portMAX_DELAY);
+        printf("read from jetson: %d %d %d %d", rx_data[1], rx_data[2], rx_data[3], rx_data[4]); 
+        switch (rx_data[ADDR_INDEX]) {
+            case LED:
+                led_set_color(0, 50, 0);
+            break;
+        }
+    }
 }
 
 void init_stepper_motor() {
@@ -287,14 +316,6 @@ void init_stepper_motor() {
     uint8_t pwm_ctrl_2_val = 0b11110000;    // PWM_CH4_DIS, half bridges 9-10 set to chopping
     write_spi(spi_mc_stepper_handle, PWM_CTRL_2, &pwm_ctrl_2_val);
 }
-
-#define OP_CTRL_1 0x08
-#define OP_CTRL_2 0x09
-#define OP_CTRL_3 0x0A
-// HB8_HS_EN HB8_LS_EN HB7_HS_EN HB7_LS_EN 
-// 10010110
-// HB6_HS_EN HB6_LS_EN HB5_HS_EN HB5_LS_EN 
-// 0110
 
 void stepper_fwd_rotation(uint8_t OP_CTRL){
     // A off, B off: 01100110
@@ -342,7 +363,7 @@ void stepper_bkwd_rotation(uint8_t OP_CTRL){
 
 void test_stepper() {
     init_boost();
-    initialize_spi();
+    init_spi();
     initialize_led();
 
     gpio_set_level(LED_1, 1);
@@ -355,25 +376,10 @@ void test_stepper() {
     }
 }
 
-static void configure_led(void)
-{
-    /* LED strip initialization with the GPIO and pixels number*/
-    led_strip_config_t strip_config = {
-        .strip_gpio_num = BLINK_GPIO,
-        .max_leds = 1, // at least one LED on board
-    };
-    led_strip_rmt_config_t rmt_config = {
-        .resolution_hz = 10 * 1000 * 1000, // 10MHz
-    };
-    ESP_ERROR_CHECK(led_strip_new_rmt_device(&strip_config, &rmt_config, &led_strip));
-    /* Set all LED off to clear all pixels */
-    led_strip_clear(led_strip);
-}
-
 void test_jetson_ctrl() {
     configure_led();
     led_set_color(50, 0, 0);
-    initialize_i2c_jetson();
+    init_i2c_jetson();
 
     uint8_t rx_data[DATA_LENGTH + 1] = {0};
     while(true){
@@ -389,6 +395,45 @@ void test_jetson_ctrl() {
     }
 }
 
+void jetson_i2c_execute_command(uint8_t rx_data[]) {
+    switch (rx_data[ADDR_INDEX]) {
+        case DRIVE_MC: 
+            write_spi(spi_mc_dc_handle, rx_data[REG_INDEX], &rx_data[DATA_INDEX]);
+        break;
+        case SERVO_MC:
+            printf("servo_mc"); 
+            uint32_t delay = 10;
+            if (rx_data[STP_X] == GO_CMD){
+                while(i2c_slave_read_buffer(I2C_HOST, rx_data, DATA_LENGTH + 1, delay) == 0){
+                    stepper_fwd_rotation(OP_CTRL_1);
+                }
+            } else if (rx_data[STP_X] == BKWD_CMD) {
+                while(i2c_slave_read_buffer(I2C_HOST, rx_data, DATA_LENGTH + 1, delay) == 0){
+                    stepper_bkwd_rotation(OP_CTRL_1);
+                }
+            } 
+            else if (rx_data[STP_Y] == GO_CMD){
+                while(i2c_slave_read_buffer(I2C_HOST, rx_data, DATA_LENGTH + 1, delay) == 0){
+                    stepper_fwd_rotation(OP_CTRL_2);
+                }
+            } else if (rx_data[STP_Y] == BKWD_CMD) {
+                while(i2c_slave_read_buffer(I2C_HOST, rx_data, DATA_LENGTH + 1, delay) == 0){
+                    stepper_bkwd_rotation(OP_CTRL_2);
+                }
+            } 
+                else if (rx_data[STP_Z] == GO_CMD){
+                while(i2c_slave_read_buffer(I2C_HOST, rx_data, DATA_LENGTH + 1, delay) == 0){
+                    stepper_fwd_rotation(OP_CTRL_3);
+                }
+            } else if (rx_data[STP_Z] == BKWD_CMD) {
+                while(i2c_slave_read_buffer(I2C_HOST, rx_data, DATA_LENGTH + 1, delay) == 0){
+                    stepper_bkwd_rotation(OP_CTRL_3);
+                }
+            } 
+        break;
+    }
+}
+
 void final_main() {
 
     initialize_led();
@@ -396,35 +441,11 @@ void final_main() {
 
     // Initialize spi bus as master
     init_boost();
-    initialize_spi();
-
-    // Add DC motor controller as spi device
-    spi_device_interface_config_t dc_mc_config = {
-        .command_bits = 2, 
-        .address_bits = 6, 
-        .mode = 0,
-        .clock_speed_hz = (20 * 1000 * 1000), 
-        .queue_size = 1,
-        .spics_io_num = 18
-    }; 
-    spi_device_handle_t dc_mc_spi;
-    spi_bus_add_device(SPI_HOST, &dc_mc_config, &dc_mc_spi);
-
-    // Add stepper motor controller as spi device
-    spi_device_interface_config_t stp_mc_config = {
-        .command_bits = 2, 
-        .address_bits = 6, 
-        .mode = 0,
-        .clock_speed_hz = (20 * 1000 * 1000), 
-        .queue_size = 1,
-        .spics_io_num = 35
-    }; 
-    spi_device_handle_t stp_mc_spi;
-    spi_bus_add_device(SPI_HOST, &stp_mc_config, &stp_mc_spi);
+    init_spi();
     
     // Initialize i2c bus as slave to listen to jetson nano
-    initialize_limit_gpio();
-    initialize_i2c_jetson();
+    init_limit_gpio();
+    init_i2c_jetson();
 
     printf("mcu initialized"); 
     gpio_set_level(LED_2, 1);
@@ -435,43 +456,9 @@ void final_main() {
         // wait until jetson nano reads from mcu1 over i2c 
         // based on jetson nano command, do different tasks
         i2c_slave_read_buffer(I2C_HOST, rx_data, DATA_LENGTH + 1, portMAX_DELAY);
-        printf("read from jetson: %d %d %d %d", rx_data[1], rx_data[2], rx_data[3], rx_data[4]); 
-        switch (rx_data[ADDR_INDEX]) {
-            case DRIVE_MC: 
-                write_spi(dc_mc_spi, rx_data[REG_INDEX], &rx_data[DATA_INDEX]);
-            break;
-            case SERVO_MC:
-                printf("servo_mc"); 
-                uint32_t delay = 10;
-                if (rx_data[STP_X] == GO_CMD){
-                    while(i2c_slave_read_buffer(I2C_HOST, rx_data, DATA_LENGTH + 1, delay) == 0){
-                        stepper_fwd_rotation(OP_CTRL_1);
-                    }
-                } else if (rx_data[STP_X] == BKWD_CMD) {
-                    while(i2c_slave_read_buffer(I2C_HOST, rx_data, DATA_LENGTH + 1, delay) == 0){
-                        stepper_bkwd_rotation(OP_CTRL_1);
-                    }
-                } 
-                else if (rx_data[STP_Y] == GO_CMD){
-                    while(i2c_slave_read_buffer(I2C_HOST, rx_data, DATA_LENGTH + 1, delay) == 0){
-                        stepper_fwd_rotation(OP_CTRL_2);
-                    }
-                } else if (rx_data[STP_Y] == BKWD_CMD) {
-                    while(i2c_slave_read_buffer(I2C_HOST, rx_data, DATA_LENGTH + 1, delay) == 0){
-                        stepper_bkwd_rotation(OP_CTRL_2);
-                    }
-                } 
-                 else if (rx_data[STP_Z] == GO_CMD){
-                    while(i2c_slave_read_buffer(I2C_HOST, rx_data, DATA_LENGTH + 1, delay) == 0){
-                        stepper_fwd_rotation(OP_CTRL_3);
-                    }
-                } else if (rx_data[STP_Z] == BKWD_CMD) {
-                    while(i2c_slave_read_buffer(I2C_HOST, rx_data, DATA_LENGTH + 1, delay) == 0){
-                        stepper_bkwd_rotation(OP_CTRL_3);
-                    }
-                } 
-            break;
-        }
+        printf("read from jetson: %d %d %d %d", rx_data[1], rx_data[2], rx_data[3], rx_data[4]);
+        
+        
         uint8_t limitVal = 0;
         for(uint8_t i = 0; i < sizeof(limit_pins)/sizeof(limit_pins[0]); i++){
             uint8_t level = gpio_get_level(limit_pins[i]);
