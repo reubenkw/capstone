@@ -29,6 +29,13 @@
 #define DRIVE_MC_ERR 0x42
 #define SERVO_MC_ERR 0x24
 
+// buck and boost
+#define GPIO_BUCK 21
+#define GPIO_BOOST 14
 
+// stepper motors
+// sets to chopping mode (from default continuous)
+#define PWM_CTRL_1 0x0B // HB8_PWM HB7_PWM HB6_PWM HB5_PWM HB4_PWM HB3_PWM HB2_PWM HB1_PWM
+#define PWM_CTRL_2 0x0C // PWM_CH4_DIS PWM_CH3_DIS PWM_CH2_DIS PWM_CH1_DIS HB12_PWM HB11_PWM HB10_PWM HB9_PWM 
 
-
+// 

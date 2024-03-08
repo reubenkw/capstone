@@ -14,6 +14,7 @@
 #include "freertos/portmacro.h"
 #include "led_strip.h"
 #include "esp_log.h"
+#include <unistd.h>
 
 #include "constants.h"
 
@@ -49,6 +50,26 @@ uint8_t error[4] = {0};
 #define SPI_INIT_ERROR 0
 #define SPI_TX_ERROR 1
 #define SPI_RX_ERROR 2 
+
+spi_device_interface_config_t spi_mc_stepper_config = {
+    .command_bits = 2, 
+    .address_bits = 6, 
+    .mode = 0,
+    .clock_speed_hz = (20 * 1000 * 1000), 
+    .queue_size = 1,
+    .spics_io_num = 18 // TODO
+};
+spi_device_handle_t spi_mc_stepper_handle;
+
+spi_device_interface_config_t spi_mc_dc_config = {
+    .command_bits = 2, 
+    .address_bits = 6, 
+    .mode = 0,
+    .clock_speed_hz = (20 * 1000 * 1000), 
+    .queue_size = 1,
+    .spics_io_num = 18
+};
+spi_device_handle_t spi_mc_dc_handle;
 
 void initialize_spi() {
     spi_bus_config_t spi_config = {
@@ -160,22 +181,14 @@ void initialize_limit_gpio() {
 void test_mc() {
     initialize_spi();
 
-    spi_device_interface_config_t dc_mc_config = {
-        .command_bits = 2, 
-        .address_bits = 6, 
-        .mode = 0,
-        .clock_speed_hz = (20 * 1000 * 1000), 
-        .queue_size = 1,
-        .spics_io_num = 18
-    }; 
     spi_device_handle_t dc_mc_spi;
-    spi_bus_add_device(SPI_HOST, &dc_mc_config, &dc_mc_spi);
+    spi_bus_add_device(SPI_HOST, &spi_mc_dc_config, &dc_mc_spi);
 
     uint8_t tx_buf = 1;
     gpio_set_level(LED_2, 1);
     while (1){
-        write_spi(dc_mc_spi, 0x07, &tx_buf);
-        read_spi(dc_mc_spi, 0x0);
+        write_spi(spi_mc_dc_handle, 0x07, &tx_buf);
+        read_spi(spi_mc_dc_handle, 0x0);
     }
 }
 
@@ -227,54 +240,116 @@ void initialize_led(){
     gpio_config(&io_conf);
 }
 
-void test_pcb() {
-    /*
-    The code just needs to pull the boost and buck enable lines high (to turn them off). 
-    Then it will poll an input line (that I am adding rn). 
-    Then once the input line is high, it turns the buck and boost modules on. Driving the GPIOs low
-    */
-    // gpio pins
-    const uint8_t GPIO_BUCK = 0; // TODO
-    const uint8_t GPIO_BOOST = 0; // TODO
-    const uint8_t GPIO_INPUT_LINE = 0; // TODO
-    
-    // set boost and buck enable lines as GPIO output
-    gpio_config_t io_conf_output = {};
-    io_conf_output.intr_type = GPIO_INTR_DISABLE;
-    io_conf_output.mode = GPIO_MODE_OUTPUT;
-    io_conf_output.pin_bit_mask = GPIO_BUCK | GPIO_BOOST;
-    io_conf_output.pull_down_en = 1;
-    io_conf_output.pull_up_en = 0;
+void init_boost() {
+    // boost high to disable
+    gpio_config_t io_conf_output = {
+        .intr_type = GPIO_INTR_DISABLE,
+        .mode = GPIO_MODE_OUTPUT,
+        .pin_bit_mask = (1 << GPIO_BOOST),
+        .pull_down_en = 0,
+        .pull_up_en = 1,      // pull high
+    };
     gpio_config(&io_conf_output);
 
-    // set input line as GPIO input
-    gpio_config_t io_conf_input = {};
-    io_conf_input.intr_type = GPIO_INTR_DISABLE;
-    io_conf_input.mode = GPIO_MODE_INPUT;
-    io_conf_input.pin_bit_mask = GPIO_INPUT_LINE;
-    io_conf_input.pull_down_en = 1;
-    io_conf_input.pull_up_en = 0;
-    gpio_config(&io_conf_input);
-
-    // set boost and buck high (turn off)
-    gpio_set_level(GPIO_BUCK, 1);
-    gpio_set_level(GPIO_BOOST, 1);
-
-    // wait for input line to be high
-    while (!gpio_get_level(GPIO_INPUT_LINE)) {}
-
-    // set boost and buck low (turn on)
-    gpio_set_level(GPIO_BUCK, 0);
+    // set boost low (turn on)
     gpio_set_level(GPIO_BOOST, 0);
 }
 
-void app_main(void)
-{
+void init_stepper_motor() {
+    /*
+    The PWM chopping mode operation is done in five steps as follows and explained in detail below.
+    1. PWM Configuration
+    2. Free-Wheeling Mode (Synchronous Rectification) Disable / Enable
+    3. PWM Channels Mapping
+    4. PWM Channels Configuration (PWM Frequency and PWM Duty)
+    5. Half-Bridge Enable
+
+    https://www.ti.com/lit/ds/symlink/drv8912-q1.pdf?HQS=dis-dk-null-digikeymode-dsf-pf-null-wwe&ts=1709642628458&ref_url=https%253A%252F%252Fwww.ti.com%252Fgeneral%252Fdocs%252Fsuppproductinfo.tsp%253FdistId%253D10%2526gotoUrl%253Dhttps%253A%252F%252Fwww.ti.com%252Flit%252Fgpn%252Fdrv8912-q1
+    pg 29 and 64
+    */
+
+    // use channel 1, 2, 3. Disable 4. and set half bridge to chopping mode
+    // uint8_t pwm_ctrl_1_val = 0b11111111;    // half bridges 1->8 set to chopping
+    // uint8_t pwm_ctrl_2_val = 0b10000011;    // PWM_CH4_DIS, half bridges 9-10 set to chopping
+
+    // for testing
+    // uint8_t pwm_ctrl_1_val = 0b00001111;    // half bridges 1->8 set to chopping
+    uint8_t pwm_ctrl_2_val = 0b11110000;    // PWM_CH4_DIS, half bridges 9-10 set to chopping
+    write_spi(spi_mc_stepper_handle, PWM_CTRL_2, &pwm_ctrl_2_val);
+}
+
+#define OP_CTRL_3 0x0A
+// HB8_HS_EN HB8_LS_EN HB7_HS_EN HB7_LS_EN 
+// 10010110
+// HB6_HS_EN HB6_LS_EN HB5_HS_EN HB5_LS_EN 
+// 0110
+
+void test_stepper() {
+    init_boost();
+    initialize_spi();
+    initialize_led();
+
+    gpio_set_level(LED_1, 1);
+
+    uint8_t pwm_ctrl_2_val = 0b11110000;    // PWM_CH4_DIS, half bridges 9-10 set to chopping
+    write_spi(spi_mc_stepper_handle, PWM_CTRL_2, &pwm_ctrl_2_val);
+    
+    uint8_t op_ctrl_2_val = 0;
+    while(true) {
+        // A off, B off: 01100110
+        op_ctrl_2_val = 0b01100110;
+        write_spi(spi_mc_stepper_handle, OP_CTRL_3, &op_ctrl_2_val);
+        usleep(1000);
+
+        // A on, B off: 10010110
+        op_ctrl_2_val = 0b10010110;
+        write_spi(spi_mc_stepper_handle, OP_CTRL_3, &op_ctrl_2_val);
+        usleep(1000);
+
+        // A on, B on: 10011001
+        op_ctrl_2_val = 0b10011001;
+        write_spi(spi_mc_stepper_handle, OP_CTRL_3, &op_ctrl_2_val);
+        usleep(1000);
+
+        // A off, B on: 01101001
+        op_ctrl_2_val = 0b01101001;
+        write_spi(spi_mc_stepper_handle, OP_CTRL_3, &op_ctrl_2_val);
+        usleep(1000);
+    }
+}
+
+// void test_read_mc() {
+//     read_spi(spi_mc_stepper_handle, )
+// }
+
+// void test_stepper_w_jetson() {
+//     uint8_t rx_data[DATA_LENGTH + 1] = {0};
+//     while(true) {
+//         i2c_slave_read_buffer(I2C_HOST, rx_data, DATA_LENGTH + 1, portMAX_DELAY);
+//         printf("read from jetson: %d %d %d %d", rx_data[1], rx_data[2], rx_data[3], rx_data[4]); 
+//         if (rx_data[ADDR_INDEX] == SERVO_MC) {
+//                 printf("servo_mc"); 
+//                 if (rx_data[COMMAND_INDEX] == WRITE_CMD){
+//                     write_spi(stp_mc_spi, rx_data[REG_INDEX], &rx_data[DATA_INDEX]);
+//                 } else {
+//                     uint8_t read_data = read_spi(stp_mc_spi, rx_data[REG_INDEX]);
+//                     // need to pad an extra zero
+//                     uint8_t tx_data[2] = {read_data, 0x0};
+//                     printf("jetson write: %d", read_data); 
+//                     i2c_slave_write_buffer(I2C_HOST, tx_data, 2, portMAX_DELAY);
+//                 }
+//             break;
+//         }
+//     }
+// }
+
+void final_main() {
     initialize_led();
     gpio_set_level(LED_1, 1);
 
     // Initialize spi bus as master
     initialize_spi();
+    init_boost();
 
     // Add DC motor controller as spi device
     spi_device_interface_config_t dc_mc_config = {
@@ -305,7 +380,7 @@ void app_main(void)
     initialize_limit_gpio();
 
     printf("mcu initialized"); 
-    gpio_set_level(LED_1, 2);
+    gpio_set_level(LED_1, 1);
 
     // ignore initial byte
     uint8_t rx_data[DATA_LENGTH + 1] = {0};
@@ -360,4 +435,10 @@ void app_main(void)
             break;
         }
     }
+}
+
+void app_main(void)
+{   
+    usleep(1000000)
+    test_stepper();
 }
