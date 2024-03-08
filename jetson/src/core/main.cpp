@@ -170,18 +170,22 @@ void test_mc() {
 
 	while(true) {
 		// forward 5 sec
+		printf("go\n");
 		mc.simple_go();
 		usleep(5000000);
 
 		// stop 2 sec
+		printf("stop\n");
 		mc.simple_stop();
 		usleep(2000000);
 
 		// back 5 sec
+		printf("back\n");
 		mc.simple_bkwd();
 		usleep(5000000);
 
 		// stop 2 sec
+		printf("stop\n");
 		mc.simple_stop();
 		usleep(2000000);
 	}
