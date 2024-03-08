@@ -13,7 +13,7 @@ Robot::Robot(Camera & camera)
     : camera(camera){
     
 	initialize_log();
-	readEncoderVals();
+	resetEncoderVals();
 	i2c_bus_file = open_i2c();
 	
 	// TODO: pid terms need to be determined experimentally
@@ -58,6 +58,11 @@ Point3D Robot::getArmPosition() {
 	return armPosition;
 }
 
+void Robot::resetEncoderVals(){
+	uint8_t clear_command = 1;
+	write_i2c(i2c_bus_file, MCU_ENCODER, &clear_command, 1);
+}
+
 void Robot::readEncoderVals(){
 	read_i2c(i2c_bus_file, MCU_ENCODER, (uint8_t * )encoderVal, 14);
 	std::string encoderString = std::string("");
@@ -98,9 +103,9 @@ void Robot::updateRobotOrientation() {
 }
 
 void Robot::updateArmPosition() {
-	armPosition[0] = servoArm[0].getElapsedDistance();
-	armPosition[1] = servoArm[1].getElapsedDistance();
-	armPosition[2] = servoArm[2].getElapsedDistance();
+	armPosition[0] += servoArm[0].getElapsedDistance();
+	armPosition[1] += servoArm[1].getElapsedDistance();
+	armPosition[2] += servoArm[2].getElapsedDistance();
 	debug_log(std::string("Updated Arm Position - x:") 
 	+ std::to_string(armPosition.x) 
 	+ std::string(", y: ")
@@ -119,6 +124,7 @@ double Robot::calculate_wheel_speed(double v, double w) {
 void Robot::driveRobotForward(Point2D goal) {
 	double angular_error_gain = 2;
 	robotPosition = Point2D(0, 0);
+	resetEncoderVals();
 	drive[frontLeft].resetElapsedDistance();
 	drive[backLeft].resetElapsedDistance();
 	drive[frontRight].resetElapsedDistance();
@@ -236,6 +242,9 @@ void Robot::moveServoArm(ServoMotor motor, double pos) {
 	} else {
 		servoArm[motor].simple_bkwd();
 	}
+
+	resetEncoderVals();
+	servoArm[motor].resetElapsedDistance();
 
 	while (delta < ARM_TOL) {
 		readEncoderVals();

@@ -64,6 +64,7 @@ public:
 	void pollinate();
 	std::vector<Point3D> scan();
 	std::vector<Point3D> findFlowers();
+	void resetEncoderVals();
 	void readEncoderVals();
 	void readLimitVals();
 	void pollinate_row(int n = 1);
