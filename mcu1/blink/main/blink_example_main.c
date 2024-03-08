@@ -347,18 +347,22 @@ void init_stepper_motor() {
 void test_microstep_drive_i2c() {
     configure_led();
     // red means stop, green go, blue back
+    led_set_color(0, 0, 0);
+    usleep(5000000);
     led_set_color(50, 0, 50);
     init_i2c_jetson();
+    printf("done init\n");
 
     uint8_t rx_data[DATA_LENGTH + 1] = {0};
     while(true){
         // wait until jetson nano reads from mcu1 over i2c 
         // based on jetson nano command, do different tasks
         i2c_slave_read_buffer(I2C_HOST, rx_data, DATA_LENGTH + 1, portMAX_DELAY);
+        led_set_color(0, 50, 50);
         printf("read from jetson: %d %d %d %d", rx_data[1], rx_data[2], rx_data[3], rx_data[4]); 
         switch (rx_data[ADDR_INDEX]) {
             case DRIVE_MC: 
-                print("incorrect command requesting drive mc!\n");
+                printf("incorrect command requesting drive mc!\n");
             break;
             case SERVO_MC:
                 printf("servo_mc"); 
@@ -383,7 +387,7 @@ void test_microstep_drive_i2c() {
                     }
                 }
                 else {
-                    print("incorrect command requesting not x step!\n");
+                    printf("incorrect command requesting not x step!\n");
                 }
             break;
         }
@@ -502,5 +506,6 @@ void final_main() {
 
 void app_main(void)
 {   
-    test_jetson_ctrl();
+    init_boost();
+    // test_microstep_drive_i2c();
 }
