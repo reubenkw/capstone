@@ -53,12 +53,12 @@ void write_i2c(int file, uint8_t mcu_addr, uint8_t * data, uint8_t len){
         dataString = dataString + std::to_string(data[i]) + std::string(", ");
     }
     if (ret < 0) {
-        log(  std::string("ERROR: failed to write to i2c bus address:" + mcu_addr) 
-            + std::string("cmd: " + WRITE) 
+        log( std::string("ERROR: failed to write to i2c bus address: ") + std::to_string(mcu_addr) 
+            + std::string("cmd: ") + std::to_string(WRITE) 
             + std::string("data: ") + dataString);
     } else {
-        debug_log(  std::string("INFO: wrote to i2c bus address:" + mcu_addr) 
-            + std::string("cmd: " + WRITE) 
+        debug_log( std::string("ERROR: failed to write to i2c bus address: ") + std::to_string(mcu_addr) 
+            + std::string("cmd: ") + std::to_string(WRITE) 
             + std::string("data: ") + dataString);
     }
 }
