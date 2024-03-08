@@ -3,7 +3,7 @@
 
 #include <cstdint>
 
-#define MCU_1 0x01
+#define MCU_1 0x42
 #define MCU_ENCODER 0x10
 
 #define DRIVE_MC 0x1
