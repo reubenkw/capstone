@@ -215,21 +215,14 @@ void Robot::resetServoArm(ServoMotor motor) {
 	// use minimum limit switch for xy and max for z
 	std::optional<LimitSwitch> limit = determineLimitSwitch(motor, (motor == z));
 
-	// negative for xy, positive for z
-	double speed = IDEAL_SPEED_ARM;
-	if (motor == z) {
-		speed = -speed;
-	}
-	servoArm[motor].setIdealSpeed(speed);
+	servoArm[motor].simple_bkwd();
 
-	while (!getLimitVal(*limit)) {
-		// controller update
-		servoArm[motor].update(encoderVal[4 + motor]);
-		updateArmPosition();
-	}
-	servoArm[motor].setIdealSpeed(0);
+	while (!getLimitVal(*limit)) {}
+
+	servoArm[motor].simple_stop();
 	armPosition[motor] = 0;
 	servoArm[motor].resetElapsedDistance();
+
 	debug_log(std::string("Arm Reached Goal"));
 }
 
@@ -238,12 +231,11 @@ void Robot::moveServoArm(ServoMotor motor, double pos) {
 	
 	std::optional<LimitSwitch> limit = determineLimitSwitch(motor, (delta > 0));
 
-	// negative for xy, positive for z
-	double speed = IDEAL_SPEED_ARM;
-	if (motor == z) {
-		speed = -speed;
+	if (delta > 0) {
+		servoArm[motor].simple_go();
+	} else {
+		servoArm[motor].simple_bkwd();
 	}
-
 
 	while (delta < ARM_TOL) {
 		readEncoderVals();
@@ -255,11 +247,10 @@ void Robot::moveServoArm(ServoMotor motor, double pos) {
 		}
 
 		// 4 bc 4 drive motors
-		servoArm[motor].update(encoderVal[4 + motor]);
 		updateArmPosition();
 		delta = pos - armPosition[motor];
 	}
-	servoArm[motor].setIdealSpeed(0);
+	servoArm[motor].simple_stop();
 }
 
 void Robot::pollinate() { 

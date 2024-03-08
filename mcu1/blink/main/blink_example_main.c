@@ -296,7 +296,7 @@ void init_stepper_motor() {
 // HB6_HS_EN HB6_LS_EN HB5_HS_EN HB5_LS_EN 
 // 0110
 
-void stepper_rotation(uint8_t OP_CTRL){
+void stepper_fwd_rotation(uint8_t OP_CTRL){
     // A off, B off: 01100110
     uint8_t op_ctrl_val = 0b01100110;
     write_spi(spi_mc_stepper_handle, OP_CTRL, &op_ctrl_val);
@@ -318,6 +318,28 @@ void stepper_rotation(uint8_t OP_CTRL){
     usleep(1000);
 }
 
+void stepper_bkwd_rotation(uint8_t OP_CTRL){
+    // A off, B off: 01100110
+    uint8_t op_ctrl_val = 0b01100110;
+    write_spi(spi_mc_stepper_handle, OP_CTRL, &op_ctrl_val);
+    usleep(1000);
+
+    // A off, B on: 01101001
+    op_ctrl_val = 0b01101001;
+    write_spi(spi_mc_stepper_handle, OP_CTRL, &op_ctrl_val);
+    usleep(1000);
+
+    // A on, B on: 10011001
+    op_ctrl_val = 0b10011001;
+    write_spi(spi_mc_stepper_handle, OP_CTRL, &op_ctrl_val);
+    usleep(1000);
+
+    // A on, B off: 10010110
+    op_ctrl_val = 0b10010110;
+    write_spi(spi_mc_stepper_handle, OP_CTRL, &op_ctrl_val);
+    usleep(1000);
+}
+
 void test_stepper() {
     init_boost();
     initialize_spi();
@@ -329,7 +351,7 @@ void test_stepper() {
     write_spi(spi_mc_stepper_handle, PWM_CTRL_2, &pwm_ctrl_2_val);
     
     while(true) {
-        stepper_rotation(OP_CTRL_3);
+        stepper_fwd_rotation(OP_CTRL_3);
     }
 }
 
@@ -421,19 +443,33 @@ void final_main() {
             case SERVO_MC:
                 printf("servo_mc"); 
                 uint32_t delay = 10;
-                if ((rx_data[CMD_INDEX] & 1) == GO_CMD){
+                if (rx_data[STP_X] == GO_CMD){
                     while(i2c_slave_read_buffer(I2C_HOST, rx_data, DATA_LENGTH + 1, delay) == 0){
-                        stepper_rotation(OP_CTRL_1);
+                        stepper_fwd_rotation(OP_CTRL_1);
                     }
-                } else if (((rx_data[CMD_INDEX] & 0b10) >> 1) == GO_CMD) {
+                } else if (rx_data[STP_X] == BKWD_CMD) {
                     while(i2c_slave_read_buffer(I2C_HOST, rx_data, DATA_LENGTH + 1, delay) == 0){
-                        stepper_rotation(OP_CTRL_2);
+                        stepper_bkwd_rotation(OP_CTRL_1);
                     }
-                } else if (((rx_data[CMD_INDEX] & 0b100) >> 1) == GO_CMD) {
+                } 
+                else if (rx_data[STP_Y] == GO_CMD){
                     while(i2c_slave_read_buffer(I2C_HOST, rx_data, DATA_LENGTH + 1, delay) == 0){
-                        stepper_rotation(OP_CTRL_3);
+                        stepper_fwd_rotation(OP_CTRL_2);
                     }
-                }
+                } else if (rx_data[STP_Y] == BKWD_CMD) {
+                    while(i2c_slave_read_buffer(I2C_HOST, rx_data, DATA_LENGTH + 1, delay) == 0){
+                        stepper_bkwd_rotation(OP_CTRL_2);
+                    }
+                } 
+                 else if (rx_data[STP_Z] == GO_CMD){
+                    while(i2c_slave_read_buffer(I2C_HOST, rx_data, DATA_LENGTH + 1, delay) == 0){
+                        stepper_fwd_rotation(OP_CTRL_3);
+                    }
+                } else if (rx_data[STP_Z] == BKWD_CMD) {
+                    while(i2c_slave_read_buffer(I2C_HOST, rx_data, DATA_LENGTH + 1, delay) == 0){
+                        stepper_bkwd_rotation(OP_CTRL_3);
+                    }
+                } 
             break;
         }
         uint8_t limitVal = 0;

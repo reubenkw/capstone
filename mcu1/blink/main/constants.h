@@ -7,8 +7,13 @@
 #define REG_INDEX 3
 #define DATA_INDEX 4 
 
+#define STP_X 2
+#define STP_Y 3
+#define STP_Z 4
+
+#define STOP_CMD 0
 #define GO_CMD 1
-#define STOP_CMD 1
+#define BKWD_CMD 2
 
 #define WRITE_CMD 1
 #define READ_CMD 2

@@ -3,8 +3,8 @@
 #include <math.h>
 
 MotorController::MotorController(double pterm, double iterm, double dterm, double integratorClamp, 
-		double enc_2_dist, double idealSpeed, int mc, int reg, int encoderVal, int file) :
-	ctrller(pterm, iterm, dterm, integratorClamp), idealSpeed(idealSpeed), enc_2_dist(enc_2_dist), mc(mc), reg(reg), lastEncoderVal(encoderVal), file(file){
+		double enc_2_dist, double idealSpeed, int mc, int motor, int encoderVal, int file) :
+	ctrller(pterm, iterm, dterm, integratorClamp), idealSpeed(idealSpeed), enc_2_dist(enc_2_dist), mc(mc), motor(motor), lastEncoderVal(encoderVal), file(file){
 	lastUpdateTime = std::chrono::system_clock::now();
 	elapsedDistance = 0;
 }
@@ -35,7 +35,7 @@ void MotorController::update(uint16_t encoderVal) {
 	} else {
 		saturatedMotorSignal = motorSignal;
 	}
-	uint8_t data[4] = {mc, reg, WRITE_CMD, (uint8_t) saturatedMotorSignal};
+	uint8_t data[4] = {mc, motor, WRITE_CMD, (uint8_t) saturatedMotorSignal};
 	write_i2c(file, MCU_1, data, 4);
 }
 
@@ -45,4 +45,25 @@ void MotorController::resetElapsedDistance() {
 
 double MotorController::getElapsedDistance() {
 	return elapsedDistance;
+}
+
+void MotorController::simple_go(){
+	uint8_t data[4] = {0};
+	data[0] = mc;
+	data[1+motor] = GO;
+	write_i2c(file, MCU_1, data, 4);
+}
+
+void MotorController::simple_bkwd(){
+	uint8_t data[4] = {0};
+	data[0] = mc;
+	data[1+motor] = STOP;
+	write_i2c(file, MCU_1, data, 4);
+}
+
+void MotorController::simple_stop(){
+	uint8_t data[4] = {0};
+	data[0] = mc;
+	data[1+motor] = BKWD;
+	write_i2c(file, MCU_1, data, 4);
 }
