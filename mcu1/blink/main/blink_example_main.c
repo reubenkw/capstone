@@ -100,9 +100,9 @@ void init_spi() {
         .command_bits = 2, 
         .address_bits = 6, 
         .mode = 1,
-        .clock_speed_hz = (20 * 1000 * 1000), 
+        .clock_speed_hz = (5 * 1000 * 1000), 
         .queue_size = 1,
-        .spics_io_num = 18
+        .spics_io_num = 48
     };
 
     // Add DC motor controller as spi device
@@ -153,11 +153,11 @@ void clear_errors(){
     error[SPI_RX_ERROR] = 0;
 }
 
-void init_i2c_jetson() {
+void git init_i2c_jetson() {
     i2c_config_t i2c_jetson_config = {
         .mode = I2C_MODE_SLAVE, 
-        .sda_io_num = 6, 
-        .scl_io_num = 5, 
+        .sda_io_num = 10, 
+        .scl_io_num = 9, 
         .sda_pullup_en = true, 
         .scl_pullup_en = true, 
         .slave = {
@@ -396,7 +396,7 @@ void test_microstep_drive_i2c() {
     }
 }
 
-#define MC_CLEAR_FAULT 0x7
+#define CONFIG_CTRL 0x7
 
 void test_stepper() {
     init_boost();
@@ -404,17 +404,35 @@ void test_stepper() {
     initialize_led();
 
     gpio_set_level(LED_1, 1);
+    usleep(10000000);
 
-    uint8_t reg = read_spi(spi_mc_stepper_handle, MC_CLEAR_FAULT);
+    read_spi(spi_mc_stepper_handle, 0);
 
-    // uint8_t pwm_ctrl_2_val = 0b11110000;    // PWM_CH4_DIS, half bridges 9-10 set to chopping
-    // write_spi(spi_mc_stepper_handle, PWM_CTRL_2, pwm_ctrl_2_val);
-    write_spi(spi_mc_stepper_handle, MC_CLEAR_FAULT, reg | 1);
+    uint8_t reg = read_spi(spi_mc_stepper_handle, CONFIG_CTRL);
+    write_spi(spi_mc_stepper_handle, CONFIG_CTRL, reg | 0b10);
 
-    while(true) {
-        // stepper_fwd_rotation(OP_CTRL_2);
-        read_spi(spi_mc_stepper_handle, 0);
+    reg = read_spi(spi_mc_stepper_handle, CONFIG_CTRL);
+    write_spi(spi_mc_stepper_handle, CONFIG_CTRL, reg | 0b01);
+
+    read_spi(spi_mc_stepper_handle, 0);
+
+    gpio_config_t io_conf = {
+        .intr_type = GPIO_INTR_DISABLE,
+        .mode = GPIO_MODE_INPUT,
+        .pin_bit_mask = (1<<5),
+        .pull_down_en = 0,
+        .pull_up_en = 1,
+    };
+    gpio_config(&io_conf);
+
+
+    while(true){
+        if (gpio_get_level(5) == 0){
+            printf("fault");
+        }
+        
     }
+
 }
 
 void test_jetson_ctrl() {
@@ -514,5 +532,5 @@ void final_main() {
 
 void app_main(void)
 {   
-    test_stepper();
+    init_i2c_jetson();
 }
