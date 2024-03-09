@@ -153,7 +153,7 @@ void clear_errors(){
     error[SPI_RX_ERROR] = 0;
 }
 
-void git init_i2c_jetson() {
+void init_i2c_jetson() {
     i2c_config_t i2c_jetson_config = {
         .mode = I2C_MODE_SLAVE, 
         .sda_io_num = 10, 
@@ -194,25 +194,25 @@ void stepper_fwd_rotation(uint8_t OP_CTRL){
     uint8_t op_ctrl_val = 0b01100110;
     write_spi(spi_mc_stepper_handle, OP_CTRL, op_ctrl_val);
     usleep(1000);
-    read_spi(spi_mc_stepper_handle, OP_CTRL);
+    // read_spi(spi_mc_stepper_handle, OP_CTRL);
 
     // A on, B off: 10010110
     op_ctrl_val = 0b10010110;
     write_spi(spi_mc_stepper_handle, OP_CTRL, op_ctrl_val);
     usleep(1000);
-    read_spi(spi_mc_stepper_handle, OP_CTRL);
+    // read_spi(spi_mc_stepper_handle, OP_CTRL);
 
     // A on, B on: 10011001
     op_ctrl_val = 0b10011001;
     write_spi(spi_mc_stepper_handle, OP_CTRL, op_ctrl_val);
     usleep(1000);
-    read_spi(spi_mc_stepper_handle, OP_CTRL);
+    // read_spi(spi_mc_stepper_handle, OP_CTRL);
 
     // A off, B on: 01101001
     op_ctrl_val = 0b01101001;
     write_spi(spi_mc_stepper_handle, OP_CTRL, op_ctrl_val);
     usleep(1000);
-    read_spi(spi_mc_stepper_handle, OP_CTRL);
+    // read_spi(spi_mc_stepper_handle, OP_CTRL);
 }
 
 void stepper_bkwd_rotation(uint8_t OP_CTRL){
@@ -454,6 +454,46 @@ void test_jetson_ctrl() {
     }
 }
 
+void test_i2c_drive_interface() {
+    init_i2c_jetson();
+    printf("done init\n");
+
+    uint8_t rx_data[DATA_LENGTH + 1] = {0};
+    while(true){
+        // wait until jetson nano reads from mcu1 over i2c 
+        // based on jetson nano command, do different tasks
+        printf("waiting for command. willing to wait 7 days.\n");
+        i2c_slave_read_buffer(I2C_HOST, rx_data, DATA_LENGTH + 1, portMAX_DELAY);
+        led_set_color(0, 50, 50);
+        printf("read from jetson: %d %d %d %d \n", rx_data[1], rx_data[2], rx_data[3], rx_data[4]); 
+        switch (rx_data[ADDR_INDEX]) {
+            case DRIVE_MC: 
+                printf("incorrect command requesting drive mc!\n");
+            break;
+            case SERVO_MC:
+                printf("servo_mc\n"); 
+                uint32_t delay = 10;
+                if (rx_data[STP_X] == GO_CMD){
+                    printf("GO_CMD recieved.\n"); 
+                    while(i2c_slave_read_buffer(I2C_HOST, rx_data, DATA_LENGTH + 1, delay) == 0){
+                        printf("Going forward...\n"); 
+                        usleep(100000);
+                    }
+                } else if (rx_data[STP_X] == BKWD_CMD) {
+                    printf("BKWD_CMD recieved.\n");
+                    while(i2c_slave_read_buffer(I2C_HOST, rx_data, DATA_LENGTH + 1, delay) == 0){
+                        printf("Going backward...\n"); 
+                        usleep(100000);
+                    }
+                }
+                else {
+                    printf("incorrect command requesting not x step!\n");
+                }
+            break;
+        }
+    }
+}
+
 void jetson_i2c_execute_command(uint8_t rx_data[]) {
     switch (rx_data[ADDR_INDEX]) {
         case DRIVE_MC: 
@@ -532,5 +572,5 @@ void final_main() {
 
 void app_main(void)
 {   
-    init_i2c_jetson();
+    test_i2c_drive_interface();
 }
