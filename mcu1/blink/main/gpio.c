@@ -61,3 +61,25 @@ void init_limit_gpio() {
     //configure GPIO with the given settings
     gpio_config(&io_conf);
 }
+
+void test_limit() {
+    init_limit_gpio();
+
+    while(true){
+        if (gpio_get_level(LIMIT_X_MIN)){
+            printf("xmin\n");
+        }
+        if (gpio_get_level(LIMIT_X_MAX)){
+            printf("xmax\n");
+        }
+        if (gpio_get_level(LIMIT_Y_MIN)){
+            printf("ymin\n");
+        }
+        if (gpio_get_level(LIMIT_Y_MAX)){
+            printf("ymax\n");
+        }
+        if (gpio_get_level(LIMIT_Z)){
+            printf("z\n");
+        }
+    }
+}

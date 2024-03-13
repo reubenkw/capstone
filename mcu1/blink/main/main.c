@@ -17,6 +17,7 @@
 #include "mc_drive.h"
 #include "gpio.h"
 #include "t_integration.h"
+#include "encoder.h"
 
 void final_main() {
 
@@ -56,8 +57,6 @@ void final_main() {
 
 void app_main(void)
 {
-    test_i2c_drive_interface();
-    init_spi();
-    init_i2c_jetson();
-    init_dev_led();
+    printf("starting main\n");
+    init_encoder();
 }

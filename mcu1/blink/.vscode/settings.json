@@ -26,7 +26,9 @@
     "t_integration.h": "c",
     "mc_drive.h": "c",
     "spi.h": "c",
-    "types.h": "c"
+    "types.h": "c",
+    "encoder.h": "c",
+    "pulse_cnt.h": "c"
   },
   "C_Cpp.errorSquiggles": "disabled"
 }
