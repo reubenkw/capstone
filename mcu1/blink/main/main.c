@@ -15,7 +15,7 @@
 #include "i2c.h"
 #include "spi.h"
 #include "mc_drive.h"
-#include "gpio.h"
+#include "mcu_gpio.h"
 #include "t_integration.h"
 #include "encoder.h"
 

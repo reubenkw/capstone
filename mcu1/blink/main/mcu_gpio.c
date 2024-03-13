@@ -1,4 +1,4 @@
-#include "gpio.h"
+#include "mcu_gpio.h"
 
 uint8_t limit_pins[5] = {LIMIT_X_MIN, LIMIT_X_MAX, LIMIT_Y_MIN, LIMIT_Y_MAX, LIMIT_Z};
 static led_strip_handle_t led_strip;

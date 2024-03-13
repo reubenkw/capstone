@@ -28,7 +28,8 @@
     "spi.h": "c",
     "types.h": "c",
     "encoder.h": "c",
-    "pulse_cnt.h": "c"
+    "pulse_cnt.h": "c",
+    "mcu_gpio.h": "c"
   },
   "C_Cpp.errorSquiggles": "disabled"
 }

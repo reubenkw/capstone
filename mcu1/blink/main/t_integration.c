@@ -1,8 +1,9 @@
 #include <unistd.h>
+#include "driver/gpio.h"
 
 #include "t_integration.h"
 #include "i2c.h"
-#include "gpio.h"
+#include "mcu_gpio.h"
 #include "spi.h"
 
 // NOTE: integration tests should be standalone and perform all required initialization

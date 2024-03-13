@@ -1,5 +1,7 @@
+#include "driver/gpio.h"
+
 #include "spi.h"
-#include "gpio.h"
+#include "mcu_gpio.h"
 
 spi_device_handle_t spi_mc_dc_handle;
 

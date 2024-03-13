@@ -14,6 +14,8 @@
 #define DRIVE_MC_ERR 0x42
 #define SERVO_MC_ERR 0x24
 
+#define FAULT_DC_GPIO 4
+
 // stepper motors only uses these registers to disabl PWM
 #define PWM_CTRL_1 0x0B // HB8_PWM HB7_PWM HB6_PWM HB5_PWM HB4_PWM HB3_PWM HB2_PWM HB1_PWM
 #define PWM_CTRL_2 0x0C // PWM_CH4_DIS PWM_CH3_DIS PWM_CH2_DIS PWM_CH1_DIS HB12_PWM HB11_PWM HB10_PWM HB9_PWM 
@@ -24,6 +26,10 @@
 // HB8_HS_EN HB8_LS_EN HB7_HS_EN HB7_LS_EN
 // HB6_HS_EN HB6_LS_EN HB5_HS_EN HB5_LS_EN
 
+#define PWM_DUTY_CTRL_1 0x13
+#define CONFIG_CTRL 0x7
+
+void config_motor_fault();
 void drive_full_forward();
 
 #endif // h
