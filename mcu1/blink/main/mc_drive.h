@@ -1,22 +1,5 @@
-#define DRIVE_MC 0x1    // must be same as comm.h
-#define SERVO_MC 0x2    // must be same as comm.h
-#define LED 0x5
-
-#define ADDR_INDEX 1
-#define CMD_INDEX 2
-#define REG_INDEX 3
-#define DATA_INDEX 4 
-
-#define STP_X 2
-#define STP_Y 3
-#define STP_Z 4
-
-#define STOP_CMD 0
-#define GO_CMD 1
-#define BKWD_CMD 2
-
-#define WRITE_CMD 1
-#define READ_CMD 2
+#ifndef MC_DRIVE_H
+#define MC_DRIVE_H
 
 #define DRIVE_MC_ADDR 0x1000
 #define SERVO_MC_ADDR 0x2000
@@ -27,18 +10,9 @@
 #define PWM_4 0x16
 #define MC_STAT_REG 0x00
 
-#define STAT_OK 0x0
-
-#define SPI_TX_ERR 0x70
-#define SPI_RX_ERR 0x80
-
 #define MC_STAT_OK 0x0
 #define DRIVE_MC_ERR 0x42
 #define SERVO_MC_ERR 0x24
-
-// buck and boost
-#define GPIO_BUCK 21
-#define GPIO_BOOST 14
 
 // stepper motors only uses these registers to disabl PWM
 #define PWM_CTRL_1 0x0B // HB8_PWM HB7_PWM HB6_PWM HB5_PWM HB4_PWM HB3_PWM HB2_PWM HB1_PWM
@@ -49,3 +23,7 @@
 #define OP_CTRL_3 0x0A
 // HB8_HS_EN HB8_LS_EN HB7_HS_EN HB7_LS_EN
 // HB6_HS_EN HB6_LS_EN HB5_HS_EN HB5_LS_EN
+
+void drive_full_forward();
+
+#endif // h
