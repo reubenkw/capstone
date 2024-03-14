@@ -12,7 +12,7 @@ extern "C" {
 #include <stdio.h>
 
 int open_i2c() {
-    int file = open("/dev/i2c-1", O_RDWR);
+    int file = open("/dev/i2c-0", O_RDWR);
     if (file < 0) {
         log(std::string("ERROR: failed to open i2c bus"));
     }

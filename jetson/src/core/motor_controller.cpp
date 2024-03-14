@@ -57,13 +57,13 @@ void MotorController::simple_go(){
 void MotorController::simple_bkwd(){
 	uint8_t data[4] = {0};
 	data[0] = mc;
-	data[1+motor] = STOP;
+	data[1+motor] = BKWD;
 	write_i2c(file, MCU_1, data, 4);
 }
 
 void MotorController::simple_stop(){
 	uint8_t data[4] = {0};
 	data[0] = mc;
-	data[1+motor] = BKWD;
+	data[1+motor] = STOP;
 	write_i2c(file, MCU_1, data, 4);
 }
