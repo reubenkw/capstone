@@ -6,6 +6,9 @@
 void app_main(void)
 {
     printf("starting main\n");
-    test_drive_alternating();
+    // test_drive_alternating();
+    test_limit();
+    test_all_stepper();
+    test_z_stepper();
     printf("done main\n");
 }

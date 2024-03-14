@@ -14,4 +14,6 @@
     (1ULL<<GPIO_DIR_X) | (1ULL<<GPIO_PULSE_X)  \
 )
 
+void init_stepper_mc();
+
 #endif // h
