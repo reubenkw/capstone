@@ -1,12 +1,49 @@
 #include <unistd.h>
 #include "driver/gpio.h"
+#include <freertos/FreeRTOS.h>
 
-#include "t_integration.h"
+#include "mcu_m.h"
 #include "i2c.h"
 #include "mcu_gpio.h"
 #include "spi.h"
 
 // NOTE: integration tests should be standalone and perform all required initialization
+
+void main_mcu_m() {
+
+    initialize_led();
+    gpio_set_level(LED_1, 1);
+
+    // Initialize spi bus as master
+    init_boost();
+    init_spi();
+    
+    // Initialize i2c bus as slave to listen to jetson nano
+    init_limit_gpio();
+    init_i2c_jetson();
+
+    printf("mcu initialized"); 
+    gpio_set_level(LED_2, 1);
+
+    // ignore initial byte
+    uint8_t rx_data[I2C_DATA_LENGTH + 1] = {0};
+    while(true) {
+        // wait until jetson nano reads from mcu1 over i2c 
+        // based on jetson nano command, do different tasks
+        i2c_slave_read_buffer(I2C_HOST, rx_data, I2C_DATA_LENGTH + 1, portMAX_DELAY);
+        printf("read from jetson: %d %d %d %d", rx_data[1], rx_data[2], rx_data[3], rx_data[4]);
+        
+        uint8_t limitVal = 0;
+        for(uint8_t i = 0; i < sizeof(limit_pins)/sizeof(limit_pins[0]); i++){
+            uint8_t level = gpio_get_level(limit_pins[i]);
+            limitVal = limitVal | (level << i);
+        }
+        // need to pad an extra zero
+        uint8_t tx_data[2] = {limitVal, 0x0};
+        printf("jetson write: %d", limitVal); 
+        i2c_slave_write_buffer(I2C_HOST, tx_data, 2, portMAX_DELAY);
+    }
+}
 
 void test_i2c_drive_interface() {
     init_i2c_jetson();
@@ -62,59 +99,6 @@ void test_jetson_ctrl() {
         switch (rx_data[ADDR_INDEX]) {
             case 0x05: // expected data
                 dev_led_set_color(0, 50, 0);
-            break;
-        }
-    }
-}
-
-#define MSTEP_DIR 17
-#define MSTEP_PULSE 18
-
-void test_microstep_drive_i2c() {
-    init_dev_led();
-    // red means stop, green go, blue back
-    dev_led_set_color(0, 0, 0);
-    usleep(5000000);
-    dev_led_set_color(50, 0, 50);
-    init_i2c_jetson();
-    printf("done init\n");
-
-    uint8_t rx_data[I2C_DATA_LENGTH + 1] = {0};
-    while(true){
-        // wait until jetson nano reads from mcu1 over i2c 
-        // based on jetson nano command, do different tasks
-        i2c_slave_read_buffer(I2C_HOST, rx_data, I2C_DATA_LENGTH + 1, portMAX_DELAY);
-        dev_led_set_color(0, 50, 50);
-        printf("read from jetson: %d %d %d %d", rx_data[1], rx_data[2], rx_data[3], rx_data[4]); 
-        switch (rx_data[ADDR_INDEX]) {
-            case DRIVE_MC: 
-                printf("incorrect command requesting drive mc!\n");
-            break;
-            case SERVO_MC:
-                printf("servo_mc"); 
-                uint32_t delay = 10;
-                if (rx_data[STP_X] == GO_CMD){
-                    dev_led_set_color(0, 50, 0);
-                    gpio_set_level(MSTEP_DIR, 1);
-                    while(i2c_slave_read_buffer(I2C_HOST, rx_data, I2C_DATA_LENGTH + 1, delay) == 0){
-                        gpio_set_level(MSTEP_PULSE, 1);
-                        usleep(1000);
-                        gpio_set_level(MSTEP_PULSE, 0);
-                        usleep(1000);
-                    }
-                } else if (rx_data[STP_X] == BKWD_CMD) {
-                    dev_led_set_color(0, 0, 50);
-                    gpio_set_level(MSTEP_DIR, 0);
-                    while(i2c_slave_read_buffer(I2C_HOST, rx_data, I2C_DATA_LENGTH + 1, delay) == 0){
-                        gpio_set_level(MSTEP_PULSE, 1);
-                        usleep(1000);
-                        gpio_set_level(MSTEP_PULSE, 0);
-                        usleep(1000);
-                    }
-                }
-                else {
-                    printf("incorrect command requesting not x step!\n");
-                }
             break;
         }
     }

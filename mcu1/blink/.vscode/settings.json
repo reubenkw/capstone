@@ -29,7 +29,9 @@
     "types.h": "c",
     "encoder.h": "c",
     "pulse_cnt.h": "c",
-    "mcu_gpio.h": "c"
+    "mcu_gpio.h": "c",
+    "mcu_m.h": "c",
+    "stdio.h": "c"
   },
   "C_Cpp.errorSquiggles": "disabled"
 }

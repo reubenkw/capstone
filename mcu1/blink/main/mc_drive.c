@@ -45,6 +45,10 @@ void init_dc_mc() {
 // negative: backwards, 0: none, positive: forwards
 // motors in order: 1, 2, 3, 4
 void set_wheel_directions(int fl, int fr, int bl, int br) {
+    // 0b01100000;  front right fwd
+    // 0b0000110;   front left bkwd
+    // 0b01100000;  back right fwd
+    // 0b01100000;  back right bkwd
     uint8_t op_ctrl_1_val = 0;
     uint8_t op_ctrl_2_val = 0;
 
@@ -77,18 +81,12 @@ void set_wheel_directions(int fl, int fr, int bl, int br) {
 }
 
 void drive_full_forward() {
-    // uint8_t op_ctrl_val = 0b01100000; // front right fwd
-    // uint8_t op_ctrl_val = 0b0000110; // front left bkwd
-    // uint8_t op_ctrl_val = 0b01100000; // back right fwd
-    // uint8_t op_ctrl_val = 0b01100000; // back right bkwd
-
-    write_spi(spi_mc_dc_handle, OP_CTRL_1, 0b01100110);
-    write_spi(spi_mc_dc_handle, OP_CTRL_2, 0b01100110);
+    set_wheel_directions(1, 1, 1, 1);
 
     write_spi(spi_mc_dc_handle, PWM_DUTY_CTRL_1, 0xFF);
     usleep(1000000);
     int count = 0xFF;
-    while(count > 10){
+    while(count > 10) {
         usleep(1000);
         write_spi(spi_mc_dc_handle, PWM_DUTY_CTRL_1, count);
         if (gpio_get_level(FAULT_DC_GPIO) == 0){
