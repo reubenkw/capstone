@@ -78,7 +78,7 @@ void test_i2c_read() {
 	int i2c_bus_file = open_i2c();
 	log(std::string("INFO: bus file: ") + std::to_string(i2c_bus_file));
 	uint8_t data[4] = {0, 0, 0, 0};
-	for (int i = 0; i < 10; i++) {
+	while(true) {
 		read_i2c(i2c_bus_file, 0x42, (uint8_t * )data, 4);
 	}
 }
@@ -199,6 +199,6 @@ int main(int argc, char** argv)
 	// image_processing_test();
 	// test_clustering();
 	// test_i2c_read();
-	test_mc();
+	test_i2c_read();
 	return 0;
 }
