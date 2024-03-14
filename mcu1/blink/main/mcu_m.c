@@ -6,11 +6,11 @@
 #include "i2c.h"
 #include "mcu_gpio.h"
 #include "spi.h"
+#include "mc_drive.h"
 
 // NOTE: integration tests should be standalone and perform all required initialization
 
 void main_mcu_m() {
-
     initialize_led();
     gpio_set_level(LED_1, 1);
 
@@ -19,7 +19,6 @@ void main_mcu_m() {
     init_spi();
     
     // Initialize i2c bus as slave to listen to jetson nano
-    init_limit_gpio();
     init_i2c_jetson();
 
     printf("mcu initialized"); 
@@ -43,6 +42,15 @@ void main_mcu_m() {
         printf("jetson write: %d", limitVal); 
         i2c_slave_write_buffer(I2C_HOST, tx_data, 2, portMAX_DELAY);
     }
+}
+
+void test_drive_alternating() {
+    init_boost();
+    init_spi();
+
+    init_dc_mc();
+
+    drive_alternate_direction();
 }
 
 void test_i2c_drive_interface() {

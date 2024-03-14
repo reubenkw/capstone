@@ -6,6 +6,6 @@
 void app_main(void)
 {
     printf("starting main\n");
-    main_mcu_m();
+    test_drive_alternating();
     printf("done main\n");
 }

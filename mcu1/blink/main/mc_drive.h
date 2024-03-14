@@ -29,7 +29,8 @@
 #define PWM_DUTY_CTRL_1 0x13
 #define CONFIG_CTRL 0x7
 
-void config_motor_fault();
+void init_dc_mc();
 void drive_full_forward();
+void drive_alternate_direction();
 
 #endif // h
