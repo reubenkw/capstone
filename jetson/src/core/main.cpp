@@ -79,7 +79,9 @@ void test_i2c_read() {
 	log(std::string("INFO: bus file: ") + std::to_string(i2c_bus_file));
 	uint8_t data[4] = {0, 0, 0, 0};
 	while(true) {
-		read_i2c(i2c_bus_file, 0x42, (uint8_t * )data, 4);
+		read_i2c(i2c_bus_file, 0x42, data, 4);
+		usleep(1000000);
+		printf("data: %x, %x, %x, %x\n", data[0], data[1], data[2], data[3]);
 	}
 }
 

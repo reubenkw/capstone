@@ -40,7 +40,7 @@ void read_i2c(int file, uint8_t mcu_addr, uint8_t * data, uint8_t len) {
         dataString = dataString + std::to_string(data[i]) + std::string(", ");
     }
 
-    debug_log(std::string(dataString));
+    log(std::string(dataString));
 }
 
 void write_i2c(int file, uint8_t mcu_addr, uint8_t * data, uint8_t len){
