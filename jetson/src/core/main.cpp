@@ -169,9 +169,9 @@ void test_mc() {
 void test_move_servo_arm(){
 	Camera cam;
 	Robot r(cam);
-	r.moveServoArm(x, 0.3);
-	r.moveServoArm(x, 0.15);
-	r.moveServoArm(y, 0.6);
+	r.moveServoArm(x, 0.05);
+	r.moveServoArm(x, 0.05);
+	r.moveServoArm(y, 0.7);
 }
 
 int main(int argc, char** argv)
