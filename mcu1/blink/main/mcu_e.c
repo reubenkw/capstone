@@ -11,8 +11,10 @@
 int gpio_read(uint8_t gpio_num){
     for(int i = 0; i < 10; i++){
         if (gpio_get_level(gpio_num)==0){
+            printf("0 ");
             return 0;
         }
+        printf("1\n");
     }
     return 1;
 }
@@ -20,12 +22,13 @@ int gpio_read(uint8_t gpio_num){
 
 void test_limit() {
     init_limit_gpio();
+    init_stepper_mc();
 
     while(true){
         printf("Limit Switch Val: %d, %d, %d, %d, %d\n", 
         gpio_get_level(LIMIT_X_MIN),
         gpio_get_level(LIMIT_X_MAX),
-        gpio_read(LIMIT_Y_MIN),
+        gpio_get_level(LIMIT_Y_MIN),
         gpio_get_level(LIMIT_Y_MAX),
         gpio_get_level(LIMIT_Z));
         
@@ -35,13 +38,12 @@ void test_limit() {
 
 void test_all_stepper(){
     init_limit_gpio();
-    init_boost();
     init_stepper_mc();
 
-    const uint action_delay = 5 * 1000000;
-    const uint step_delay = 10000;
+    const uint action_delay = 1 * 1000000;
+    const uint step_delay = 1000;
     const uint z_step_delay = 1000;
-    const uint z_dropdown = 2000;
+    const uint z_dropdown = 3000;
 
     // positive y
     gpio_set_level(GPIO_DIR_Y, 0); 
@@ -138,9 +140,9 @@ void test_all_stepper(){
     for(int k = 0; k < z_dropdown; k++){
         printf("z 0\n");
         gpio_set_level(GPIO_PULSE_Z, 1);
-        usleep(z_step_delay * 2);
+        usleep(z_step_delay);
         gpio_set_level(GPIO_PULSE_Z, 0);
-        usleep(z_step_delay * 2);    
+        usleep(z_step_delay);    
     }
 
     usleep(action_delay);
