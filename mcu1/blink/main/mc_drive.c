@@ -42,16 +42,17 @@ void init_dc_mc() {
     printf("done init_dc_mc");
 }
 
-void check_and_clear_fault() {
+bool check_and_clear_fault() {
     if (gpio_get_level(FAULT_DC_GPIO) == 0){
         printf("fault\n");
         read_spi(spi_mc_dc_handle, 0);
         uint8_t reg = read_spi(spi_mc_dc_handle, CONFIG_CTRL);
         write_spi(spi_mc_dc_handle, CONFIG_CTRL, reg | 0b01);
-    } else {
-        printf("no fault\n");
-        read_spi(spi_mc_dc_handle, 0);
+        return true;
     }
+    printf("no fault\n");
+    read_spi(spi_mc_dc_handle, 0);
+    return false;
 }
 
 // negative: backwards, 0: none, positive: forwards
@@ -77,9 +78,9 @@ void set_wheel_directions(int fl, int fr, int bl, int br) {
     }
 
     if (bl > 0) {
-        op_ctrl_2_val |= 0b0000110;
-    } else if (bl < 0) {
         op_ctrl_2_val |= 0b0001001;
+    } else if (bl < 0) {
+        op_ctrl_2_val |= 0b0000110;
     }
 
     if (br > 0) {
@@ -93,19 +94,22 @@ void set_wheel_directions(int fl, int fr, int bl, int br) {
 }
 
 void drive_full_forward() {
-    set_wheel_directions(1, 1, 1, 1);
-    write_spi(spi_mc_dc_handle, PWM_DUTY_CTRL_1, 0xFF);
+    set_wheel_directions(0,1,1,1);
+    write_spi(spi_mc_dc_handle, PWM_DUTY_CTRL_1, 0x7F);
 }
 
 void drive_alternate_direction() {
-    uint8_t speed = 0;
+    const int min_pwm = 20;
     const int accel_delay = 1000;
+    uint8_t speed = 0;
     while(true) {
         set_wheel_directions(1, 1, 1, 1);
         printf("speeding up forward!\n");
-        for (; speed<255; speed++) {
+        for (speed=min_pwm; speed<254; speed++) {
             write_spi(spi_mc_dc_handle, PWM_DUTY_CTRL_1, speed);
-            check_and_clear_fault();
+            if (check_and_clear_fault()) {
+                speed--;
+            }
             usleep(accel_delay);
         }
 
@@ -114,9 +118,11 @@ void drive_alternate_direction() {
         usleep(5 * 1000000);
 
         printf("slowing down!\n");
-        for (; speed>10; speed--) {
+        for (; speed>min_pwm; speed--) {
             write_spi(spi_mc_dc_handle, PWM_DUTY_CTRL_1, speed);
-            check_and_clear_fault();
+            if (check_and_clear_fault()) {
+                speed++;
+            }
             usleep(accel_delay);
         } 
         write_spi(spi_mc_dc_handle, PWM_DUTY_CTRL_1, 0);
@@ -128,9 +134,11 @@ void drive_alternate_direction() {
         // set direction to reversed
         set_wheel_directions(-1, -1, -1, -1);
         printf("speeding up backwards!\n");
-        for (; speed<255; speed++) {
+        for (speed=min_pwm; speed<254; speed++) {
             write_spi(spi_mc_dc_handle, PWM_DUTY_CTRL_1, speed);
-            check_and_clear_fault();
+            if (check_and_clear_fault()) {
+                speed--;
+            }
             usleep(accel_delay);
         }
 
@@ -139,9 +147,11 @@ void drive_alternate_direction() {
         usleep(5 * 1000000);
 
         printf("slowing down!\n");
-        for (; speed>10; speed--) {
+        for (; speed>min_pwm; speed--) {
             write_spi(spi_mc_dc_handle, PWM_DUTY_CTRL_1, speed);
-            check_and_clear_fault();
+            if (check_and_clear_fault()) {
+                speed++;
+            }
             usleep(accel_delay);
         } 
         write_spi(spi_mc_dc_handle, PWM_DUTY_CTRL_1, 0);

@@ -53,6 +53,19 @@ void test_drive_alternating() {
     drive_alternate_direction();
 }
 
+void test_drive_full() {
+    init_boost();
+    init_spi();
+
+    init_dc_mc();
+
+    drive_full_forward();
+    while(true) {
+        check_and_clear_fault();
+        usleep(10000);
+    }
+}
+
 void test_i2c_drive_interface() {
     init_i2c_jetson();
     printf("done init\n");

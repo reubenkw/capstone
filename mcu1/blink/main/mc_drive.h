@@ -32,5 +32,6 @@
 void init_dc_mc();
 void drive_full_forward();
 void drive_alternate_direction();
+bool check_and_clear_fault();
 
 #endif // h
