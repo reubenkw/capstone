@@ -7,20 +7,6 @@
 #include "mcu_gpio.h"
 #include "mc_stepper.h"
 
-void test_limit() {
-    init_limit_gpio();
-
-    while(true){
-        printf("Limit Switch Val: %d, %d, %d, %d, %d\n", 
-        gpio_get_level(LIMIT_X_MIN),
-        gpio_get_level(LIMIT_X_MAX),
-        gpio_get_level(LIMIT_Y_MIN),
-        gpio_get_level(LIMIT_Y_MAX),
-        gpio_get_level(LIMIT_Z));
-        
-    }
-}
-
 // low pass filter bs
 int gpio_read(uint8_t gpio_num){
     for(int i = 0; i < 10; i++){
@@ -31,13 +17,29 @@ int gpio_read(uint8_t gpio_num){
     return 1;
 }
 
+
+void test_limit() {
+    init_limit_gpio();
+
+    while(true){
+        printf("Limit Switch Val: %d, %d, %d, %d, %d\n", 
+        gpio_get_level(LIMIT_X_MIN),
+        gpio_get_level(LIMIT_X_MAX),
+        gpio_read(LIMIT_Y_MIN),
+        gpio_get_level(LIMIT_Y_MAX),
+        gpio_get_level(LIMIT_Z));
+        
+    }
+}
+
+
 void test_all_stepper(){
     init_limit_gpio();
     init_boost();
     init_stepper_mc();
 
-    const uint action_delay = 1 * 1000000;
-    const uint step_delay = 1000;
+    const uint action_delay = 5 * 1000000;
+    const uint step_delay = 10000;
     const uint z_step_delay = 1000;
     const uint z_dropdown = 2000;
 

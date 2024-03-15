@@ -8,18 +8,13 @@
 
 void app_main(void)
 {
-    usleep(10000000);
     printf("starting main\n");
+    usleep(5000000);
     // test_drive_full();
     // test_drive_alternating();
     // test_limit();
-    // test_all_stepper();
+    test_all_stepper();
     // test_z_stepper();
-    init_spi();
-    while(1) {
-        printf("doing nothing. will always do nothing.\n");
-        read_spi(spi_mc_dc_handle, 0);
-        usleep(10000000);
-    }
+    // test_i2c_stepper_interface();
     printf("done main\n");
 }
