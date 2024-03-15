@@ -64,7 +64,7 @@ uint8_t read_spi(spi_device_handle_t device, uint addr) {
         printf("err spi read: %d\n", err);
         gpio_set_level(LED_3, 1);
     } else {
-        printf("spi read: %d\n", rx_buf & 0xFF );
+        // printf("spi read: %d\n", rx_buf & 0xFF );
     }
     return rx_buf;
 }
@@ -81,6 +81,6 @@ void write_spi(spi_device_handle_t device, uint addr, uint8_t tx_data) {
         printf("err spi write: %d\n", err);
         gpio_set_level(LED_3, 1);
     } else {
-        printf("spi write: %d\n", tx_data);
+        // printf("spi write: %d\n", tx_data);
     }
 }

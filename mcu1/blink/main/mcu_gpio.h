@@ -19,11 +19,11 @@
 #define GPIO_LED_PIN_SEL ( (1ULL<<LED_1) | (1ULL<<LED_2) |(1ULL<<LED_3) )
 
 // limit switches, accessible from MCU_M (for now)
-#define LIMIT_X_MIN 2
-#define LIMIT_X_MAX 44
-#define LIMIT_Y_MIN 47
-#define LIMIT_Y_MAX 43
-#define LIMIT_Z 1
+#define LIMIT_X_MIN 36
+#define LIMIT_X_MAX 3
+#define LIMIT_Y_MIN 14
+#define LIMIT_Y_MAX 35
+#define LIMIT_Z 37
 
 #define GPIO_LIMIT_PIN_SEL  ( \
     (1ULL<<LIMIT_X_MIN) | (1ULL<<LIMIT_X_MAX) | \
