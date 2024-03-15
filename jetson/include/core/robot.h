@@ -40,8 +40,6 @@ class Robot {
 	int i2c_bus_file;
 
 	uint16_t encoderVal[7];
-	uint8_t limitVals;
-
 public:
 
 
@@ -53,19 +51,15 @@ public:
 	void updateArmPosition();
 	uint16_t getServoMotorEncoderVal(ServoMotor motor);
 	uint16_t getDriveMotorEncoderVal(DriveMotor motor);
-	uint8_t getLimitVals();
-	bool getLimitVal(LimitSwitch s);
 
 	std::optional<LimitSwitch> determineLimitSwitch(ServoMotor m, bool positive);
 	double calculate_wheel_speed(double v, double w);
 	void driveRobotForward(Point2D idealPos);
-	void resetServoArm(ServoMotor motor);
 	void moveServoArm(ServoMotor motor, double pos);
 	void pollinate();
 	std::vector<Point3D> scan();
 	std::vector<Point3D> findFlowers();
 	void readEncoderVals();
-	void readLimitVals();
 	void pollinate_row(int n = 1);
 };
 

@@ -11,9 +11,10 @@
 #define REG_INDEX 3
 #define DATA_INDEX 4 
 
-#define STP_X 2
-#define STP_Y 3
-#define STP_Z 4
+#define STP_X 0
+#define STP_Y 1
+#define STP_Z 2
+#define ENC 3
 
 #define DRIVE_MC 0x1    // must be same as comm.h
 #define SERVO_MC 0x2    // must be same as comm.h

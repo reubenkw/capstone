@@ -59,22 +59,13 @@ Point3D Robot::getArmPosition() {
 }
 
 void Robot::readEncoderVals(){
-	read_i2c(i2c_bus_file, MCU_ENCODER, (uint8_t * )encoderVal, 14);
+	read_i2c(i2c_bus_file, MCU_E, (uint8_t * )encoderVal, 14);
 	std::string encoderString = std::string("");
 	for (int i = 0; i < 7; i++){
 		encoderString = std::to_string(encoderVal[i]) + std::string(" ");
 	}
 	debug_log(std::string("Encoders: ") + encoderString);
 	
-}
-
-void Robot::readLimitVals(){
-	read_i2c(i2c_bus_file, MCU_1, &limitVals, 1);
-	std::string limitString = std::string("");
-	for (int i = 0; i < 7; i++){
-		limitString = std::to_string((limitVals & (1<<i)) >> i) + std::string(" ");
-	}
-	debug_log(std::string("Limit: ") + limitString);
 }
 
 // Based on MTE 544 Localization I and II 
@@ -95,18 +86,6 @@ void Robot::updateRobotOrientation() {
 	+ std::to_string(robotPosition.y)
 	+ std::string(", angle: ")
 	+ std::to_string(robotAngle));
-}
-
-void Robot::updateArmPosition() {
-	armPosition[0] = servoArm[0].getElapsedDistance();
-	armPosition[1] = servoArm[1].getElapsedDistance();
-	armPosition[2] = servoArm[2].getElapsedDistance();
-	debug_log(std::string("Updated Arm Position - x:") 
-	+ std::to_string(armPosition.x) 
-	+ std::string(", y: ")
-	+ std::to_string(armPosition.y)
-	+ std::string(", z: ")
-	+ std::to_string(armPosition.z));
 }
 
 // From MTE 544 Modeling III IV Lecture Slide 16
@@ -183,74 +162,8 @@ uint16_t Robot::getDriveMotorEncoderVal(DriveMotor motor) {
 	return encoderVal[motor];
 }
 
-uint8_t Robot::getLimitVals() {
-	readLimitVals();
-	return limitVals;
-}
-
-bool Robot::getLimitVal(LimitSwitch s) {
-	readLimitVals();
-	return ((limitVals & (1 << s)) != 0);
-}
-
-// ugly but required by our confusing (for this) conventions
-std::optional<LimitSwitch> Robot::determineLimitSwitch(ServoMotor m, bool positive) {
-	switch (m) {
-		case x:
-			if (positive) {return {x_max};}
-			return {x_min};
-		case y:
-			if (positive) {return {y_max};}
-			return {y_min};
-		default:
-			// z
-			if (positive) {return {z_max};}
-			return {};
-	}
-}
-
-void Robot::resetServoArm(ServoMotor motor) {
-	// waits to hit the limit switch
-
-	// use minimum limit switch for xy and max for z
-	std::optional<LimitSwitch> limit = determineLimitSwitch(motor, (motor == z));
-
-	servoArm[motor].simple_bkwd();
-
-	while (!getLimitVal(*limit)) {}
-
-	servoArm[motor].simple_stop();
-	armPosition[motor] = 0;
-	servoArm[motor].resetElapsedDistance();
-
-	debug_log(std::string("Arm Reached Goal"));
-}
-
 void Robot::moveServoArm(ServoMotor motor, double pos) {
-	double delta = pos - armPosition[pos];
-	
-	std::optional<LimitSwitch> limit = determineLimitSwitch(motor, (delta > 0));
-
-	if (delta > 0) {
-		servoArm[motor].simple_go();
-	} else {
-		servoArm[motor].simple_bkwd();
-	}
-
-	while (delta < ARM_TOL) {
-		readEncoderVals();
-
-		// limit is some (not z min) and the value is true
-		if (limit && getLimitVal(*limit)) {
-			log(std::string("DEBUG: Hit limit switch in moveServoArm()."));
-			break;
-		}
-
-		// 4 bc 4 drive motors
-		updateArmPosition();
-		delta = pos - armPosition[motor];
-	}
-	servoArm[motor].simple_stop();
+	servoArm[motor].simple_pos(pos);
 }
 
 void Robot::pollinate() { 
