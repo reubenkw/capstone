@@ -74,12 +74,15 @@ cv::Mat colorMask(cv::Mat& image, Pixel ideal, double angleTol, double lengthTol
 std::vector<Point2D> findFlowerCenters(cv::Mat& image){
 	std::vector<Point2D> yellowBlobs;
 
-	cv::Mat yellowMask = colorMask(image, {255, 255, 255}, 0.1, 75);
+	uint8_t brightest = (uint8_t) brightestPixelVal(image);
+	log(std::string("brightest pixel value: ") + std::to_string(brightest));
+
+	cv::Mat yellowMask = colorMask(image, {brightest, brightest, brightest}, 0.1, 100);
 	cv::imwrite("./plots/yellow.png", yellowMask);
 
 	cv::Mat green = colorMask(image, {30, 55, 15}, 0.2, 50);
 	cv::imwrite("./plots/green.png", green);
-	cv::blur(green, green, cv::Size(20, 20));
+	cv::blur(green, green, cv::Size(35, 35));
 	cv::imwrite("./plots/blurredGreen.png", green);
 
 	cv::Mat labels, stats, centroids;
@@ -89,7 +92,7 @@ std::vector<Point2D> findFlowerCenters(cv::Mat& image){
 	// TODO: smarter way to determine hardcoded cutoffs?
 	for (int i = 1; i < label_count; i++) {
 		int blurredGreenVal = green.at<uchar>((int)centroids.at<double>(i, 1), (int)centroids.at<double>(i, 0));
-		if ( blurredGreenVal > 10) {
+		if ( blurredGreenVal > 10 && stats.at<int>(i, cv::CC_STAT_AREA) > 20 ) {
 			yellowBlobs.push_back({ centroids.at<double>(i, 0), centroids.at<double>(i, 1) });
 		}
 	}
