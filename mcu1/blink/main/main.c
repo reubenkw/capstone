@@ -4,8 +4,6 @@
 #include "mcu_e.h"
 #include "i2c.h"
 
-#include "spi.h"
-
 void app_main(void)
 {
     usleep(5000000);

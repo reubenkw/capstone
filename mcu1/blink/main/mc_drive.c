@@ -94,13 +94,15 @@ void set_wheel_directions(int fl, int fr, int bl, int br) {
 }
 
 void drive_full_forward() {
-    set_wheel_directions(0,1,1,1);
+    set_wheel_directions(1,1,1,1);
     write_spi(spi_mc_dc_handle, PWM_DUTY_CTRL_1, 0x7F);
 }
 
 void drive_alternate_direction() {
-    const int min_pwm = 20;
-    const int accel_delay = 1000;
+    const uint accel_delay = 1000;
+    const uint full_speed_delay = 5 * 1000000;
+    const uint stopped_delay = 2 * 1000000;
+    const uint8_t min_pwm = 20;
     uint8_t speed = 0;
     while(true) {
         set_wheel_directions(1, 1, 1, 1);
@@ -116,7 +118,7 @@ void drive_alternate_direction() {
 
         // stay at speed
         printf("full speed forward!\n");
-        usleep(5 * 1000000);
+        usleep(full_speed_delay);
 
         printf("slowing down!\n");
         for (speed=254; speed>10; speed--) {
@@ -131,7 +133,7 @@ void drive_alternate_direction() {
 
         // stay at stopped
         printf("stopped!\n");
-        usleep(2 * 1000000);
+        usleep(stopped_delay);
 
         // set direction to reversed
         set_wheel_directions(-1, -1, -1, -1);
@@ -147,7 +149,7 @@ void drive_alternate_direction() {
 
         // stay at speed
         printf("full speed backwards!\n");
-        usleep(5 * 1000000);
+        usleep(full_speed_delay);
 
         printf("slowing down!\n");
         for (speed=254; speed>10; speed--) {
@@ -162,6 +164,6 @@ void drive_alternate_direction() {
 
         // stay at stopped
         printf("stopped!\n");
-        usleep(2 * 1000000);
+        usleep(stopped_delay);
     }
 }

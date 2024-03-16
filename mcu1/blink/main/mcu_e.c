@@ -21,7 +21,7 @@ int gpio_read(uint8_t gpio_num){
 void test_limit() {
     init_limit_gpio();
     init_stepper_mc();
-    init_i2c_jetson();
+    init_i2c_jetson_mcu_e();
 
     gpio_set_level(6, 1);
 
@@ -255,7 +255,7 @@ bool move_stepper(uint8_t motor, float ideal_pos){
 void test_i2c_stepper_interface(){
     init_limit_gpio();
     init_stepper_mc();
-    init_i2c_jetson();
+    init_i2c_jetson_mcu_e();
     printf("done init\n");
 
     uint8_t rx_data[I2C_DATA_LENGTH + 1] = {0};

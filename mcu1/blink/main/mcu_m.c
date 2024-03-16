@@ -32,7 +32,7 @@ void test_drive_full() {
 }
 
 void test_i2c_drive_interface() {
-    init_i2c_jetson();
+    init_i2c_jetson_mcu_m();
     printf("done init\n");
 
     uint8_t rx_data[I2C_DATA_LENGTH + 1] = {0};
@@ -49,7 +49,7 @@ void test_i2c_drive_interface() {
 void test_jetson_ctrl() {
     init_dev_led();
     dev_led_set_color(50, 0, 0);
-    init_i2c_jetson();
+    init_i2c_jetson_mcu_m();
 
     uint8_t rx_data[I2C_DATA_LENGTH + 1] = {0};
     while(true){
