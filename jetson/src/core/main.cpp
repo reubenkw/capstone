@@ -16,9 +16,7 @@
 
 std::string const HOME = std::getenv("HOME") ? std::getenv("HOME") : ".";
 
-void test_image_processing() {
-	Camera cam;
-
+std::vector<Point3D> test_image_processing(Camera & cam) {
 	cv::Mat image = cam.getColorImage();
 
 	cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
@@ -57,17 +55,6 @@ void test_image_processing() {
 	}
 	std::vector<Point3D> robotPoints = camera2robot(cam3DPoints, 0, 0);
 
-	Point3D origin = cam.getDeprojection((1, 1));
-	log(std::string("origin: ") 
-		+ std::to_string(origin.x) + std::string(", ") 
-		+ std::to_string(origin.y) + std::string(", ") 
-		+ std::to_string(origin.z));
-	Point3D halfhalf = cam.getDeprojection((424, 240));
-	log(std::string("halfhalf: ") 
-		+ std::to_string(halfhalf.x) + std::string(", ") 
-		+ std::to_string(halfhalf.y) + std::string(", ") 
-		+ std::to_string(halfhalf.z));
-
 	for (Point3D const& blob : robotPoints) {
 		log(std::string("blob: ") 
 		+ std::to_string(blob.x) + std::string(", ") 
@@ -77,6 +64,8 @@ void test_image_processing() {
 	
 	cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
 	cv::imwrite("plots/flowers.jpg", image);
+
+	return robotPoints;
 }
 
 void pid_motor_ctrl_test() {
@@ -223,14 +212,29 @@ void test_move_servo_arm(){
 	r.moveServoArm(z, 0.7);
 }
 
+void test_move_servo_arm_to_flowers(){
+	Camera cam;
+	Robot r(cam);
+	std::vector<Point3D> robotPoints = test_image_processing(cam);
+	r.moveServoArm(z, 0.8);
+	for (auto const & robotPoint : robotPoints){
+		r.moveServoArm(x, robotPoint.x);
+		r.moveServoArm(y, robotPoint.y);
+		r.moveServoArm(z, robotPoint.z);
+	}
+	
+}
+
 int main(int argc, char** argv)
 {
 	initialize_log();
 	log(std::string("Starting Program!"));
 	// test_camera_image();
-	test_image_processing();
+	// Camera cam;
+	// test_image_processing(cam);
 	// test_clustering();
 	// test_i2c_read();
 	// test_move_servo_arm();
+	test_move_servo_arm_to_flowers();
 	return 0;
 }
