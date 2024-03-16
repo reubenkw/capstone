@@ -74,10 +74,10 @@ cv::Mat colorMask(cv::Mat& image, Pixel ideal, double angleTol, double lengthTol
 std::vector<Point2D> findFlowerCenters(cv::Mat& image){
 	std::vector<Point2D> yellowBlobs;
 
-	cv::Mat yellowMask = colorMask(image, {255, 255, 255}, 0.1, 5);
+	cv::Mat yellowMask = colorMask(image, {255, 255, 255}, 0.1, 75);
 	cv::imwrite("./plots/yellow.png", yellowMask);
 
-	cv::Mat green = colorMask(image, {82, 105, 74}, 0.1, 5);
+	cv::Mat green = colorMask(image, {82, 105, 74}, 0.1, 50);
 	cv::imwrite("./plots/green.png", green);
 	cv::blur(green, green, cv::Size(20, 20));
 	cv::imwrite("./plots/blurredGreen.png", green);
