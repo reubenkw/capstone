@@ -1,6 +1,7 @@
 #include "motor_controller.h"
 #include "log.h"
 
+#include <unistd.h>
 #include <math.h>
 #include <stdexcept>
 
@@ -71,7 +72,7 @@ void MotorController::simple_bkwd(){
 void MotorController::simple_pos(double pos){
 	pos = pos * 1000; // convert from [m] to [mm]
 	uint16_t sat_pos;
-	if (pos > 653){
+	if (pos > 6535){
 		sat_pos = 0xFFFF;
 	} else {
 		sat_pos = (uint16_t) (pos*10);
@@ -85,11 +86,13 @@ void MotorController::simple_pos(double pos){
 			std::string("to position: ") + std::to_string(pos) + 
 			std::string("by sending value: ") + std::to_string(data[1]) 
 			+ std::string(" ") + std::to_string(data[2]) );
-	uint8_t resp = 0;
-	read_i2c(file, MCU_E, &resp, 1);
-	while(resp == 0){}
-	log(	std::string("Read stepper motor return: ") + std::to_string(resp));
-	if (resp == 2){ // hit limit switch
-		throw std::logic_error("hit limit switch");
-	}
+	// uint8_t resp = 0;
+	// while(resp == 0){
+	//	read_i2c(file, MCU_E, &resp, 1);
+	//	usleep(1000);
+	// }
+	// log(	std::string("Read stepper motor return: ") + std::to_string(resp));
+	// if (resp == 2){ // hit limit switch
+	// 	throw std::logic_error("hit limit switch");
+	// }
 }
