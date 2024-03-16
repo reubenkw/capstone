@@ -3,8 +3,8 @@
 
 #include <cstdint>
 
-#define MCU_1 0x42
-#define MCU_ENCODER 0x10
+#define MCU_M 0x42
+#define MCU_E 0x10
 
 #define DRIVE_MC 0x1
 #define SERVO_MC 0x2

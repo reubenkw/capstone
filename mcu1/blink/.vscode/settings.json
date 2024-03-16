@@ -21,7 +21,19 @@
     "task.h": "c",
     "i2c.h": "c",
     "esp_intr_alloc.h": "c",
-    "freertos.h": "c"
+    "freertos.h": "c",
+    "gpio.h": "c",
+    "t_integration.h": "c",
+    "mc_drive.h": "c",
+    "spi.h": "c",
+    "types.h": "c",
+    "encoder.h": "c",
+    "pulse_cnt.h": "c",
+    "mcu_gpio.h": "c",
+    "mcu_m.h": "c",
+    "stdio.h": "c",
+    "mc_stepper.h": "c",
+    "mcu_e.h": "c"
   },
   "C_Cpp.errorSquiggles": "disabled"
 }

@@ -74,20 +74,38 @@ void test_camera_image() {
 	log(std::string("saved color and depth image under jetson/plots/"));
 }
 
-void test_i2c_read() {
+void test_i2c_read(uint address) {
 	int i2c_bus_file = open_i2c();
 	log(std::string("INFO: bus file: ") + std::to_string(i2c_bus_file));
 	uint8_t data[4] = {0, 0, 0, 0};
-	for (int i = 0; i < 10; i++) {
-		read_i2c(i2c_bus_file, 0x42, (uint8_t * )data, 4);
+	while(true) {
+		read_i2c(i2c_bus_file, address, data, 4);
+		usleep(1000000);
+		printf("data: %x, %x, %x, %x\n", data[0], data[1], data[2], data[3]);
 	}
 }
 
-void test_i2c_write() {
+void test_i2c_read_mcu_e() {
+	test_i2c_read(MCU_E);
+}
+
+void test_i2c_read_mcu_m() {
+	test_i2c_read(MCU_M);
+}
+
+void test_i2c_write(uint address) {
 	int i2c_bus_file = open_i2c();
 	log(std::string("INFO: bus file: ") + std::to_string(i2c_bus_file));
 	uint8_t data[4] = {0x5, 0x0, 0x0, 0x0};
-	write_i2c(i2c_bus_file, 0x42, data, 4);
+	write_i2c(i2c_bus_file, address, data, 4);
+}
+
+void test_i2c_write_mcu_e() {
+	test_i2c_write(MCU_E);
+}
+
+void test_i2c_write_mcu_m() {
+	test_i2c_write(MCU_M);
 }
 
 void test_scan() {
@@ -123,7 +141,7 @@ void test_arm_x() {
 	log(std::string("INFO: starting test_arm_x"));
 	Camera cam;
 	Robot r(cam);
-	r.resetServoArm(x);
+	r.moveServoArm(x, 0);
 	r.moveServoArm(x, CARTESIAN_X_MAX);
 	log(std::string("done testing test_arm_x"));
 }
@@ -132,7 +150,7 @@ void test_arm_y() {
 	log(std::string("INFO: starting test_arm_y"));
 	Camera cam;
 	Robot r(cam);
-	r.resetServoArm(y);
+	r.moveServoArm(y, 0);
 	r.moveServoArm(y, CARTESIAN_Y_MAX);
 	log(std::string("done testing test_arm_y"));
 }
@@ -141,28 +159,11 @@ void test_arm_z() {
 	log(std::string("INFO: starting test_arm_z"));
 	Camera cam;
 	Robot r(cam);
-	r.resetServoArm(z); 
+	r.moveServoArm(z, 0.748); 
 	r.moveServoArm(z, CARTESIAN_Z_MIN);
 	log(std::string("done testing test_arm_z"));
 }
 
-void test_limit_switches() {
-	log(std::string("INFO: starting test_limit_switches (expecting user input)."));
-	Camera cam;
-	Robot r(cam);
-	int n_state_changes = 10;
-	int8_t limits = 0;
-	int8_t limits_prev = 0;
-	while(true) {
-		limits = r.getLimitVals();
-		if (limits != limits_prev) {
-			log(std::string("INFO: limit state changed. Value: " + limits));
-		}
-		limits_prev = limits;
-	}
-
-	log(std::string("INFO: done test_limit_switches (check log)."));
-}
 
 void test_mc() {
 	int file = open_i2c();
@@ -174,21 +175,20 @@ void test_mc() {
 		mc.simple_go();
 		usleep(5000000);
 
-		// stop 2 sec
-		printf("stop\n");
-		mc.simple_stop();
-		usleep(2000000);
-
 		// back 5 sec
 		printf("back\n");
 		mc.simple_bkwd();
 		usleep(5000000);
-
-		// stop 2 sec
-		printf("stop\n");
-		mc.simple_stop();
-		usleep(2000000);
 	}
+}
+
+void test_move_servo_arm(){
+	Camera cam;
+	Robot r(cam);
+	printf("done init\n");
+	r.moveServoArm(x, 0.05);
+	r.moveServoArm(y, 0.05);
+	r.moveServoArm(z, 0.7);
 }
 
 int main(int argc, char** argv)
@@ -198,7 +198,7 @@ int main(int argc, char** argv)
 	// test_camera_image();
 	// image_processing_test();
 	// test_clustering();
-	// test_i2c_read();
-	test_mc();
+	// test_i2c_read_mcu_e();
+	test_move_servo_arm();
 	return 0;
 }

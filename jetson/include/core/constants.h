@@ -7,7 +7,7 @@ const float CARTESIAN_X_MIN = 0;        // [m]
 const float CARTESIAN_X_MAX = 0.620;    // [m]
 const float CARTESIAN_Y_MIN = 0;        // [m]
 const float CARTESIAN_Y_MAX = 0.330;    // [m]
-const float CARTESIAN_Z_MIN = 0;        // [m] won't actually be zero
+const float CARTESIAN_Z_MIN = 0.4;      // [m] won't actually be zero
 const float CARTESIAN_Z_MAX = 0.82;     // [m] very approx
 const float FLOOR_2_CAM = 0.890;        // [m]
 
