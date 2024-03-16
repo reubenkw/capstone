@@ -73,34 +73,39 @@ void test_camera_image() {
 
 	log(std::string("saved color and depth image under jetson/plots/"));
 }
-/*
-void test_i2c_read() {
+
+void test_i2c_read(uint address) {
 	int i2c_bus_file = open_i2c();
 	log(std::string("INFO: bus file: ") + std::to_string(i2c_bus_file));
 	uint8_t data[4] = {0, 0, 0, 0};
 	while(true) {
-		read_i2c(i2c_bus_file, 0x10, data, 4);
-		// usleep(1000000);
+		read_i2c(i2c_bus_file, address, data, 4);
+		usleep(1000000);
 		printf("data: %x, %x, %x, %x\n", data[0], data[1], data[2], data[3]);
 	}
 }
-*/
-void test_i2c_read() {
-	int i2c_bus_file = open_i2c();
-	log(std::string("INFO: bus file: ") + std::to_string(i2c_bus_file));
-	uint8_t data[2] = {0};
-	while(true) {
-		read_i2c(i2c_bus_file, 0x10, data, 2);
-		usleep(1000000);
-		printf("data: %x\n", data[0]);
-	}
+
+void test_i2c_read_mcu_e() {
+	test_i2c_read(MCU_E);
 }
 
-void test_i2c_write() {
+void test_i2c_read_mcu_m() {
+	test_i2c_read(MCU_M);
+}
+
+void test_i2c_write(uint address) {
 	int i2c_bus_file = open_i2c();
 	log(std::string("INFO: bus file: ") + std::to_string(i2c_bus_file));
 	uint8_t data[4] = {0x5, 0x0, 0x0, 0x0};
-	write_i2c(i2c_bus_file, 0x10, data, 4);
+	write_i2c(i2c_bus_file, address, data, 4);
+}
+
+void test_i2c_write_mcu_e() {
+	test_i2c_write(MCU_E);
+}
+
+void test_i2c_write_mcu_m() {
+	test_i2c_write(MCU_M);
 }
 
 void test_scan() {
@@ -193,7 +198,7 @@ int main(int argc, char** argv)
 	// test_camera_image();
 	// image_processing_test();
 	// test_clustering();
-	// test_i2c_read();
+	// test_i2c_read_mcu_e();
 	test_move_servo_arm();
 	return 0;
 }
