@@ -1,0 +1,5 @@
+16-03-2024_11-05-09 Starting Program!
+16-03-2024_11-05-09 INFO Camera: starting init
+16-03-2024_11-05-10 INFO Camera: first frame read
+16-03-2024_11-05-10 INFO Camera: init done
+16-03-2024_11-05-10 brightest pixel value: 248.000000

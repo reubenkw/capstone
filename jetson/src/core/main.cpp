@@ -15,7 +15,7 @@
 
 std::string const HOME = std::getenv("HOME") ? std::getenv("HOME") : ".";
 
-void image_processing_test() {
+void test_image_processing() {
 	Camera cam;
 
 	cv::Mat image = cam.getColorImage();
@@ -191,9 +191,9 @@ int main(int argc, char** argv)
 	initialize_log();
 	log(std::string("Starting Program!"));
 	// test_camera_image();
-	// image_processing_test();
+	test_image_processing();
 	// test_clustering();
 	// test_i2c_read();
-	test_move_servo_arm();
+	// test_move_servo_arm();
 	return 0;
 }
