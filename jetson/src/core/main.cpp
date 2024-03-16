@@ -23,15 +23,24 @@ void test_image_processing() {
 	cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
 	cv::imwrite("./plots/original_image.png", image);
 	cv::cvtColor(image, image, cv::COLOR_BGR2RGB);
-
+		
+	log(std::string("yellow blobs!!!!!!"));
 	std::vector<Point2D> yellowBlobs = findFlowerCenters(image);
+	for (Point2D const& blob : yellowBlobs) {
+		log(std::string("yellow blob") + std::to_string(blob.x) + std::string(",") + std::to_string(blob.y));
+	}
+	std::vector<Point2D> avgCenter = avgClusterCenters(yellowBlobs, 10);
+	log(std::string("avgCenters!!!!!!"));
+	for (Point2D const& blob : avgCenter) {
+		log(std::string("avgCenter: ") + std::to_string(blob.x) + std::string(",") + std::to_string(blob.y));
+	}
 
 	cv::Mat depth = cam.getDepthImage();
 	cv::imwrite("./plots/depth.png", depth);
 	int width = image.cols;
 	int height = image.rows;
 
-	for (Point2D const& blob : yellowBlobs) {
+	for (Point2D const& blob : avgCenter) {
 		cv::circle(image, cv::Point((int)blob.x, (int)blob.y), 5, { 255, 0, 255 }, 5);
 		float x = blob.x/width;
 		float y = blob.y/height;

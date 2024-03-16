@@ -3,7 +3,7 @@
 
 #include <string>
 
-const bool DEBUG = false;
+const bool DEBUG = true;
 
 void initialize_log();
 void log(std::string message);
