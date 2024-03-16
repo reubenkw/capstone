@@ -7,12 +7,12 @@ const float CARTESIAN_X_MIN = 0;        // [m]
 const float CARTESIAN_X_MAX = 0.620;    // [m]
 const float CARTESIAN_Y_MIN = 0;        // [m]
 const float CARTESIAN_Y_MAX = 0.330;    // [m]
-const float CARTESIAN_Z_MIN = 0.4;      // [m] won't actually be zero
-const float CARTESIAN_Z_MAX = 0.82;     // [m] very approx
-const float FLOOR_2_CAM = 0.890;        // [m]
+const float CARTESIAN_Z_MIN = 0.4;      // [m] 
+const float CARTESIAN_Z_MAX = 0.82;     // [m] 
+const float FLOOR_2_CAM = 0.815;        // [m]
 
 const float CAMERA_2_EFFECTOR_X = 0.032;    // [m]
-const float CAMERA_2_EFFECTOR_Y = 0.058;    // [m]
+const float CAMERA_2_EFFECTOR_Y = 0.08;     // [m]
 
 // (hopefully not painfully) slow to start
 const float IDEAL_SPEED_DRIVE = 0.1;    // [m/s]

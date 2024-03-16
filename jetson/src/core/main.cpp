@@ -5,6 +5,7 @@
 #include "cluster.h"
 #include "robot.h"
 #include "constants.h"
+#include "frame_transform.h"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -45,6 +46,16 @@ void test_image_processing() {
 		float x = blob.x/width;
 		float y = blob.y/height;
 		log(std::string("depth val: ") + std::to_string(cam.getDepthVal(x, y)));
+	}
+
+	std::vector<Point3D> cam3DPoints = cam.getDeprojection(avgCenter);
+	std::vector<Point3D> robotPoints = camera2robot(cam3DPoints, 0, 0);
+
+	for (Point3D const& blob : robotPoints) {
+		log(std::string("blob: ") 
+		+ std::to_string(blob.x) + std::string(", ") 
+		+ std::to_string(blob.y) + std::string(", ") 
+		+ std::to_string(blob.z));
 	}
 	
 	cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
