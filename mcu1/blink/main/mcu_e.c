@@ -165,12 +165,12 @@ void test_z_stepper() {
 
     const uint action_delay = 1 * 1000000;
     const uint z_step_delay = 1000;
-    const uint z_dropdown = 2000;
+    const uint z_dropdown = 3000;
 
     // up to limit
+    printf("z 1\n");
     gpio_set_level(GPIO_DIR_Z, 1);
     while(gpio_read(LIMIT_Z)==0) {
-        printf("z 1\n");
         gpio_set_level(GPIO_PULSE_Z, 1);
         usleep(z_step_delay);
         gpio_set_level(GPIO_PULSE_Z, 0);
@@ -180,9 +180,14 @@ void test_z_stepper() {
     usleep(action_delay);
 
     // dropdown fixed number of steps
+    printf("z 0\n");
+    const uint step_delta_2_stop = 100;
     gpio_set_level(GPIO_DIR_Z, 0);
-    for(int k = 0; k < z_dropdown; k++){
-        printf("z 0\n");
+    for(int k = 0; k < z_dropdown; k++) {
+        // if ((k % step_delta_2_stop) == 0) {
+        //     printf("z steps: %d\n", k);
+        //     usleep(2 * 1000000);
+        // }
         gpio_set_level(GPIO_PULSE_Z, 1);
         usleep(z_step_delay * 2);
         gpio_set_level(GPIO_PULSE_Z, 0);
@@ -192,9 +197,9 @@ void test_z_stepper() {
     usleep(action_delay);
 
     // back up to limit
+    printf("z 3\n");
     gpio_set_level(GPIO_DIR_Z, 1);
     while(gpio_read(LIMIT_Z)==0) {
-        printf("z 3\n");
         gpio_set_level(GPIO_PULSE_Z, 1);
         usleep(z_step_delay);
         gpio_set_level(GPIO_PULSE_Z, 0);
