@@ -9,7 +9,7 @@ void init_i2c_jetson() {
         .scl_pullup_en = true, 
         .slave = {
             .addr_10bit_en = 0, 
-            .slave_addr = 0x42, 
+            .slave_addr = 0x10, 
             .maximum_speed = 400000
         }
     };
@@ -26,9 +26,10 @@ void init_i2c_jetson() {
 void test_i2c_write() {
     // Initialize i2c bus as slave to listen to jetson nano
     init_i2c_jetson();
-    uint8_t data[5] = {0xCA, 0xFE, 0xBA, 0xBE, 0x00};
+    uint8_t data[1] = {0xFF};
     while (1){
-        int data_trans = i2c_slave_write_buffer(I2C_HOST, data, 5, portMAX_DELAY);
+        // i2c_reset_tx_fifo(I2C_HOST);
+        int data_trans = i2c_slave_write_buffer(I2C_HOST, data, 1, 1000 / portTICK_PERIOD_MS);
         printf("data trans: %d\n", data_trans);
     }
 }
