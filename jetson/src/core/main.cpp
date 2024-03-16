@@ -230,11 +230,11 @@ int main(int argc, char** argv)
 	initialize_log();
 	log(std::string("Starting Program!"));
 	// test_camera_image();
-	// Camera cam;
-	// test_image_processing(cam);
+	Camera cam;
+	test_image_processing(cam);
 	// test_clustering();
 	// test_i2c_read();
 	// test_move_servo_arm();
-	test_move_servo_arm_to_flowers();
+	// test_move_servo_arm_to_flowers();
 	return 0;
 }
