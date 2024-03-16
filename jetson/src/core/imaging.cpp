@@ -46,22 +46,23 @@ double dotProduct(Pixel x, Pixel y) {
 }
 
 // TODO: determine colour pixels better
-bool isColor(Pixel pix, Pixel ideal, double brightestVal, double tol) {
-	if (toGreyscale(pix) > brightestVal * 0.5) {
-		double dp = dotProduct(pix, ideal);
-		return acos(dp / sqrt(dotProduct(pix, pix)) / sqrt(dotProduct(ideal, ideal))) < tol;
-	}
+bool isColor(Pixel pix, Pixel ideal, double angleTol, double lengthTol) {
+	
+	double dp = dotProduct(pix, ideal);
+	return acos(dp / sqrt(dotProduct(pix, pix)) / sqrt(dotProduct(ideal, ideal))) < angleTol &&
+			std::abs(toGreyscale(ideal) - toGreyscale(pix)) < lengthTol;
+	
 	return false;
 }
 
-cv::Mat colorMask(cv::Mat& image, double brightest, Pixel ideal, double tol) {
+cv::Mat colorMask(cv::Mat& image, Pixel ideal, double angleTol, double lengthTol) {
 	cv::Mat thresholded =  cv::Mat::zeros(cv::Size(image.cols, image.rows), CV_8UC1);;
 
 	for (int i = 0; i < image.rows; i++) {
 		for (int j = 0; j < image.cols; j++) {
 			cv::Point3_<uchar>* p = image.ptr<cv::Point3_<uchar> >(i, j);
 			Pixel pix{ p->x, p->y, p->z };
-			if (isColor(pix, ideal, brightest, tol)) {
+			if (isColor(pix, ideal, angleTol, lengthTol)) {
 				thresholded.at<uchar>(i, j) = 255;
 			}
 		}
@@ -73,13 +74,10 @@ cv::Mat colorMask(cv::Mat& image, double brightest, Pixel ideal, double tol) {
 std::vector<Point2D> findFlowerCenters(cv::Mat& image){
 	std::vector<Point2D> yellowBlobs;
 
-	double brightest = brightestPixelVal(image);
-	log(std::string("brightest pixel value: ") + std::to_string(brightest));
-
-	cv::Mat yellowMask = colorMask(image, brightest, {255, 255, 255}, 0.1);
+	cv::Mat yellowMask = colorMask(image, {255, 255, 255}, 0.1, 5);
 	cv::imwrite("./plots/yellow.png", yellowMask);
 
-	cv::Mat green = colorMask(image, 50, {82, 105, 74}, 0.1);
+	cv::Mat green = colorMask(image, {82, 105, 74}, 0.1, 5);
 	cv::imwrite("./plots/green.png", green);
 	cv::blur(green, green, cv::Size(20, 20));
 	cv::imwrite("./plots/blurredGreen.png", green);
