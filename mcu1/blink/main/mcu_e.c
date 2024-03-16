@@ -161,7 +161,6 @@ void test_all_stepper(){
 
 void test_z_stepper() {
     init_limit_gpio();
-    init_boost();
     init_stepper_mc();
 
     const uint action_delay = 1 * 1000000;
