@@ -11,8 +11,8 @@ const float CARTESIAN_Z_MIN = 0.4;      // [m]
 const float CARTESIAN_Z_MAX = 0.82;     // [m] 
 const float FLOOR_2_CAM = 0.815;        // [m]
 
-const float CAMERA_2_EFFECTOR_X = 0.032;    // [m]
-const float CAMERA_2_EFFECTOR_Y = 0.08;     // [m]
+const float CAMERA_2_EFFECTOR_X = 0.034;    // [m]
+const float CAMERA_2_EFFECTOR_Y = 0.085;     // [m]
 
 // (hopefully not painfully) slow to start
 const float IDEAL_SPEED_DRIVE = 0.1;    // [m/s]

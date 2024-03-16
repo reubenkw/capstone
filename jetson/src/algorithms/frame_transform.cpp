@@ -11,7 +11,7 @@ reference frames :
 
 // made easier because the camera gives depth to the camera plane (ie z = depth)
 Point3D camera2robot(Point3D camera_point, double arm_x, double arm_y) {
-    double x = arm_x + CAMERA_2_EFFECTOR_X + camera_point.x;
+    double x = arm_x + CAMERA_2_EFFECTOR_X - camera_point.x;
     double y = arm_y + CAMERA_2_EFFECTOR_Y + camera_point.y;
     double z = FLOOR_2_CAM - camera_point.z;
 

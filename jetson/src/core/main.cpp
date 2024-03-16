@@ -49,7 +49,24 @@ void test_image_processing() {
 	}
 
 	std::vector<Point3D> cam3DPoints = cam.getDeprojection(avgCenter);
+	for (Point3D const& blob : cam3DPoints) {
+		log(std::string("cam point: ") 
+		+ std::to_string(blob.x) + std::string(", ") 
+		+ std::to_string(blob.y) + std::string(", ") 
+		+ std::to_string(blob.z));
+	}
 	std::vector<Point3D> robotPoints = camera2robot(cam3DPoints, 0, 0);
+
+	Point3D origin = cam.getDeprojection((1, 1));
+	log(std::string("origin: ") 
+		+ std::to_string(origin.x) + std::string(", ") 
+		+ std::to_string(origin.y) + std::string(", ") 
+		+ std::to_string(origin.z));
+	Point3D halfhalf = cam.getDeprojection((424, 240));
+	log(std::string("halfhalf: ") 
+		+ std::to_string(halfhalf.x) + std::string(", ") 
+		+ std::to_string(halfhalf.y) + std::string(", ") 
+		+ std::to_string(halfhalf.z));
 
 	for (Point3D const& blob : robotPoints) {
 		log(std::string("blob: ") 
