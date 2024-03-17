@@ -81,7 +81,7 @@ cv::Mat whiteMask(cv::Mat& image, uint8_t brightest) {
 			double r = p->x;
 			double g = p->y;
 			double b = p->z;
-			if (g/r > 0.95 && g/r < 1.05 && g/b > 0.9 && g/b < 1.1 && b > brightest*0.9) {
+			if (g/r > 0.6 && g/r < 1.4 && g/b > 0.6 && g/b < 1.4 && (r + g + b)/3 > 200) {
 				thresholded.at<uchar>(i, j) = 255;
 			}
 		}
@@ -100,7 +100,7 @@ cv::Mat greenMask(cv::Mat& image) {
 			double r = p->x;
 			double g = p->y;
 			double b = p->z;
-			if (g > r * 1.2 && g > b * 1.75 && g > 60) {
+			if (g > r * 1.3 && g > b * 1.3 && g > 50) {
 				thresholded.at<uchar>(i, j) = 255;
 			}
 		}
