@@ -15,9 +15,9 @@ void app_main(void)
     // test_all_stepper();
     // test_z_stepper();
     // test_i2c_stepper_interface();
-    // test_i2c_read();
+    test_i2c_write(MCU_E_ADDRESS);
     // test_all_stepper();
-    test_i2c_stepper_interface();
+    // test_i2c_stepper_interface();
     // test_motor_go_to(260, 210, 550);
     printf("done main\n");
     while(true) {

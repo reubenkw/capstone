@@ -28,7 +28,7 @@
 
 void init_i2c_jetson_mcu_m();
 void init_i2c_jetson_mcu_e();
-void test_i2c_write();
-void test_i2c_read();
+void test_i2c_write(uint mcu_address);
+void test_i2c_read(uint mcu_address);
 
 #endif //h
