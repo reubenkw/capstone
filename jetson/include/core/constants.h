@@ -9,7 +9,7 @@ const float CARTESIAN_Y_MIN = 0;        // [m]
 const float CARTESIAN_Y_MAX = 0.28;    // [m]
 const float CARTESIAN_Z_MIN = 0.3;      // [m] 
 const float CARTESIAN_Z_MAX = 0.75;     // [m] 
-const float FLOOR_2_CAM = 0.815;        // [m]
+const float FLOOR_2_CAM = 0.806;        // [m]
 
 const float CAMERA_2_EFFECTOR_X = 0.034;    // [m]
 const float CAMERA_2_EFFECTOR_Y = 0.085;     // [m]
