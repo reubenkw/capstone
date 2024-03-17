@@ -77,8 +77,11 @@ cv::Mat whiteMask(cv::Mat& image) {
 	for (int i = 0; i < image.rows; i++) {
 		for (int j = 0; j < image.cols; j++) {
 			cv::Point3_<uchar>* p = image.ptr<cv::Point3_<uchar> >(i, j);
-			Pixel pix{ p->x, p->y, p->z };
-			if (pix.g < pix.r * 1.05 && pix.r < pix.g * 1.05 && pix.g < pix.b * 1.1 && pix.g > 235) {
+			// need double not uint8 bc values might go > 255 in the math
+			double r = p->x;
+			double g = p->y;
+			double b = p->z;
+			if (g < r * 1.05 && r < g * 1.05 && g < b * 1.1 && g > 235) {
 				thresholded.at<uchar>(i, j) = 255;
 			}
 		}
@@ -93,8 +96,11 @@ cv::Mat greenMask(cv::Mat& image) {
 	for (int i = 0; i < image.rows; i++) {
 		for (int j = 0; j < image.cols; j++) {
 			cv::Point3_<uchar>* p = image.ptr<cv::Point3_<uchar> >(i, j);
-			Pixel pix{ p->x, p->y, p->z };
-			if (pix.g > pix.r * 1.2 && pix.g > pix.b * 2 && pix.g > 50) {
+			// need double not uint8 bc values might go > 255 in the math
+			double r = p->x;
+			double g = p->y;
+			double b = p->z;
+			if (g > r * 1.2 && g > b * 1.5 && g > 50) {
 				thresholded.at<uchar>(i, j) = 255;
 			}
 		}
@@ -109,10 +115,8 @@ std::vector<Point2D> findFlowerCenters(cv::Mat& image, Camera & cam){
 	uint8_t brightest = (uint8_t) brightestPixelVal(image);
 	log(std::string("brightest pixel value: ") + std::to_string(brightest));
 
-	cv::Mat whiteMask = colorMask(image, {255, 255, 255}, 0, 255);
-	log(std::string("found white mask"));
+	cv::Mat whiteMask = whiteMask(image);
 	cv::imwrite("./plots/white.png", whiteMask);
-	log(std::string("saved white mask"));
 
 	cv::Mat green = greenMask(image);
 	cv::imwrite("./plots/green.png", green);
