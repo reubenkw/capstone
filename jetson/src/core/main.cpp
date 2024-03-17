@@ -20,8 +20,8 @@ std::vector<Point3D> test_image_processing(Camera & cam) {
 	cv::Mat image = cam.getColorImage();
 
 	cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
-	std::string tag = getFormattedTimeStamp();
-	cv::imwrite("./plots/" + tag + "_original_image.png", image);
+	std::string tag = std::string("");
+	cv::imwrite("./plots/original_image.png", image);
 	cv::cvtColor(image, image, cv::COLOR_BGR2RGB);
 		
 	log(std::string("finding yellow blobs!!!!!!"));
@@ -36,7 +36,7 @@ std::vector<Point3D> test_image_processing(Camera & cam) {
 	}
 
 	cv::Mat depth = cam.getDepthImage();
-	cv::imwrite("./plots/" + tag + "_depth.png", depth);
+	cv::imwrite("./plots/depth.png", depth);
 	int width = image.cols;
 	int height = image.rows;
 

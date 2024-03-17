@@ -71,7 +71,7 @@ cv::Mat colorMask(cv::Mat& image, Pixel ideal, double angleTol, double lengthTol
 	return thresholded;
 }
 
-cv::Mat whiteMask(cv::Mat& image) {
+cv::Mat whiteMask(cv::Mat& image, uint8_t brightest) {
 	cv::Mat thresholded =  cv::Mat::zeros(cv::Size(image.cols, image.rows), CV_8UC1);;
 
 	for (int i = 0; i < image.rows; i++) {
@@ -81,7 +81,7 @@ cv::Mat whiteMask(cv::Mat& image) {
 			double r = p->x;
 			double g = p->y;
 			double b = p->z;
-			if (g/r > 0.95 && g/r < 1.05 && g/b > 0.9 && g/b < 1.1 && b > 245) {
+			if (g/r > 0.95 && g/r < 1.05 && g/b > 0.9 && g/b < 1.1 && b > brightest*0.9) {
 				thresholded.at<uchar>(i, j) = 255;
 			}
 		}
@@ -115,7 +115,7 @@ std::vector<Point2D> findFlowerCenters(cv::Mat& image, Camera & cam, std::string
 	uint8_t brightest = (uint8_t) brightestPixelVal(image);
 	log(std::string("brightest pixel value: ") + std::to_string(brightest));
 
-	cv::Mat white = whiteMask(image);
+	cv::Mat white = whiteMask(image, brightest);
 	cv::imwrite("./plots/" + tag + "_white.png", white);
 
 	cv::Mat green = greenMask(image);
@@ -155,6 +155,11 @@ Camera::Camera() : color{rs2::frame()}, depth{rs2::frame()} {
 	log(std::string("INFO Camera: starting init"));
 	p.start();
 	
+	// set manual exposure
+	auto colorSensor = p.get_active_profile().get_device().query_sensors()[0];
+	colorSensor.set_option(RS2_OPTION_ENABLE_AUTO_EXPOSURE, 0);
+	colorSensor.set_option(RS2_OPTION_EXPOSURE, 60000);
+
 	// Block program until frames arrive
 	storeSnapshot();
 	log(std::string("INFO Camera: first frame read"));
@@ -163,12 +168,9 @@ Camera::Camera() : color{rs2::frame()}, depth{rs2::frame()} {
 	rs2_error *e = 0;
 	rs2::video_stream_profile profile(depth.get_profile());
 	intrinsic = profile.get_intrinsics();
-
-	// set manual exposure
-	auto colorSensor = p.get_active_profile().get_device().query_sensors()[1];
-	colorSensor.set_option(RS2_OPTION_ENABLE_AUTO_EXPOSURE, 0);
-	colorSensor.set_option(RS2_OPTION_EXPOSURE, 78000);
+	
 	log(std::string("INFO Camera: init done"));
+	
 }
 
 // returns the most recent snapshot
