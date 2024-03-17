@@ -109,19 +109,19 @@ cv::Mat greenMask(cv::Mat& image) {
 	return thresholded;
 }
 
-std::vector<Point2D> findFlowerCenters(cv::Mat& image, Camera & cam){
+std::vector<Point2D> findFlowerCenters(cv::Mat& image, Camera & cam, std::string const & tag){
 	std::vector<Point2D> whiteBlobs;
 
 	uint8_t brightest = (uint8_t) brightestPixelVal(image);
 	log(std::string("brightest pixel value: ") + std::to_string(brightest));
 
 	cv::Mat white = whiteMask(image);
-	cv::imwrite("./plots/white.png", white);
+	cv::imwrite("./plots/" + tag + "_white.png", white);
 
 	cv::Mat green = greenMask(image);
-	cv::imwrite("./plots/green.png", green);
+	cv::imwrite("./plots/" + tag + "_green.png", green);
 	cv::blur(green, green, cv::Size(50, 50));
-	cv::imwrite("./plots/blurredGreen.png", green);
+	cv::imwrite("./plots/" + tag + "_blurredGreen.png", green);
 
 	cv::Mat labels, stats, centroids;
 	int label_count = cv::connectedComponentsWithStats(white, labels, stats, centroids);

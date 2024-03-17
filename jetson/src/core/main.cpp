@@ -20,22 +20,23 @@ std::vector<Point3D> test_image_processing(Camera & cam) {
 	cv::Mat image = cam.getColorImage();
 
 	cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
-	cv::imwrite("./plots/original_image.png", image);
+	std::string tag = getFormattedTimeStamp();
+	cv::imwrite("./plots/" + tag + "_original_image.png", image);
 	cv::cvtColor(image, image, cv::COLOR_BGR2RGB);
 		
-	log(std::string("yellow blobs!!!!!!"));
-	std::vector<Point2D> yellowBlobs = findFlowerCenters(image, cam);
+	log(std::string("finding yellow blobs!!!!!!"));
+	std::vector<Point2D> yellowBlobs = findFlowerCenters(image, cam, tag);
 	for (Point2D const& blob : yellowBlobs) {
 		log(std::string("yellow blob") + std::to_string(blob.x) + std::string(",") + std::to_string(blob.y));
 	}
 	std::vector<Point2D> avgCenter = avgClusterCenters(yellowBlobs, 10);
-	log(std::string("avgCenters!!!!!!"));
+	log(std::string("finding avgCenters!!!!!!"));
 	for (Point2D const& blob : avgCenter) {
 		log(std::string("avgCenter: ") + std::to_string(blob.x) + std::string(",") + std::to_string(blob.y));
 	}
 
 	cv::Mat depth = cam.getDepthImage();
-	cv::imwrite("./plots/depth.png", depth);
+	cv::imwrite("./plots/" + tag + "_depth.png", depth);
 	int width = image.cols;
 	int height = image.rows;
 
@@ -63,7 +64,7 @@ std::vector<Point3D> test_image_processing(Camera & cam) {
 	}
 	
 	cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
-	cv::imwrite("plots/flowers.jpg", image);
+	cv::imwrite("plots/" + tag + "_flowers.jpg", image);
 
 	return robotPoints;
 }
@@ -258,12 +259,12 @@ int main(int argc, char** argv)
 	initialize_log();
 	log(std::string("Starting Program!"));
 	// test_camera_image();
-	Camera cam;
-	test_image_processing(cam);
+	// Camera cam;
+	// test_image_processing(cam);
 	// test_clustering();
 	// test_i2c_read();
 	// test_move_servo_arm();
 	// test_move_servo_arm_to_flowers();
-	// test_scan();
+	test_scan();
 	return 0;
 }
