@@ -1,61 +1,78 @@
-16-03-2024_21-26-20 INFO: ioctl_val: 
-16-03-2024_21-26-20 -1
-16-03-2024_21-26-20 ERROR: failed to read from i2c bus address: 
-16-03-2024_21-26-20 Encoders: 42224 
-16-03-2024_21-26-20 Initialized Robot
-16-03-2024_21-26-20 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 2, 31, 64, 0, 
-16-03-2024_21-26-20 Move stepper motor: 2to position: 800.000000by sending value: 31 64
-16-03-2024_21-26-20 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 0, 0, 0, 0, 
-16-03-2024_21-26-20 Move stepper motor: 0to position: 0.000000by sending value: 0 0
-16-03-2024_21-26-20 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 1, 0, 0, 0, 
-16-03-2024_21-26-20 Move stepper motor: 1to position: 0.000000by sending value: 0 0
-16-03-2024_21-26-35 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 0, 6, 14, 0, 
-16-03-2024_21-26-35 Move stepper motor: 0to position: 155.000001by sending value: 6 14
-16-03-2024_21-26-35 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 1, 4, 76, 0, 
-16-03-2024_21-26-35 Move stepper motor: 1to position: 110.000007by sending value: 4 76
-16-03-2024_21-26-50 brightest pixel value: 255
-16-03-2024_21-26-50 Arm Position - x:0.000000, y: 0.000000, z: 0.820000
-16-03-2024_21-26-50 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 0, 6, 14, 0, 
-16-03-2024_21-26-50 Move stepper motor: 0to position: 155.000001by sending value: 6 14
-16-03-2024_21-26-50 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 1, 8, 152, 0, 
-16-03-2024_21-26-50 Move stepper motor: 1to position: 220.000014by sending value: 8 152
-16-03-2024_21-27-05 brightest pixel value: 254
-16-03-2024_21-27-06 depth val: 0.312800
-16-03-2024_21-27-06 Arm Position - x:0.000000, y: 0.000000, z: 0.820000
-16-03-2024_21-27-06 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 0, 12, 28, 0, 
-16-03-2024_21-27-06 Move stepper motor: 0to position: 310.000002by sending value: 12 28
-16-03-2024_21-27-06 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 1, 4, 76, 0, 
-16-03-2024_21-27-06 Move stepper motor: 1to position: 110.000007by sending value: 4 76
-16-03-2024_21-27-21 brightest pixel value: 255
-16-03-2024_21-27-21 depth val: 0.325700
-16-03-2024_21-27-21 Arm Position - x:0.000000, y: 0.000000, z: 0.820000
-16-03-2024_21-27-21 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 0, 12, 28, 0, 
-16-03-2024_21-27-21 Move stepper motor: 0to position: 310.000002by sending value: 12 28
-16-03-2024_21-27-21 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 1, 8, 152, 0, 
-16-03-2024_21-27-21 Move stepper motor: 1to position: 220.000014by sending value: 8 152
-16-03-2024_21-27-36 brightest pixel value: 254
-16-03-2024_21-27-37 Arm Position - x:0.000000, y: 0.000000, z: 0.820000
-16-03-2024_21-27-37 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 0, 18, 42, 0, 
-16-03-2024_21-27-37 Move stepper motor: 0to position: 465.000004by sending value: 18 42
-16-03-2024_21-27-37 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 1, 4, 76, 0, 
-16-03-2024_21-27-37 Move stepper motor: 1to position: 110.000007by sending value: 4 76
-16-03-2024_21-27-52 brightest pixel value: 255
-16-03-2024_21-27-52 depth val: 0.000000
-16-03-2024_21-27-52 depth val: 0.169800
-16-03-2024_21-27-52 depth val: 0.317200
-16-03-2024_21-27-52 Arm Position - x:0.000000, y: 0.000000, z: 0.820000
-16-03-2024_21-27-52 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 0, 18, 42, 0, 
-16-03-2024_21-27-52 Move stepper motor: 0to position: 465.000004by sending value: 18 42
-16-03-2024_21-27-52 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 1, 8, 152, 0, 
-16-03-2024_21-27-52 Move stepper motor: 1to position: 220.000014by sending value: 8 152
-16-03-2024_21-28-07 brightest pixel value: 255
-16-03-2024_21-28-08 depth val: 0.313600
-16-03-2024_21-28-08 Arm Position - x:0.000000, y: 0.000000, z: 0.820000
-16-03-2024_21-28-08 move arm to point: -0.013477, 0.053335, 0.575150
-16-03-2024_21-28-23 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 0, 0, 0, 0, 
-16-03-2024_21-28-23 Move stepper motor: 0to position: -13.476915by sending value: 0 0
-16-03-2024_21-28-23 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 1, 2, 21, 0, 
-16-03-2024_21-28-23 Move stepper motor: 1to position: 53.335180by sending value: 2 21
-16-03-2024_21-28-23 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 2, 22, 119, 0, 
-16-03-2024_21-28-23 Move stepper motor: 2to position: 575.150001by sending value: 22 119
-16-03-2024_21-28-23 INFO: done test_scan.
+16-03-2024_22-08-20 INFO: ioctl_val: 
+16-03-2024_22-08-20 -1
+16-03-2024_22-08-20 ERROR: failed to read from i2c bus address: 
+16-03-2024_22-08-20 Encoders: 58608 
+16-03-2024_22-08-20 Initialized Robot
+16-03-2024_22-08-20 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 2, 31, 64, 0, 
+16-03-2024_22-08-20 Move stepper motor: 2to position: 800.000000by sending value: 31 64
+16-03-2024_22-08-20 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 0, 0, 0, 0, 
+16-03-2024_22-08-20 Move stepper motor: 0to position: 0.000000by sending value: 0 0
+16-03-2024_22-08-20 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 1, 0, 0, 0, 
+16-03-2024_22-08-20 Move stepper motor: 1to position: 0.000000by sending value: 0 0
+16-03-2024_22-08-35 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 0, 8, 18, 0, 
+16-03-2024_22-08-35 Move stepper motor: 0to position: 206.666663by sending value: 8 18
+16-03-2024_22-08-35 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 1, 4, 76, 0, 
+16-03-2024_22-08-35 Move stepper motor: 1to position: 110.000007by sending value: 4 76
+16-03-2024_22-08-50 brightest pixel value: 255
+16-03-2024_22-08-50 depth val: 0.337300
+16-03-2024_22-08-50 Arm Position - x:0.206667, y: 0.110000, z: 0.800000
+16-03-2024_22-08-50 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 0, 8, 18, 0, 
+16-03-2024_22-08-50 Move stepper motor: 0to position: 206.666663by sending value: 8 18
+16-03-2024_22-08-50 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 1, 8, 152, 0, 
+16-03-2024_22-08-50 Move stepper motor: 1to position: 220.000014by sending value: 8 152
+16-03-2024_22-09-05 brightest pixel value: 254
+16-03-2024_22-09-05 depth val: 0.367000
+16-03-2024_22-09-05 depth val: 0.000000
+16-03-2024_22-09-05 depth val: 0.335400
+16-03-2024_22-09-05 depth val: 0.313200
+16-03-2024_22-09-06 Arm Position - x:0.206667, y: 0.220000, z: 0.800000
+16-03-2024_22-09-06 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 0, 16, 37, 0, 
+16-03-2024_22-09-06 Move stepper motor: 0to position: 413.333327by sending value: 16 37
+16-03-2024_22-09-06 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 1, 4, 76, 0, 
+16-03-2024_22-09-06 Move stepper motor: 1to position: 110.000007by sending value: 4 76
+16-03-2024_22-09-21 brightest pixel value: 255
+16-03-2024_22-09-21 depth val: 0.000000
+16-03-2024_22-09-21 Arm Position - x:0.413333, y: 0.110000, z: 0.800000
+16-03-2024_22-09-21 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 0, 16, 37, 0, 
+16-03-2024_22-09-21 Move stepper motor: 0to position: 413.333327by sending value: 16 37
+16-03-2024_22-09-21 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 1, 8, 152, 0, 
+16-03-2024_22-09-21 Move stepper motor: 1to position: 220.000014by sending value: 8 152
+16-03-2024_22-09-36 brightest pixel value: 255
+16-03-2024_22-09-36 depth val: 0.308900
+16-03-2024_22-09-37 Arm Position - x:0.413333, y: 0.220000, z: 0.800000
+16-03-2024_22-09-37 flower: 0.387063, 0.103176, 0.477700
+16-03-2024_22-09-37 flower: 0.367442, 0.111564, 0.448000
+16-03-2024_22-09-37 flower: 0.240667, 0.305000, 0.815000
+16-03-2024_22-09-37 flower: 0.383300, 0.155264, 0.479600
+16-03-2024_22-09-37 flower: 0.257809, 0.235507, 0.501800
+16-03-2024_22-09-37 flower: 0.447333, 0.195000, 0.815000
+16-03-2024_22-09-37 flower: 0.257439, 0.230943, 0.506100
+16-03-2024_22-09-37 move arm to point: 0.379268, 0.123335, 0.468433
+16-03-2024_22-09-52 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 0, 14, 208, 0, 
+16-03-2024_22-09-52 Move stepper motor: 0to position: 379.268127by sending value: 14 208
+16-03-2024_22-09-52 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 1, 4, 209, 0, 
+16-03-2024_22-09-52 Move stepper motor: 1to position: 123.334815by sending value: 4 209
+16-03-2024_22-09-52 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 2, 18, 76, 0, 
+16-03-2024_22-09-52 Move stepper motor: 2to position: 468.433340by sending value: 18 76
+16-03-2024_22-09-52 move arm to point: 0.240667, 0.305000, 0.815000
+16-03-2024_22-10-07 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 0, 9, 102, 0, 
+16-03-2024_22-10-07 Move stepper motor: 0to position: 240.666665by sending value: 9 102
+16-03-2024_22-10-07 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 1, 11, 234, 0, 
+16-03-2024_22-10-07 Move stepper motor: 1to position: 305.000015by sending value: 11 234
+16-03-2024_22-10-07 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 2, 31, 213, 0, 
+16-03-2024_22-10-07 Move stepper motor: 2to position: 814.999998by sending value: 31 213
+16-03-2024_22-10-07 move arm to point: 0.257624, 0.233225, 0.503950
+16-03-2024_22-10-22 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 0, 10, 16, 0, 
+16-03-2024_22-10-22 Move stepper motor: 0to position: 257.624161by sending value: 10 16
+16-03-2024_22-10-22 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 1, 9, 28, 0, 
+16-03-2024_22-10-22 Move stepper motor: 1to position: 233.224988by sending value: 9 28
+16-03-2024_22-10-22 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 2, 19, 175, 0, 
+16-03-2024_22-10-22 Move stepper motor: 2to position: 503.950000by sending value: 19 175
+16-03-2024_22-10-22 move arm to point: 0.447333, 0.195000, 0.815000
+16-03-2024_22-10-37 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 0, 17, 121, 0, 
+16-03-2024_22-10-37 Move stepper motor: 0to position: 447.333328by sending value: 17 121
+16-03-2024_22-10-37 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 1, 7, 158, 0, 
+16-03-2024_22-10-37 Move stepper motor: 1to position: 195.000008by sending value: 7 158
+16-03-2024_22-10-37 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 2, 31, 213, 0, 
+16-03-2024_22-10-37 Move stepper motor: 2to position: 814.999998by sending value: 31 213
+16-03-2024_22-10-37 INFO: done test_scan.
