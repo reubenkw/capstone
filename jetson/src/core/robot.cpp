@@ -164,6 +164,7 @@ uint16_t Robot::getDriveMotorEncoderVal(DriveMotor motor) {
 
 void Robot::moveServoArm(ServoMotor motor, double pos) {
 	servoArm[motor].simple_pos(pos);
+	armPosition[motor] = pos;
 }
 
 void Robot::pollinate() { 
