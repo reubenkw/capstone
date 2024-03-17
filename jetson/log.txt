@@ -1,6 +1,9 @@
-17-03-2024_13-11-44 Starting Program!
-17-03-2024_13-11-44 INFO Camera: starting init
-17-03-2024_13-11-45 INFO Camera: first frame read
-17-03-2024_13-11-45 INFO Camera: init done
-17-03-2024_13-11-45 yellow blobs!!!!!!
-17-03-2024_13-11-45 brightest pixel value: 253
+17-03-2024_13-19-11 Starting Program!
+17-03-2024_13-19-11 INFO Camera: starting init
+17-03-2024_13-19-12 INFO Camera: first frame read
+17-03-2024_13-19-12 INFO Camera: init done
+17-03-2024_13-19-12 yellow blobs!!!!!!
+17-03-2024_13-19-12 brightest pixel value: 253
+17-03-2024_13-19-12 found white mask
+17-03-2024_13-19-12 saved white mask
+17-03-2024_13-19-12 avgCenters!!!!!!
