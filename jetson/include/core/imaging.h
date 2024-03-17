@@ -7,10 +7,6 @@
 #include <opencv2/opencv.hpp>
 #include <librealsense2/rs.hpp>
 
-
-std::vector<Point2D> findFlowerCenters(cv::Mat &  image);
-double findYCenterOfPlant(cv::Mat & image);
-
 struct Pixel {
 	uint8_t r;
 	uint8_t g;
@@ -32,5 +28,8 @@ public:
 	Point3D getDeprojection(Point2D color_pixel);
 	std::vector<Point3D> getDeprojection(std::vector<Point2D> const & color_pixels);
 };
+
+std::vector<Point2D> findFlowerCenters(cv::Mat &  image, Camera & cam);
+double findYCenterOfPlant(cv::Mat & image);
 
 #endif // h

@@ -24,7 +24,7 @@ std::vector<Point3D> test_image_processing(Camera & cam) {
 	cv::cvtColor(image, image, cv::COLOR_BGR2RGB);
 		
 	log(std::string("yellow blobs!!!!!!"));
-	std::vector<Point2D> yellowBlobs = findFlowerCenters(image);
+	std::vector<Point2D> yellowBlobs = findFlowerCenters(image, cam);
 	for (Point2D const& blob : yellowBlobs) {
 		log(std::string("yellow blob") + std::to_string(blob.x) + std::string(",") + std::to_string(blob.y));
 	}

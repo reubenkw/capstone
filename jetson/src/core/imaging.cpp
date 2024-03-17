@@ -71,7 +71,7 @@ cv::Mat colorMask(cv::Mat& image, Pixel ideal, double angleTol, double lengthTol
 	return thresholded;
 }
 
-std::vector<Point2D> findFlowerCenters(cv::Mat& image){
+std::vector<Point2D> findFlowerCenters(cv::Mat& image, Camera & cam){
 	std::vector<Point2D> yellowBlobs;
 
 	uint8_t brightest = (uint8_t) brightestPixelVal(image);
@@ -91,8 +91,12 @@ std::vector<Point2D> findFlowerCenters(cv::Mat& image){
 	// start index at 1 since first blob is background blob
 	// TODO: smarter way to determine hardcoded cutoffs?
 	for (int i = 1; i < label_count; i++) {
-		int blurredGreenVal = green.at<uchar>((int)centroids.at<double>(i, 1), (int)centroids.at<double>(i, 0));
-		if ( blurredGreenVal > 10 && stats.at<int>(i, cv::CC_STAT_AREA) > 20 ) {
+		double centerX = centroids.at<double>(i, 0);
+		double centerY = centroids.at<double>(i, 1);
+		int blurredGreenVal = green.at<uchar>((int)centerY, (int)centerX);
+		if ( blurredGreenVal > 10 
+				&& stats.at<int>(i, cv::CC_STAT_AREA) > 20 
+				&& cam.getDepthVal(centerX, centerY) < 0.4) {
 			yellowBlobs.push_back({ centroids.at<double>(i, 0), centroids.at<double>(i, 1) });
 		}
 	}

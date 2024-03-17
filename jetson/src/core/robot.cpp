@@ -198,7 +198,7 @@ std::vector<Point3D> Robot::findFlowers(){
 		cv::imwrite(std::string("./plots/") + getFormattedTimeStamp() + std::string("_image.png"), image);
 		cv::cvtColor(image, image, cv::COLOR_BGR2RGB);
 	}
-	std::vector<Point2D> flowerCenters = findFlowerCenters(image);
+	std::vector<Point2D> flowerCenters = findFlowerCenters(image, camera);
 	if (DEBUG) {
 		for (Point2D const& blob : flowerCenters) {
 			cv::circle(image, cv::Point((int)blob.x, (int)blob.y), 5, { 255, 0, 255 }, 5);
