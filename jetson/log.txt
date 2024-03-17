@@ -1,12 +1,6 @@
-17-03-2024_12-55-31 Starting Program!
-17-03-2024_12-55-31 INFO Camera: starting init
-17-03-2024_12-55-32 INFO Camera: first frame read
-17-03-2024_12-55-32 INFO Camera: init done
-17-03-2024_12-55-32 yellow blobs!!!!!!
-17-03-2024_12-55-32 brightest pixel value: 253
-17-03-2024_12-55-32 yellow blob571.425926,266.203704
-17-03-2024_12-55-32 avgCenters!!!!!!
-17-03-2024_12-55-32 avgCenter: 571.425926,266.203704
-17-03-2024_12-55-33 depth val: 0.310000
-17-03-2024_12-55-33 cam point: 0.104915, 0.019018, 0.310000
-17-03-2024_12-55-33 blob: -0.070915, 0.104018, 0.505000
+17-03-2024_13-11-44 Starting Program!
+17-03-2024_13-11-44 INFO Camera: starting init
+17-03-2024_13-11-45 INFO Camera: first frame read
+17-03-2024_13-11-45 INFO Camera: init done
+17-03-2024_13-11-45 yellow blobs!!!!!!
+17-03-2024_13-11-45 brightest pixel value: 253

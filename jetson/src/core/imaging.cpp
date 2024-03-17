@@ -104,13 +104,13 @@ cv::Mat greenMask(cv::Mat& image) {
 }
 
 std::vector<Point2D> findFlowerCenters(cv::Mat& image, Camera & cam){
-	std::vector<Point2D> yellowBlobs;
+	std::vector<Point2D> whiteBlobs;
 
 	uint8_t brightest = (uint8_t) brightestPixelVal(image);
 	log(std::string("brightest pixel value: ") + std::to_string(brightest));
 
-	cv::Mat white = whiteMask(image);
-	cv::imwrite("./plots/white.png", yellowMask);
+	cv::Mat whiteMask = whiteMask(image);
+	cv::imwrite("./plots/white.png", whiteMask);
 
 	cv::Mat green = greenMask(image);
 	cv::imwrite("./plots/green.png", green);
@@ -118,7 +118,7 @@ std::vector<Point2D> findFlowerCenters(cv::Mat& image, Camera & cam){
 	cv::imwrite("./plots/blurredGreen.png", green);
 
 	cv::Mat labels, stats, centroids;
-	int label_count = cv::connectedComponentsWithStats(yellowMask, labels, stats, centroids);
+	int label_count = cv::connectedComponentsWithStats(whiteMask, labels, stats, centroids);
 	
 	// start index at 1 since first blob is background blob
 	// TODO: smarter way to determine hardcoded cutoffs?
@@ -134,10 +134,10 @@ std::vector<Point2D> findFlowerCenters(cv::Mat& image, Camera & cam){
 		if ( blurredGreenVal > 10 
 				&& stats.at<int>(i, cv::CC_STAT_AREA) > 20 
 				&& cam.getDepthVal(x, y) < 0.4) {
-			yellowBlobs.push_back({ centroids.at<double>(i, 0), centroids.at<double>(i, 1) });
+			whiteBlobs.push_back({ centroids.at<double>(i, 0), centroids.at<double>(i, 1) });
 		}
 	}
-	return yellowBlobs;
+	return whiteBlobs;
 }
 
 // TODO: Find center of row
