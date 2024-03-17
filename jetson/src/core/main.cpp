@@ -238,34 +238,34 @@ void test_scan() {
 
 	std::vector<Point3D> flowerCenters = r.scan();
 
-	for (auto const & flowerCenter : flowerCenters){
+	// for (auto const & flowerCenter : flowerCenters){
 
-		// check if point is within bounds
-		if (flowerCenter.x > CARTESIAN_X_MAX || flowerCenter.x < CARTESIAN_X_MIN ||
-			flowerCenter.y > CARTESIAN_Y_MAX || flowerCenter.y < CARTESIAN_Y_MIN ||
-			flowerCenter.z > CARTESIAN_Z_MAX || flowerCenter.z < CARTESIAN_Z_MIN) {
-			std::stringstream ss;
-			ss << "INFO robot: ignoring out of bound flower at: (" 
-				<< flowerCenter.x << ", " << flowerCenter.y << ", " << flowerCenter.x << ").";
-			log(ss.str());
-			continue;
-		}
+	// 	// check if point is within bounds
+	// 	if (flowerCenter.x > CARTESIAN_X_MAX || flowerCenter.x < CARTESIAN_X_MIN ||
+	// 		flowerCenter.y > CARTESIAN_Y_MAX || flowerCenter.y < CARTESIAN_Y_MIN ||
+	// 		flowerCenter.z > CARTESIAN_Z_MAX || flowerCenter.z < CARTESIAN_Z_MIN) {
+	// 		std::stringstream ss;
+	// 		ss << "INFO robot: ignoring out of bound flower at: (" 
+	// 			<< flowerCenter.x << ", " << flowerCenter.y << ", " << flowerCenter.x << ").";
+	// 		log(ss.str());
+	// 		continue;
+	// 	}
 
-		log(std::string("move arm to point: ") 
-		+ std::to_string(flowerCenter.x) + std::string(", ") 
-		+ std::to_string(flowerCenter.y) + std::string(", ")
-		+ std::to_string(flowerCenter.z));
+	// 	log(std::string("move arm to point: ") 
+	// 	+ std::to_string(flowerCenter.x) + std::string(", ") 
+	// 	+ std::to_string(flowerCenter.y) + std::string(", ")
+	// 	+ std::to_string(flowerCenter.z));
 
-		usleep(15000000);
+	// 	usleep(15000000);
 
-		r.moveServoArm(x, flowerCenter.x);
-		r.moveServoArm(y, flowerCenter.y);
-		r.moveServoArm(z, flowerCenter.z);
+	// 	r.moveServoArm(x, flowerCenter.x);
+	// 	r.moveServoArm(y, flowerCenter.y);
+	// 	r.moveServoArm(z, flowerCenter.z);
 
-		usleep(30000000);
-		r.moveServoArm(z, 0.8);
+	// 	usleep(30000000);
+	// 	r.moveServoArm(z, 0.8);
 
-	}
+	// }
 	log(std::string("INFO: done test_scan."));
 	
 }
