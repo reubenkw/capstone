@@ -71,16 +71,48 @@ cv::Mat colorMask(cv::Mat& image, Pixel ideal, double angleTol, double lengthTol
 	return thresholded;
 }
 
+cv::Mat whiteMask(cv::Mat& image) {
+	cv::Mat thresholded =  cv::Mat::zeros(cv::Size(image.cols, image.rows), CV_8UC1);;
+
+	for (int i = 0; i < image.rows; i++) {
+		for (int j = 0; j < image.cols; j++) {
+			cv::Point3_<uchar>* p = image.ptr<cv::Point3_<uchar> >(i, j);
+			Pixel pix{ p->x, p->y, p->z };
+			if (pix.g < pix.r * 1.05 && pix.r < pix.g * 1.05 && pix.g < pix.b * 1.1 && pix.g > 235) {
+				thresholded.at<uchar>(i, j) = 255;
+			}
+		}
+	}
+
+	return thresholded;
+}
+
+cv::Mat greenMask(cv::Mat& image) {
+	cv::Mat thresholded =  cv::Mat::zeros(cv::Size(image.cols, image.rows), CV_8UC1);;
+
+	for (int i = 0; i < image.rows; i++) {
+		for (int j = 0; j < image.cols; j++) {
+			cv::Point3_<uchar>* p = image.ptr<cv::Point3_<uchar> >(i, j);
+			Pixel pix{ p->x, p->y, p->z };
+			if (pix.g > pix.r * 1.2 && pix.g > pix.b * 2 && pix.g > 50) {
+				thresholded.at<uchar>(i, j) = 255;
+			}
+		}
+	}
+
+	return thresholded;
+}
+
 std::vector<Point2D> findFlowerCenters(cv::Mat& image, Camera & cam){
 	std::vector<Point2D> yellowBlobs;
 
 	uint8_t brightest = (uint8_t) brightestPixelVal(image);
 	log(std::string("brightest pixel value: ") + std::to_string(brightest));
 
-	cv::Mat yellowMask = colorMask(image, {brightest, brightest, brightest}, 0.2, 50);
-	cv::imwrite("./plots/yellow.png", yellowMask);
+	cv::Mat white = whiteMask(image);
+	cv::imwrite("./plots/white.png", yellowMask);
 
-	cv::Mat green = colorMask(image, {30, 55, 15}, 0.2, 50);
+	cv::Mat green = greenMask(image);
 	cv::imwrite("./plots/green.png", green);
 	cv::blur(green, green, cv::Size(50, 50));
 	cv::imwrite("./plots/blurredGreen.png", green);
