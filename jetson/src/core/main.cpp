@@ -115,11 +115,11 @@ void test_i2c_read() {
 void test_i2c_read() {
 	int i2c_bus_file = open_i2c();
 	log(std::string("INFO: bus file: ") + std::to_string(i2c_bus_file));
-	uint8_t data[2] = {0};
+	uint8_t data[1] = {0};
 	while(true) {
-		read_i2c(i2c_bus_file, 0x10, data, 2);
-		usleep(1000000);
+		read_i2c(i2c_bus_file, 0x10, data, 1);
 		printf("data: %x\n", data[0]);
+ 		usleep(1000000);
 	}
 }
 
@@ -278,7 +278,8 @@ int main(int argc, char** argv)
 	// Camera cam;
 	// test_image_processing(cam);
 	// test_clustering();
-	// test_i2c_read();
+	// test_i2c_write();
+	test_i2c_read();
 	// test_move_servo_arm();
 	// test_move_servo_arm_to_flowers();
 	// test_scan();
