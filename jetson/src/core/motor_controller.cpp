@@ -86,13 +86,15 @@ void MotorController::simple_pos(double pos){
 			std::string("to position: ") + std::to_string(pos) + 
 			std::string("by sending value: ") + std::to_string(data[1]) 
 			+ std::string(" ") + std::to_string(data[2]) );
-	// uint8_t resp = 0;
-	// while(resp == 0){
-	//	read_i2c(file, MCU_E, &resp, 1);
-	//	usleep(1000);
-	// }
-	// log(	std::string("Read stepper motor return: ") + std::to_string(resp));
-	// if (resp == 2){ // hit limit switch
-	// 	throw std::logic_error("hit limit switch");
-	// }
+	
+	uint8_t resp[1] = {0};
+	while(resp[0] == 0 || resp[0] == 1) {
+		read_i2c(file, MCU_E, resp, 1);
+		log(std::string("Read stepper motor return: ") + std::to_string(resp[0]));
+ 		usleep(1000000);
+	}
+	log(std::string("Read stepper motor return: ") + std::to_string(resp[0]));
+	if (resp[0] == 3){ // hit limit switch
+		throw std::logic_error("hit limit switch");
+	}
 }

@@ -234,7 +234,7 @@ void test_scan() {
 	r.moveServoArm(x, 0);
 	r.moveServoArm(y, 0);
 	
-	usleep(15000000);
+	usleep(1000000);
 
 	std::vector<Point3D> flowerCenters = r.scan();
 
@@ -256,13 +256,13 @@ void test_scan() {
 		+ std::to_string(flowerCenter.y) + std::string(", ")
 		+ std::to_string(flowerCenter.z));
 
-		usleep(15000000);
+		usleep(1000000);
 
 		r.moveServoArm(x, flowerCenter.x);
 		r.moveServoArm(y, flowerCenter.y);
 		r.moveServoArm(z, flowerCenter.z);
 
-		usleep(15000000);
+		usleep(1000000);
 		r.moveServoArm(z, 0.8);
 
 	}
