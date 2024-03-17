@@ -90,13 +90,18 @@ std::vector<Point2D> findFlowerCenters(cv::Mat& image, Camera & cam){
 	
 	// start index at 1 since first blob is background blob
 	// TODO: smarter way to determine hardcoded cutoffs?
+	int width = image.cols;
+	int height = image.rows;
+
 	for (int i = 1; i < label_count; i++) {
 		double centerX = centroids.at<double>(i, 0);
 		double centerY = centroids.at<double>(i, 1);
 		int blurredGreenVal = green.at<uchar>((int)centerY, (int)centerX);
+		float x = centerX/width;
+		float y = centerY/height;
 		if ( blurredGreenVal > 10 
 				&& stats.at<int>(i, cv::CC_STAT_AREA) > 20 
-				&& cam.getDepthVal(centerX, centerY) < 0.4) {
+				&& cam.getDepthVal(x, y) < 0.4) {
 			yellowBlobs.push_back({ centroids.at<double>(i, 0), centroids.at<double>(i, 1) });
 		}
 	}

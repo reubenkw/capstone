@@ -200,7 +200,11 @@ std::vector<Point3D> Robot::findFlowers(){
 	}
 	std::vector<Point2D> flowerCenters = findFlowerCenters(image, camera);
 	if (DEBUG) {
+		int width = image.cols;
+		int height = image.rows;
 		for (Point2D const& blob : flowerCenters) {
+			float x = blob.x/width;
+			float y = blob.y/height;
 			cv::circle(image, cv::Point((int)blob.x, (int)blob.y), 5, { 255, 0, 255 }, 5);
 			log(std::string("depth val: ") + std::to_string(camera.getDepthVal(x, y)));
 		}
