@@ -249,6 +249,10 @@ void test_scan() {
 		r.moveServoArm(x, flowerCenter.x);
 		r.moveServoArm(y, flowerCenter.y);
 		r.moveServoArm(z, flowerCenter.z);
+
+		usleep(30000000);
+		r.moveServoArm(z, 0.8);
+
 	}
 	log(std::string("INFO: done test_scan."));
 	
@@ -259,12 +263,12 @@ int main(int argc, char** argv)
 	initialize_log();
 	log(std::string("Starting Program!"));
 	// test_camera_image();
-	// Camera cam;
-	// test_image_processing(cam);
+	Camera cam;
+	test_image_processing(cam);
 	// test_clustering();
 	// test_i2c_read();
 	// test_move_servo_arm();
 	// test_move_servo_arm_to_flowers();
-	test_scan();
+	// test_scan();
 	return 0;
 }
