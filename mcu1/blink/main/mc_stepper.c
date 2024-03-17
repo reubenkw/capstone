@@ -108,9 +108,9 @@ int move_z(uint crnt, uint desired) {
 }
 
 void reset_xyz() {
+    move_z(0, 9999); // current could be unknown, just move up to limit
     move_x(-9999);
     move_y(-9999);
-    move_z(0, 9999); // current could be unknown, just move up to limit
     end_effector_position[STP_X] = 0;
     end_effector_position[STP_Y] = 0;
     end_effector_position[STP_Z] = LIMIT_Z_MAX_DIST;

@@ -224,37 +224,35 @@ void test_stepper_positioning() {
     // usleep(action_delay);
 }
 
-void test_i2c_stepper_interface(){
+void test_i2c_stepper_interface() {
+    printf("starting init\n");
     init_limit_gpio();
     init_stepper_mc();
     init_i2c_jetson_mcu_e();
     printf("done init\n");
 
+    reset_xyz();
+
     uint8_t rx_data[I2C_DATA_LENGTH + 1] = {0};
     while(true){
+        usleep(500000);
         // wait until jetson nano reads from mcu1 over i2c 
         // based on jetson nano command, do different tasks
         printf("waiting for command. willing to wait 7 days.\n");
         i2c_slave_read_buffer(I2C_HOST, rx_data, I2C_DATA_LENGTH + 1, portMAX_DELAY);
         printf("read from jetson: %d %d %d %d \n", rx_data[1], rx_data[2], rx_data[3], rx_data[4]); 
         
-        switch (rx_data[ADDR_INDEX]) {
-            case STP_X:
-            case STP_Y: 
-            case STP_Z: {
-                uint16_t ideal_pos_10x = rx_data[2] << 8 | rx_data[3];
-                printf("ideal_pos_10x: %d\n", ideal_pos_10x);
-                float ideal_pos = (double) ideal_pos_10x / 10.0;
-                printf("Move stepper motor: %d to position %0.2f from position %0.2f\n", 
-                    rx_data[1], ideal_pos, end_effector_position[rx_data[ADDR_INDEX]]); 
-                move_stepper(rx_data[ADDR_INDEX], ideal_pos);
-                // int data_trans = i2c_slave_write_buffer(I2C_HOST, data, 2, portMAX_DELAY);
-                // printf("data trans: %d\n", data_trans);
-                break;
-            }
-            case ENC:
-                printf("encoder address!");
-            break;
+        if (rx_data[ADDR_INDEX] < 3) {
+            uint16_t ideal_pos_10x = rx_data[2] << 8 | rx_data[3];
+            printf("ideal_pos_10x: %d\n", ideal_pos_10x);
+            float ideal_pos = (double) ideal_pos_10x / 10.0;
+            printf("Move stepper motor: %d to position %0.2f from position %0.2f\n", 
+                rx_data[1], ideal_pos, end_effector_position[rx_data[ADDR_INDEX]]); 
+            move_stepper(rx_data[ADDR_INDEX], ideal_pos);
+            // int data_trans = i2c_slave_write_buffer(I2C_HOST, data, 2, portMAX_DELAY);
+            // printf("data trans: %d\n", data_trans);
+        } else {
+            printf("encoder address!");
         }
     }
 }
@@ -265,7 +263,7 @@ void test_motor_go_to(int x, int y, int z) {
 
     reset_xyz();
 
-    move_x(x);
-    move_y(y);
-    move_z(LIMIT_Z_MAX_DIST, z);
+    // move_x(x);
+    // move_y(y);
+    // move_z(LIMIT_Z_MAX_DIST, z);
 }
