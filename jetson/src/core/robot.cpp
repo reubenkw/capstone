@@ -181,10 +181,10 @@ void Robot::pollinate() {
 std::vector<Point3D> Robot::scan() {
 	std::vector<Point3D> flowersToVisit;
 	std::vector<Point2D> scanLoc{
-		Point2D(CARTESIAN_X_MAX/3, CARTESIAN_Y_MAX/3), 
-		Point2D(2*CARTESIAN_X_MAX/3, CARTESIAN_Y_MAX/3), 
-		Point2D(2*CARTESIAN_X_MAX/3, 2*CARTESIAN_Y_MAX/3), 
-		Point2D(CARTESIAN_X_MAX/3, 2*CARTESIAN_Y_MAX/3)};
+		Point2D(CARTESIAN_X_MAX/3, CARTESIAN_Y_MAX/3 - 0.05), 
+		Point2D(2*CARTESIAN_X_MAX/3, CARTESIAN_Y_MAX/3 - 0.05), 
+		Point2D(2*CARTESIAN_X_MAX/3, 2*CARTESIAN_Y_MAX/3 - 0.05), 
+		Point2D(CARTESIAN_X_MAX/3, 2*CARTESIAN_Y_MAX/3 - 0.05)};
 	for (int i = 0; i < 4; i++){
 			log(std::string("Scanning location: ") 
 				+ std::to_string( scanLoc.at(i).x )

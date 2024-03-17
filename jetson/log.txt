@@ -1,74 +1,22 @@
-17-03-2024_17-29-34 INFO: ioctl_val: 
-17-03-2024_17-29-34 -1
-17-03-2024_17-29-34 ERROR: failed to read from i2c bus address: 
-17-03-2024_17-29-34 Encoders: 9456 
-17-03-2024_17-29-34 Initialized Robot
-17-03-2024_17-29-34 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 2, 31, 64, 0, 
-17-03-2024_17-29-34 Move stepper motor: 2to position: 800.000000by sending value: 31 64
-17-03-2024_17-29-34 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 0, 0, 0, 0, 
-17-03-2024_17-29-34 Move stepper motor: 0to position: 0.000000by sending value: 0 0
-17-03-2024_17-29-34 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 1, 0, 0, 0, 
-17-03-2024_17-29-34 Move stepper motor: 1to position: 0.000000by sending value: 0 0
-17-03-2024_17-29-49 Scanning location: 0.200000, 0.093333
-17-03-2024_17-29-49 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 0, 7, 208, 0, 
-17-03-2024_17-29-49 Move stepper motor: 0to position: 200.000003by sending value: 7 208
-17-03-2024_17-29-49 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 1, 3, 165, 0, 
-17-03-2024_17-29-49 Move stepper motor: 1to position: 93.333334by sending value: 3 165
-17-03-2024_17-30-04 brightest pixel value: 254
-17-03-2024_17-30-04 depth val: 0.383100
-17-03-2024_17-30-04 depth val: 0.316400
-17-03-2024_17-30-04 Arm Position - x:0.200000, y: 0.093333, z: 0.800000
-17-03-2024_17-30-04 Scanning location: 0.400000, 0.093333
-17-03-2024_17-30-04 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 0, 15, 160, 0, 
-17-03-2024_17-30-04 Move stepper motor: 0to position: 400.000006by sending value: 15 160
-17-03-2024_17-30-04 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 1, 3, 165, 0, 
-17-03-2024_17-30-04 Move stepper motor: 1to position: 93.333334by sending value: 3 165
-17-03-2024_17-30-19 brightest pixel value: 254
-17-03-2024_17-30-19 depth val: 0.387300
-17-03-2024_17-30-19 depth val: 0.314800
-17-03-2024_17-30-20 Arm Position - x:0.400000, y: 0.093333, z: 0.800000
-17-03-2024_17-30-20 Scanning location: 0.400000, 0.186667
-17-03-2024_17-30-20 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 0, 15, 160, 0, 
-17-03-2024_17-30-20 Move stepper motor: 0to position: 400.000006by sending value: 15 160
-17-03-2024_17-30-20 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 1, 7, 74, 0, 
-17-03-2024_17-30-20 Move stepper motor: 1to position: 186.666667by sending value: 7 74
-17-03-2024_17-30-35 brightest pixel value: 255
-17-03-2024_17-30-35 depth val: 0.385500
-17-03-2024_17-30-35 depth val: 0.316800
-17-03-2024_17-30-35 Arm Position - x:0.400000, y: 0.186667, z: 0.800000
-17-03-2024_17-30-35 Scanning location: 0.200000, 0.186667
-17-03-2024_17-30-35 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 0, 7, 208, 0, 
-17-03-2024_17-30-35 Move stepper motor: 0to position: 200.000003by sending value: 7 208
-17-03-2024_17-30-35 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 1, 7, 74, 0, 
-17-03-2024_17-30-35 Move stepper motor: 1to position: 186.666667by sending value: 7 74
-17-03-2024_17-30-50 brightest pixel value: 254
-17-03-2024_17-30-50 depth val: 0.386100
-17-03-2024_17-30-50 depth val: 0.313200
-17-03-2024_17-30-50 Arm Position - x:0.200000, y: 0.186667, z: 0.800000
-17-03-2024_17-30-50 flower: 0.205978, 0.103433, 0.431900
-17-03-2024_17-30-50 flower: 0.330258, 0.233966, 0.498600
-17-03-2024_17-30-50 flower: 0.204558, 0.104385, 0.427700
-17-03-2024_17-30-50 flower: 0.327653, 0.233889, 0.500200
-17-03-2024_17-30-50 flower: 0.205648, 0.110837, 0.429500
-17-03-2024_17-30-50 flower: 0.326285, 0.238283, 0.498200
-17-03-2024_17-30-50 flower: 0.205528, 0.107742, 0.428900
-17-03-2024_17-30-50 flower: 0.328999, 0.237964, 0.501800
-17-03-2024_17-30-50 move arm to point: 0.205428, 0.106599, 0.429500
-17-03-2024_17-31-05 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 0, 8, 6, 0, 
-17-03-2024_17-31-05 Move stepper motor: 0to position: 205.427939by sending value: 8 6
-17-03-2024_17-31-05 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 1, 4, 41, 0, 
-17-03-2024_17-31-05 Move stepper motor: 1to position: 106.599098by sending value: 4 41
-17-03-2024_17-31-05 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 2, 16, 199, 0, 
-17-03-2024_17-31-05 Move stepper motor: 2to position: 429.500006by sending value: 16 199
-17-03-2024_17-31-35 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 2, 31, 64, 0, 
-17-03-2024_17-31-35 Move stepper motor: 2to position: 800.000000by sending value: 31 64
-17-03-2024_17-31-35 move arm to point: 0.328299, 0.236026, 0.499700
-17-03-2024_17-31-50 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 0, 12, 210, 0, 
-17-03-2024_17-31-50 Move stepper motor: 0to position: 328.298852by sending value: 12 210
-17-03-2024_17-31-50 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 1, 9, 56, 0, 
-17-03-2024_17-31-50 Move stepper motor: 1to position: 236.025546by sending value: 9 56
-17-03-2024_17-31-50 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 2, 19, 133, 0, 
-17-03-2024_17-31-50 Move stepper motor: 2to position: 499.700002by sending value: 19 133
-17-03-2024_17-32-20 ERROR: failed to write to i2c bus address: 16cmd: 1data: (uint8_t decimal) 2, 31, 64, 0, 
-17-03-2024_17-32-20 Move stepper motor: 2to position: 800.000000by sending value: 31 64
-17-03-2024_17-32-20 INFO: done test_scan.
+17-03-2024_17-55-28 Starting Program!
+17-03-2024_17-55-28 INFO Camera: starting init
+17-03-2024_17-55-29 INFO Camera: first frame read
+17-03-2024_17-55-29 INFO Camera: init done
+17-03-2024_17-55-29 finding yellow blobs!!!!!!
+17-03-2024_17-55-29 brightest pixel value: 254
+17-03-2024_17-55-29 yellow blob5.918415,60.668998
+17-03-2024_17-55-29 yellow blob456.233990,84.014778
+17-03-2024_17-55-29 yellow blob437.531100,290.557416
+17-03-2024_17-55-29 finding avgCenters!!!!!!
+17-03-2024_17-55-29 avgCenter: 5.918415,60.668998
+17-03-2024_17-55-29 avgCenter: 456.233990,84.014778
+17-03-2024_17-55-29 avgCenter: 437.531100,290.557416
+17-03-2024_17-55-29 depth val: 0.000000
+17-03-2024_17-55-29 depth val: 0.391600
+17-03-2024_17-55-29 depth val: 0.308500
+17-03-2024_17-55-29 cam point: -0.000000, -0.000000, 0.000000
+17-03-2024_17-55-29 cam point: 0.026840, -0.143138, 0.391600
+17-03-2024_17-55-29 cam point: 0.007626, 0.036529, 0.308500
+17-03-2024_17-55-29 blob: 0.034000, 0.085000, 0.806000
+17-03-2024_17-55-29 blob: 0.007160, -0.058138, 0.414400
+17-03-2024_17-55-29 blob: 0.026374, 0.121529, 0.497500
