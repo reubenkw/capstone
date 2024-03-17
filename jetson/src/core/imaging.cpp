@@ -154,7 +154,7 @@ double findYCenterOfPlant(cv::Mat& image) {
 Camera::Camera() : color{rs2::frame()}, depth{rs2::frame()} {
 	log(std::string("INFO Camera: starting init"));
 	p.start();
-
+	
 	// Block program until frames arrive
 	storeSnapshot();
 	log(std::string("INFO Camera: first frame read"));
@@ -163,6 +163,11 @@ Camera::Camera() : color{rs2::frame()}, depth{rs2::frame()} {
 	rs2_error *e = 0;
 	rs2::video_stream_profile profile(depth.get_profile());
 	intrinsic = profile.get_intrinsics();
+
+	// set manual exposure
+	auto colorSensor = p.get_active_profile().get_device().query_sensors()[1];
+	colorSensor.set_option(RS2_OPTION_ENABLE_AUTO_EXPOSURE, 0);
+	colorSensor.set_option(RS2_OPTION_EXPOSURE, 78000);
 	log(std::string("INFO Camera: init done"));
 }
 
