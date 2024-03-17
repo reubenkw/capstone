@@ -100,7 +100,7 @@ cv::Mat greenMask(cv::Mat& image) {
 			double r = p->x;
 			double g = p->y;
 			double b = p->z;
-			if (g > r * 1.2 && g > b * 1.5 && g > 50) {
+			if (g > r * 1.2 && g > b * 1.75 && g > 60) {
 				thresholded.at<uchar>(i, j) = 255;
 			}
 		}
