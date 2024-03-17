@@ -179,9 +179,9 @@ void Robot::pollinate() {
 
 std::vector<Point3D> Robot::scan() {
 	std::vector<Point3D> flowersToVisit;
-	for (int i = 1; i < 4; i++){
+	for (int i = 1; i < 3; i++){
 		for (int j = 1; j < 3; j++){
-			moveServoArm(x, CARTESIAN_X_MAX*i/4);
+			moveServoArm(x, CARTESIAN_X_MAX*i/3);
 			moveServoArm(y, CARTESIAN_Y_MAX*j/3);
 			usleep(15000000);
 			std::vector<Point3D> newFlowers = findFlowers();
@@ -194,9 +194,10 @@ std::vector<Point3D> Robot::scan() {
 std::vector<Point3D> Robot::findFlowers(){
 	camera.storeSnapshot();
 	cv::Mat image = camera.getColorImage();
+	std::string timestamp = getFormattedTimeStamp();
 	if (DEBUG) {
 		cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
-		cv::imwrite(std::string("./plots/") + getFormattedTimeStamp() + std::string("_image.png"), image);
+		cv::imwrite(std::string("./plots") + timestamp + std::string("/") +  + std::string("_image.png"), image);
 		cv::cvtColor(image, image, cv::COLOR_BGR2RGB);
 	}
 	std::vector<Point2D> flowerCenters = findFlowerCenters(image, camera);
