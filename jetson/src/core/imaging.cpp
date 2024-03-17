@@ -77,7 +77,7 @@ std::vector<Point2D> findFlowerCenters(cv::Mat& image){
 	uint8_t brightest = (uint8_t) brightestPixelVal(image);
 	log(std::string("brightest pixel value: ") + std::to_string(brightest));
 
-	cv::Mat yellowMask = colorMask(image, {brightest, brightest, brightest}, 0.1, 100);
+	cv::Mat yellowMask = colorMask(image, {brightest, brightest, brightest}, 0.2, 50);
 	cv::imwrite("./plots/yellow.png", yellowMask);
 
 	cv::Mat green = colorMask(image, {30, 55, 15}, 0.2, 50);
