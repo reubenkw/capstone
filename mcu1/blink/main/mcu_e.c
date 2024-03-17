@@ -36,8 +36,7 @@ void test_limit() {
     }
 }
 
-
-void test_all_stepper(){
+void test_all_stepper() {
     init_limit_gpio();
     init_stepper_mc();
 
@@ -181,7 +180,7 @@ void test_z_stepper() {
 
     // dropdown fixed number of steps
     printf("z 0\n");
-    const uint step_delta_2_stop = 100;
+    // const uint step_delta_2_stop = 100;
     gpio_set_level(GPIO_DIR_Z, 0);
     for(int k = 0; k < z_dropdown; k++) {
         // if ((k % step_delta_2_stop) == 0) {
@@ -207,53 +206,22 @@ void test_z_stepper() {
     }
 }
 
-void step(uint8_t pin){
-    uint step_delay = 1000;
-    gpio_set_level(pin, 1);
-    usleep(step_delay);
-    gpio_set_level(pin, 0);
-    usleep(step_delay);  
-}
+void test_stepper_positioning() {
+    init_limit_gpio();
+    init_stepper_mc();
 
-float pos[3] = {0, 0, LIMIT_Z_DIST};
-bool move_stepper(uint8_t motor, float ideal_pos){
-    bool fwd_dir[3] = {1,0,1};
-    uint8_t dir[3] = {GPIO_DIR_X, GPIO_DIR_Y, GPIO_DIR_Z};
-    uint8_t pulse[3] = {GPIO_PULSE_X, GPIO_PULSE_Y, GPIO_PULSE_Z};
-    uint8_t fwd_limit[3] = {LIMIT_X_MAX, LIMIT_Y_MAX, LIMIT_Z};
-    uint8_t bkwd_limit[2] = {LIMIT_X_MIN, LIMIT_Y_MIN};
-    uint16_t max_limits[3] = {LIMIT_X_MAX_DIST, LIMIT_Y_MAX_DIST, LIMIT_Z_DIST};
-    uint16_t min_limits[3] = {0, 0, 400};
+    printf("0 point: %d\n", z_dist_2_steps(0));
+    printf("400 point: %d\n", z_dist_2_steps(400));
 
-    float tol = 0.163;
-    float delta = ideal_pos - pos[motor];
+    uint action_delay = 2 * 1000000;
 
-    if (delta > tol){ // move forward
-        gpio_set_level(dir[motor], fwd_dir[motor]);
-        while(delta > tol){
-            if (gpio_get_level(fwd_limit[motor]) == 1){
-                pos[motor] = max_limits[motor];
-                printf("hit fwd limit switch: %d", motor);
-                return true;
-            }
-            step(pulse[motor]);
-            delta -= 0.163;  
-        }
-    } else if (delta < -tol){ // move backward
-        gpio_set_level(dir[motor], !fwd_dir[motor]);
-        while(delta < -tol){
-            if ((motor != STP_Z && gpio_get_level(bkwd_limit[motor]) == 1) || 
-                (motor == STP_Z && pos[motor] <= min_limits[STP_Z])){
-                pos[motor] = min_limits[motor];
-                printf("hit bkwd limit switch: %d", motor);
-                return true;
-            }
-            step(pulse[motor]);
-            delta += 0.163;
-        }
-    }
-    pos[motor] = ideal_pos - delta;    
-    return false;
+    usleep(action_delay);
+    move_stepper(STP_X, 600 - 50);
+    usleep(action_delay);
+    move_stepper(STP_Y, 280 - 50);
+    usleep(action_delay);
+    // move_stepper(STP_Z, 50);
+    // usleep(action_delay);
 }
 
 void test_i2c_stepper_interface(){
@@ -278,7 +246,7 @@ void test_i2c_stepper_interface(){
                 printf("ideal_pos_10x: %d\n", ideal_pos_10x);
                 float ideal_pos = (double) ideal_pos_10x / 10.0;
                 printf("Move stepper motor: %d to position %0.2f from position %0.2f\n", 
-                    rx_data[1], ideal_pos, pos[rx_data[ADDR_INDEX]]); 
+                    rx_data[1], ideal_pos, end_effector_position[rx_data[ADDR_INDEX]]); 
                 move_stepper(rx_data[ADDR_INDEX], ideal_pos);
                 // int data_trans = i2c_slave_write_buffer(I2C_HOST, data, 2, portMAX_DELAY);
                 // printf("data trans: %d\n", data_trans);
@@ -289,4 +257,15 @@ void test_i2c_stepper_interface(){
             break;
         }
     }
+}
+
+void test_motor_go_to(int x, int y, int z) {
+    init_limit_gpio();
+    init_stepper_mc();
+
+    reset_xyz();
+
+    move_x(x);
+    move_y(y);
+    move_z(LIMIT_Z_MAX_DIST, z);
 }

@@ -20,13 +20,13 @@ void test_drive_alternating() {
 
 void test_drive_full() {
     init_boost();
-    init_spi();
+    // init_spi();
 
-    init_dc_mc();
+    // init_dc_mc();
 
-    drive_full_forward();
+    // drive_full_forward();
     while(true) {
-        check_and_clear_fault();
+        // check_and_clear_fault();
         usleep(10000);
     }
 }

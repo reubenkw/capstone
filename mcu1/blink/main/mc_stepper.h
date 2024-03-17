@@ -8,6 +8,9 @@
 #define GPIO_DIR_X 6
 #define GPIO_PULSE_X 15
 
+// TODO: Add this to GPIO_MOTOR_PIN_SEL and uncomment enable
+// #define GPIO_STP_ENABLE 7
+
 #define GPIO_MOTOR_PIN_SEL  ( \
     (1ULL<<GPIO_DIR_Z) | (1ULL<<GPIO_PULSE_Z) | \
     (1ULL<<GPIO_DIR_Y) | (1ULL<<GPIO_PULSE_Y) | \
@@ -18,9 +21,28 @@
 #define LIMIT_X_MIN_DIST 0
 #define LIMIT_X_MAX_DIST 680
 #define LIMIT_Y_MIN_DIST 0
-#define LIMIT_Y_MAX_DIST 340
-#define LIMIT_Z_DIST 748
+#define LIMIT_Y_MAX_DIST 282
+#define LIMIT_Z_MIN_DIST 340
+#define LIMIT_Z_MAX_DIST 748
+
+#define LEN_PAINT_BRUSH 27
+#define Z_POLY_COEF_2 -0.0089030252411718
+#define Z_POLY_COEF_1 2.22734338198796
+#define Z_POLY_COEF_0 3257.50512922151
+
+#define X_DIST_PER_STEP (600.0/2002)
+#define Y_DIST_PER_STEP (280.0/910)
+
+extern float end_effector_position[3];
 
 void init_stepper_mc();
+uint z_dist_2_steps(uint tip_z);
+void step(uint8_t pin);
+
+int move_x(int delta);
+int move_y(int delta);
+int move_z(uint crnt, uint desired);
+void move_stepper(uint8_t motor, float ideal_pos);
+void reset_xyz();
 
 #endif // h
