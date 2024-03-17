@@ -129,18 +129,6 @@ void test_i2c_write() {
 	write_i2c(i2c_bus_file, 0x10, data, 4);
 }
 
-void test_scan() {
-	log(std::string("INFO: starting test_scan."));
-	Camera cam;
-	Robot r(cam);
-	std::vector<Point3D> flowers = r.scan();
-	for ( Point3D flower : flowers ) {
-		log(std::string("flower detected: " + std::to_string(flower.x) + ", " 
-			+ std::to_string(flower.y) + ", " + std::to_string(flower.z)));
-	}
-	log(std::string("INFO: done test_scan."));
-}
-
 void test_pollinate() {
 	log(std::string("INFO: starting test_pollinate."));
 	Camera cam;
@@ -215,13 +203,53 @@ void test_move_servo_arm(){
 void test_move_servo_arm_to_flowers(){
 	Camera cam;
 	Robot r(cam);
-	std::vector<Point3D> robotPoints = test_image_processing(cam);
+	
 	r.moveServoArm(z, 0.8);
+	r.moveServoArm(x, 0);
+	r.moveServoArm(y, 0);
+
+	usleep(30000000);
+
+	std::vector<Point3D> robotPoints = test_image_processing(cam);
+
 	for (auto const & robotPoint : robotPoints){
+		log(std::string("move arm to point: ") 
+		+ std::to_string(robotPoint.x) + std::string(", ") 
+		+ std::to_string(robotPoint.y) + std::string(", ")
+		+ std::to_string(robotPoint.z));
 		r.moveServoArm(x, robotPoint.x);
 		r.moveServoArm(y, robotPoint.y);
 		r.moveServoArm(z, robotPoint.z);
 	}
+	
+}
+
+void test_scan() {
+	log(std::string("INFO: starting test_scan."));
+	Camera cam;
+	Robot r(cam);
+	
+	r.moveServoArm(z, 0.8);
+	r.moveServoArm(x, 0);
+	r.moveServoArm(y, 0);
+	
+	usleep(15000000);
+
+	std::vector<Point3D> flowerCenters = r.scan();
+
+	for (auto const & flowerCenter : flowerCenters){
+		log(std::string("move arm to point: ") 
+		+ std::to_string(flowerCenter.x) + std::string(", ") 
+		+ std::to_string(flowerCenter.y) + std::string(", ")
+		+ std::to_string(flowerCenter.z));
+
+		usleep(15000000);
+
+		r.moveServoArm(x, flowerCenter.x);
+		r.moveServoArm(y, flowerCenter.y);
+		r.moveServoArm(z, flowerCenter.z);
+	}
+	log(std::string("INFO: done test_scan."));
 	
 }
 
@@ -230,11 +258,12 @@ int main(int argc, char** argv)
 	initialize_log();
 	log(std::string("Starting Program!"));
 	// test_camera_image();
-	Camera cam;
-	test_image_processing(cam);
+	// Camera cam;
+	// test_image_processing(cam);
 	// test_clustering();
 	// test_i2c_read();
 	// test_move_servo_arm();
 	// test_move_servo_arm_to_flowers();
+	test_scan();
 	return 0;
 }

@@ -183,6 +183,7 @@ std::vector<Point3D> Robot::scan() {
 		for (int j = 1; j < 3; j++){
 			moveServoArm(x, CARTESIAN_X_MAX*i/4);
 			moveServoArm(y, CARTESIAN_Y_MAX*j/3);
+			usleep(15000000);
 			std::vector<Point3D> newFlowers = findFlowers();
 			flowersToVisit.insert(flowersToVisit.end(), newFlowers.begin(), newFlowers.end());
 		}

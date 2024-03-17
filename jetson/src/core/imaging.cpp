@@ -82,7 +82,7 @@ std::vector<Point2D> findFlowerCenters(cv::Mat& image, Camera & cam){
 
 	cv::Mat green = colorMask(image, {30, 55, 15}, 0.2, 50);
 	cv::imwrite("./plots/green.png", green);
-	cv::blur(green, green, cv::Size(35, 35));
+	cv::blur(green, green, cv::Size(50, 50));
 	cv::imwrite("./plots/blurredGreen.png", green);
 
 	cv::Mat labels, stats, centroids;
