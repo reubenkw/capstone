@@ -1,6 +1,6 @@
 #include "i2c.h"
 
-void init_i2c_jetson() {
+void init_i2c_jetson(uint mcu_address) {
     i2c_config_t i2c_jetson_config = {
         .mode = I2C_MODE_SLAVE, 
         .sda_io_num = 10, 
@@ -9,7 +9,7 @@ void init_i2c_jetson() {
         .scl_pullup_en = true, 
         .slave = {
             .addr_10bit_en = 0, 
-            .slave_addr = 0x42, 
+            .slave_addr = mcu_address, 
             .maximum_speed = 400000
         }
     };
@@ -23,18 +23,27 @@ void init_i2c_jetson() {
     printf("jetson i2c init"); 
 }
 
-void test_i2c_write() {
+void init_i2c_jetson_mcu_m() {
+    init_i2c_jetson(MCU_M_ADDRESS);
+}
+
+void init_i2c_jetson_mcu_e() {
+    init_i2c_jetson(MCU_E_ADDRESS);
+}
+
+void test_i2c_write(uint mcu_address) {
     // Initialize i2c bus as slave to listen to jetson nano
-    init_i2c_jetson();
-    uint8_t data[5] = {0xCA, 0xFE, 0xBA, 0xBE, 0x00};
+    init_i2c_jetson(mcu_address);
+    uint8_t data[1] = {0xFF};
     while (1){
-        int data_trans = i2c_slave_write_buffer(I2C_HOST, data, 5, portMAX_DELAY);
+        // i2c_reset_tx_fifo(I2C_HOST);
+        int data_trans = i2c_slave_write_buffer(I2C_HOST, data, 1, 1000 / portTICK_PERIOD_MS);
         printf("data trans: %d\n", data_trans);
     }
 }
 
-void test_i2c_read() {
-    init_i2c_jetson();
+void test_i2c_read(uint mcu_address) {
+    init_i2c_jetson(mcu_address);
     uint8_t data[5] = {0, 0, 0, 0, 0};
     while(1){
         i2c_slave_read_buffer(I2C_HOST, data, 5, portMAX_DELAY);
