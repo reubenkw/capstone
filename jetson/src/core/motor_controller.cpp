@@ -78,21 +78,23 @@ void MotorController::simple_pos(double pos){
 		sat_pos = (uint16_t) (pos*10);
 	}
 	uint8_t data[4] = {0};
-	data[0] = motor;
-	data[1] = (sat_pos & 0xFF00) >> 8;
-	data[2] = (sat_pos & 0xFF);
+	data[0] = 0;
+	data[1] = motor;
+	data[2] = (sat_pos & 0xFF00) >> 8;
+	data[3] = (sat_pos & 0xFF);
+	usleep(1000000);
 	write_i2c(file, MCU_E, data, 4);
 	log(	std::string("Move stepper motor: ") + std::to_string(motor) +
 			std::string("to position: ") + std::to_string(pos) + 
 			std::string("by sending value: ") + std::to_string(data[1]) 
 			+ std::string(" ") + std::to_string(data[2]) );
-	// uint8_t resp = 0;
-	// while(resp == 0){
-	//	read_i2c(file, MCU_E, &resp, 1);
-	//	usleep(1000);
-	// }
-	// log(	std::string("Read stepper motor return: ") + std::to_string(resp));
-	// if (resp == 2){ // hit limit switch
-	// 	throw std::logic_error("hit limit switch");
-	// }
+	
+	uint8_t resp[1] = {0};
+	while(resp[0] != 1) {
+		usleep(1000000);
+		read_i2c(file, MCU_E, resp, 1);
+		log(std::string("Read stepper motor return: ") + std::to_string(resp[0]));
+
+	}
+	log(std::string("Read stepper motor return: ") + std::to_string(resp[0]));
 }

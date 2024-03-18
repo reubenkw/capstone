@@ -164,6 +164,7 @@ uint16_t Robot::getDriveMotorEncoderVal(DriveMotor motor) {
 
 void Robot::moveServoArm(ServoMotor motor, double pos) {
 	servoArm[motor].simple_pos(pos);
+	armPosition[motor] = pos;
 }
 
 void Robot::pollinate() { 
@@ -179,34 +180,51 @@ void Robot::pollinate() {
 
 std::vector<Point3D> Robot::scan() {
 	std::vector<Point3D> flowersToVisit;
-	for (int i = 1; i < 4; i++){
-		for (int j = 1; j < 3; j++){
-			moveServoArm(x, CARTESIAN_X_MAX*i/4);
-			moveServoArm(y, CARTESIAN_Y_MAX*j/3);
+	std::vector<Point2D> scanLoc{
+		Point2D(CARTESIAN_X_MAX/3, CARTESIAN_Y_MAX/3 - 0.05), 
+		Point2D(2*CARTESIAN_X_MAX/3, CARTESIAN_Y_MAX/3 - 0.05), 
+		Point2D(2*CARTESIAN_X_MAX/3, 2*CARTESIAN_Y_MAX/3 - 0.05), 
+		Point2D(CARTESIAN_X_MAX/3, 2*CARTESIAN_Y_MAX/3 - 0.05)};
+	for (int i = 0; i < 4; i++){
+			log(std::string("Scanning location: ") 
+				+ std::to_string( scanLoc.at(i).x )
+				+ std::string(", ")
+				+ std::to_string( scanLoc.at(i).y ));
+			moveServoArm(x, scanLoc.at(i).x);
+			moveServoArm(y, scanLoc.at(i).y);
+			usleep(1000000);
 			std::vector<Point3D> newFlowers = findFlowers();
 			flowersToVisit.insert(flowersToVisit.end(), newFlowers.begin(), newFlowers.end());
-		}
 	}
-	return avgClusterCenters(flowersToVisit, 10);
+	for (auto flowerToVisit : flowersToVisit){
+		log(std::string("flower: ") + std::to_string(flowerToVisit.x) + std::string(", ") + std::to_string(flowerToVisit.y)
+		 + std::string(", ") + std::to_string(flowerToVisit.z));
+	}
+	return avgClusterCenters(flowersToVisit, 0.06);
 }
 
 std::vector<Point3D> Robot::findFlowers(){
 	camera.storeSnapshot();
 	cv::Mat image = camera.getColorImage();
+	std::string tag = getFormattedTimeStamp();
 	if (DEBUG) {
 		cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
-		cv::imwrite(std::string("./plots/") + getFormattedTimeStamp() + std::string("_image.png"), image);
+		cv::imwrite("./plots/" + tag + "_image.png", image);
 		cv::cvtColor(image, image, cv::COLOR_BGR2RGB);
 	}
-	std::vector<Point2D> flowerCenters = findFlowerCenters(image);
+	std::vector<Point2D> flowerCenters = findFlowerCenters(image, camera, tag);
 	if (DEBUG) {
+		int width = image.cols;
+		int height = image.rows;
 		for (Point2D const& blob : flowerCenters) {
+			float x = blob.x/width;
+			float y = blob.y/height;
 			cv::circle(image, cv::Point((int)blob.x, (int)blob.y), 5, { 255, 0, 255 }, 5);
 			log(std::string("depth val: ") + std::to_string(camera.getDepthVal(x, y)));
 		}
 
 		cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
-		cv::imwrite(std::string("./plots/") + getFormattedTimeStamp() + std::string("_yellow_blobs.png"), image);
+		cv::imwrite("./plots/" + tag + "_yellow_blobs.png", image);
 		cv::cvtColor(image, image, cv::COLOR_BGR2RGB);
 	}
 	flowerCenters = avgClusterCenters(flowerCenters, 10);
@@ -215,7 +233,7 @@ std::vector<Point3D> Robot::findFlowers(){
 			cv::circle(image, cv::Point((int)blob.x, (int)blob.y), 5, { 255, 0, 255 }, 5);
 		}
 		cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
-		cv::imwrite(std::string("./plots/") + getFormattedTimeStamp() + std::string("_clustered.png"), image);
+		cv::imwrite("./plots/" + tag + "_clustered.png", image);
 		cv::cvtColor(image, image, cv::COLOR_BGR2RGB);
 	}
 	
