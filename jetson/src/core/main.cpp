@@ -217,6 +217,8 @@ void test_scan() {
 	Camera cam;
 	Robot r(cam);
 
+	r.resetServoArm();
+
 	std::vector<Point3D> flowerCenters = r.scan();
 
 	for (auto const & flowerCenter : flowerCenters){

@@ -56,6 +56,7 @@ public:
 	double calculate_wheel_speed(double v, double w);
 	void driveRobotForward(Point2D idealPos);
 	void moveServoArm(ServoMotor motor, double pos);
+	void resetServoArm();
 	void pollinate();
 	std::vector<Point3D> scan();
 	std::vector<Point3D> findFlowers();
