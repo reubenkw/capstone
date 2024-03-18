@@ -34,28 +34,12 @@ void init_i2c_jetson_mcu_e() {
     init_i2c_jetson(MCU_E_ADDRESS);
 }
 
-void notify_jetson_got_command() {
-    uint8_t data[2] = {0x1};
-    i2c_reset_rx_fifo(I2C_HOST);
+void i2c_write_jetson(mcu_e_status_t status) {
+    uint8_t data[1] = {status};
     i2c_reset_tx_fifo(I2C_HOST);
     i2c_slave_write_buffer(I2C_HOST, data, 1, portMAX_DELAY);
-    printf("i2c: sent notify_jetson_got_command.\n");
-}
-
-void notify_jetson_done_motor_move() {
-    uint8_t data[2] = {0x2};
-    i2c_reset_rx_fifo(I2C_HOST);
-    i2c_reset_tx_fifo(I2C_HOST);
-    i2c_slave_write_buffer(I2C_HOST, data, 1, portMAX_DELAY);
-    printf("i2c: sent notify_jetson_done_motor_move.\n");
-}
-
-void notify_jetson_hit_limit() {
-    uint8_t data[2] = {0x3};
-    i2c_reset_rx_fifo(I2C_HOST);
-    i2c_reset_tx_fifo(I2C_HOST);
-    i2c_slave_write_buffer(I2C_HOST, data, 1, portMAX_DELAY);
-    printf("i2c: sent notify_jetson_hit_limit.\n");
+    usleep(100000);
+    printf("i2c_write_jetson %x.\n", status);
 }
 
 void test_i2c_write(uint mcu_address) {

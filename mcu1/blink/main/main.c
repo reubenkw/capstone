@@ -8,7 +8,6 @@ void app_main(void)
 {
     usleep(5000000);
     printf("starting main\n");
-    test_i2c_read_write();
 
     // test_stepper_positioning();
     // test_drive_full();
@@ -16,7 +15,7 @@ void app_main(void)
     // test_limit();
     // test_all_stepper();
     // test_z_stepper();
-    // test_i2c_stepper_interface();
+    test_i2c_stepper_interface();
     // test_i2c_write(MCU_E_ADDRESS);
     // test_all_stepper();
     // test_i2c_stepper_interface();
