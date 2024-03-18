@@ -46,22 +46,23 @@ double dotProduct(Pixel x, Pixel y) {
 }
 
 // TODO: determine colour pixels better
-bool isColor(Pixel pix, Pixel ideal, double brightestVal, double tol) {
-	if (toGreyscale(pix) > brightestVal * 0.5) {
-		double dp = dotProduct(pix, ideal);
-		return acos(dp / sqrt(dotProduct(pix, pix)) / sqrt(dotProduct(ideal, ideal))) < tol;
-	}
+bool isColor(Pixel pix, Pixel ideal, double angleTol, double lengthTol) {
+	
+	double dp = dotProduct(pix, ideal);
+	return acos(dp / sqrt(dotProduct(pix, pix)) / sqrt(dotProduct(ideal, ideal))) < angleTol &&
+			std::abs(toGreyscale(ideal) - toGreyscale(pix)) < lengthTol;
+	
 	return false;
 }
 
-cv::Mat colorMask(cv::Mat& image, double brightest, Pixel ideal, double tol) {
+cv::Mat colorMask(cv::Mat& image, Pixel ideal, double angleTol, double lengthTol) {
 	cv::Mat thresholded =  cv::Mat::zeros(cv::Size(image.cols, image.rows), CV_8UC1);;
 
 	for (int i = 0; i < image.rows; i++) {
 		for (int j = 0; j < image.cols; j++) {
 			cv::Point3_<uchar>* p = image.ptr<cv::Point3_<uchar> >(i, j);
 			Pixel pix{ p->x, p->y, p->z };
-			if (isColor(pix, ideal, brightest, tol)) {
+			if (isColor(pix, ideal, angleTol, lengthTol)) {
 				thresholded.at<uchar>(i, j) = 255;
 			}
 		}
@@ -70,31 +71,79 @@ cv::Mat colorMask(cv::Mat& image, double brightest, Pixel ideal, double tol) {
 	return thresholded;
 }
 
-std::vector<Point2D> findFlowerCenters(cv::Mat& image){
-	std::vector<Point2D> yellowBlobs;
+cv::Mat whiteMask(cv::Mat& image, uint8_t brightest) {
+	cv::Mat thresholded =  cv::Mat::zeros(cv::Size(image.cols, image.rows), CV_8UC1);;
 
-	double brightest = brightestPixelVal(image);
+	for (int i = 0; i < image.rows; i++) {
+		for (int j = 0; j < image.cols; j++) {
+			cv::Point3_<uchar>* p = image.ptr<cv::Point3_<uchar> >(i, j);
+			// need double not uint8 bc values might go > 255 in the math
+			double r = p->x;
+			double g = p->y;
+			double b = p->z;
+			if (g/r > 0.6 && g/r < 1.4 && g/b > 0.6 && g/b < 1.4 && (r + g + b)/3 > 200) {
+				thresholded.at<uchar>(i, j) = 255;
+			}
+		}
+	}
+
+	return thresholded;
+}
+
+cv::Mat greenMask(cv::Mat& image) {
+	cv::Mat thresholded =  cv::Mat::zeros(cv::Size(image.cols, image.rows), CV_8UC1);;
+
+	for (int i = 0; i < image.rows; i++) {
+		for (int j = 0; j < image.cols; j++) {
+			cv::Point3_<uchar>* p = image.ptr<cv::Point3_<uchar> >(i, j);
+			// need double not uint8 bc values might go > 255 in the math
+			double r = p->x;
+			double g = p->y;
+			double b = p->z;
+			if (g > r * 1.3 && g > b * 1.3 && g > 50) {
+				thresholded.at<uchar>(i, j) = 255;
+			}
+		}
+	}
+
+	return thresholded;
+}
+
+std::vector<Point2D> findFlowerCenters(cv::Mat& image, Camera & cam, std::string const & tag){
+	std::vector<Point2D> whiteBlobs;
+
+	uint8_t brightest = (uint8_t) brightestPixelVal(image);
 	log(std::string("brightest pixel value: ") + std::to_string(brightest));
 
-	cv::Mat yellowMask = colorMask(image, brightest, {255, 255, 100}, 0.1);
-	cv::imwrite("./plots/yellow.png", yellowMask);
+	cv::Mat white = whiteMask(image, brightest);
+	cv::imwrite("./plots/" + tag + "_white.png", white);
 
-	cv::Mat green = colorMask(image, 50, {30, 60, 20}, 0.1);
-	cv::blur(green, green, cv::Size(100, 100));
-	cv::imwrite("./plots/blurredGreen.png", green);
+	cv::Mat green = greenMask(image);
+	cv::imwrite("./plots/" + tag + "_green.png", green);
+	cv::blur(green, green, cv::Size(50, 50));
+	cv::imwrite("./plots/" + tag + "_blurredGreen.png", green);
 
 	cv::Mat labels, stats, centroids;
-	int label_count = cv::connectedComponentsWithStats(yellowMask, labels, stats, centroids);
+	int label_count = cv::connectedComponentsWithStats(white, labels, stats, centroids);
 	
 	// start index at 1 since first blob is background blob
 	// TODO: smarter way to determine hardcoded cutoffs?
+	int width = image.cols;
+	int height = image.rows;
+
 	for (int i = 1; i < label_count; i++) {
-		int blurredGreenVal = green.at<uchar>((int)centroids.at<double>(i, 1), (int)centroids.at<double>(i, 0));
-		if ( blurredGreenVal > 10) {
-			yellowBlobs.push_back({ centroids.at<double>(i, 0), centroids.at<double>(i, 1) });
+		double centerX = centroids.at<double>(i, 0);
+		double centerY = centroids.at<double>(i, 1);
+		int blurredGreenVal = green.at<uchar>((int)centerY, (int)centerX);
+		float x = centerX/width;
+		float y = centerY/height;
+		if ( blurredGreenVal > 10 
+				&& stats.at<int>(i, cv::CC_STAT_AREA) > 20 
+				&& cam.getDepthVal(x, y) < 0.4) {
+			whiteBlobs.push_back({ centroids.at<double>(i, 0), centroids.at<double>(i, 1) });
 		}
 	}
-	return yellowBlobs;
+	return whiteBlobs;
 }
 
 // TODO: Find center of row
@@ -105,6 +154,11 @@ double findYCenterOfPlant(cv::Mat& image) {
 Camera::Camera() : color{rs2::frame()}, depth{rs2::frame()} {
 	log(std::string("INFO Camera: starting init"));
 	p.start();
+	
+	// set manual exposure
+	auto colorSensor = p.get_active_profile().get_device().query_sensors()[0];
+	colorSensor.set_option(RS2_OPTION_ENABLE_AUTO_EXPOSURE, 0);
+	colorSensor.set_option(RS2_OPTION_EXPOSURE, 60000);
 
 	// Block program until frames arrive
 	storeSnapshot();
@@ -114,7 +168,9 @@ Camera::Camera() : color{rs2::frame()}, depth{rs2::frame()} {
 	rs2_error *e = 0;
 	rs2::video_stream_profile profile(depth.get_profile());
 	intrinsic = profile.get_intrinsics();
+	
 	log(std::string("INFO Camera: init done"));
+	
 }
 
 // returns the most recent snapshot

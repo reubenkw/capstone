@@ -70,6 +70,7 @@ void MotorController::simple_pos(double pos) {
 	data[1] = (sat_pos & 0xFF00) >> 8;
 	data[2] = (sat_pos & 0xFF);
 	write_i2c(file, MCU_E, CMD_MOVE_AXIS, data, 3);
+	usleep(10000);
 	log(	std::string("Move stepper motor: ") + std::to_string(motor) +
 			std::string("to position: ") + std::to_string(pos) + 
 			std::string("by sending value: ") + std::to_string(data[1]) 
