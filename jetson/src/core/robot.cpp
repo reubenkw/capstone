@@ -58,13 +58,14 @@ Point3D Robot::getArmPosition() {
 	return armPosition;
 }
 
-void Robot::readEncoderVals(){
-	read_i2c(i2c_bus_file, MCU_E, (uint8_t * )encoderVal, 14);
-	std::string encoderString = std::string("");
-	for (int i = 0; i < 7; i++){
-		encoderString = std::to_string(encoderVal[i]) + std::string(" ");
-	}
-	debug_log(std::string("Encoders: ") + encoderString);
+// TODO: if used, update with jetson_2_mcu_e_commands_t
+void Robot::readEncoderVals() {
+// 	read_i2c(i2c_bus_file, MCU_E, (uint8_t * )encoderVal, 14);
+// 	std::string encoderString = std::string("");
+// 	for (int i = 0; i < 7; i++){
+// 		encoderString = std::to_string(encoderVal[i]) + std::string(" ");
+// 	}
+// 	debug_log(std::string("Encoders: ") + encoderString);
 	
 }
 
@@ -150,11 +151,6 @@ void Robot::driveRobotForward(Point2D goal) {
 	drive[backRight].setIdealSpeed(0);
 
 	debug_log(std::string("Robot Reached Goal"));
-}
-
-uint16_t Robot::getServoMotorEncoderVal(ServoMotor motor) {
-	readEncoderVals();
-	return encoderVal[4 + motor];
 }
 
 uint16_t Robot::getDriveMotorEncoderVal(DriveMotor motor) {

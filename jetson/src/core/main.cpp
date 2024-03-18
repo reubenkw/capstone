@@ -77,9 +77,9 @@ void test_camera_image() {
 void test_i2c_read(uint address) {
 	int i2c_bus_file = open_i2c();
 	log(std::string("INFO: bus file: ") + std::to_string(i2c_bus_file));
-	uint8_t data[4] = {0, 0, 0, 0};
+	uint8_t data[1] = {0};
 	while(true) {
-		read_i2c(i2c_bus_file, address, data, 4);
+		read_i2c(i2c_bus_file, CMD_WRITE_STATUS, address, data, 1);
 		usleep(1000000);
 		printf("data: %x, %x, %x, %x\n", data[0], data[1], data[2], data[3]);
 	}
@@ -97,7 +97,7 @@ void test_i2c_write(uint address) {
 	int i2c_bus_file = open_i2c();
 	log(std::string("INFO: bus file: ") + std::to_string(i2c_bus_file));
 	uint8_t data[4] = {0x5, 0x0, 0x0, 0x0};
-	write_i2c(i2c_bus_file, address, data, 4);
+	write_i2c(i2c_bus_file, address, 0x1, data, 4);
 }
 
 void test_i2c_write_mcu_e() {
@@ -162,24 +162,6 @@ void test_arm_z() {
 	r.moveServoArm(z, 0.748); 
 	r.moveServoArm(z, CARTESIAN_Z_MIN);
 	log(std::string("done testing test_arm_z"));
-}
-
-
-void test_mc() {
-	int file = open_i2c();
-	MotorController mc(0, 0, 0.01, 0, 0.01, 0, SERVO_MC, x, 0, file);
-
-	while(true) {
-		// forward 5 sec
-		printf("go\n");
-		mc.simple_go();
-		usleep(5000000);
-
-		// back 5 sec
-		printf("back\n");
-		mc.simple_bkwd();
-		usleep(5000000);
-	}
 }
 
 void test_move_servo_arm(){

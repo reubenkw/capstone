@@ -19,10 +19,7 @@ int open_i2c() {
     return file;
 }
 
-#define READ 2
-#define WRITE 1
-
-void read_i2c(int file, uint8_t mcu_addr, uint8_t * data, uint8_t len) {
+void read_i2c(int file, uint8_t mcu_addr, uint8_t command, uint8_t * data, uint8_t len) {
     int ioctl_val = ioctl(file, I2C_SLAVE, 0x42);
     log(std::string("INFO: ioctl_val: "));
     log(std::to_string(ioctl_val));
@@ -31,7 +28,7 @@ void read_i2c(int file, uint8_t mcu_addr, uint8_t * data, uint8_t len) {
         return;
     }
 
-    i2c_smbus_read_i2c_block_data(file, READ, len, data);
+    i2c_smbus_read_i2c_block_data(file, command, len, data);
     log(std::string("INFO: read from i2c bus address: ") + std::to_string(mcu_addr));
     log(std::string("INFO: data: "));
 
@@ -43,22 +40,22 @@ void read_i2c(int file, uint8_t mcu_addr, uint8_t * data, uint8_t len) {
     log(std::string(dataString));
 }
 
-void write_i2c(int file, uint8_t mcu_addr, uint8_t * data, uint8_t len){
+void write_i2c(int file, uint8_t mcu_addr, uint8_t command, uint8_t * data, uint8_t len) {
     if (ioctl(file, I2C_SLAVE, mcu_addr) < 0) {
         log(std::string("ERROR: failed to write to i2c bus address:" + mcu_addr));
     }
-    int ret = i2c_smbus_write_i2c_block_data(file, WRITE, len, data);
+    int ret = i2c_smbus_write_i2c_block_data(file, command, len, data);
     std::string dataString = std::string("(uint8_t decimal) ");
     for (int i = 0; i < len; i++){
         dataString = dataString + std::to_string(data[i]) + std::string(", ");
     }
     if (ret < 0) {
         log( std::string("ERROR: failed to write to i2c bus address: ") + std::to_string(mcu_addr) 
-            + std::string("cmd: ") + std::to_string(WRITE) 
+            + std::string("cmd: ") + std::to_string(command) 
             + std::string("data: ") + dataString);
     } else {
         debug_log( std::string("INFO: wrote to i2c bus address: ") + std::to_string(mcu_addr) 
-            + std::string("cmd: ") + std::to_string(WRITE) 
+            + std::string("cmd: ") + std::to_string(command) 
             + std::string("data: ") + dataString);
     }
 }

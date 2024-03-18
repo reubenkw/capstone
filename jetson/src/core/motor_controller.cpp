@@ -1,5 +1,6 @@
 #include "motor_controller.h"
 #include "log.h"
+#include "comm.h"
 
 #include <unistd.h>
 #include <math.h>
@@ -39,8 +40,9 @@ void MotorController::update(uint16_t encoderVal) {
 	} else {
 		saturatedMotorSignal = motorSignal;
 	}
-	uint8_t data[4] = {mc, motor, WRITE_CMD, (uint8_t) saturatedMotorSignal};
-	write_i2c(file, MCU_M, data, 4);
+	// TODO: fix if needed
+	// uint8_t data[4] = {mc, motor, WRITE_CMD, (uint8_t) saturatedMotorSignal};
+	// write_i2c(file, MCU_M, data, 4); 
 }
 
 void MotorController::resetElapsedDistance() {
@@ -52,24 +54,10 @@ double MotorController::getElapsedDistance() {
 }
 
 // Stepper Motor Controller
-// 1st byte: which stepper motor (X: 0, Y: 1, Z: 0)
+// 1st byte: which stepper motor (X: 0, Y: 1, Z: 2)
 // 2nd + 3rd byte: 16 bit position, mm location x 100
 // Here we want to move keep moving forward (program will stop after hitting a limit switch)
-void MotorController::simple_go(){
-	uint8_t data[4] = {0};
-	data[0] = motor;
-	data[1] = 0xFF;
-	data[2] = 0xFF;
-	write_i2c(file, MCU_E, data, 4);
-}
-
-void MotorController::simple_bkwd(){
-	uint8_t data[4] = {0};
-	data[0] = motor;
-	write_i2c(file, MCU_E, data, 4);
-}
-
-void MotorController::simple_pos(double pos){
+void MotorController::simple_pos(double pos) {
 	pos = pos * 1000; // convert from [m] to [mm]
 	uint16_t sat_pos;
 	if (pos > 6535){
@@ -77,22 +65,40 @@ void MotorController::simple_pos(double pos){
 	} else {
 		sat_pos = (uint16_t) (pos*10);
 	}
-	uint8_t data[4] = {0};
+	uint8_t data[3] = {0};
 	data[0] = motor;
 	data[1] = (sat_pos & 0xFF00) >> 8;
 	data[2] = (sat_pos & 0xFF);
-	write_i2c(file, MCU_E, data, 4);
+	write_i2c(file, MCU_E, CMD_MOVE_AXIS, data, 3);
 	log(	std::string("Move stepper motor: ") + std::to_string(motor) +
 			std::string("to position: ") + std::to_string(pos) + 
 			std::string("by sending value: ") + std::to_string(data[1]) 
 			+ std::string(" ") + std::to_string(data[2]) );
-	// uint8_t resp = 0;
-	// while(resp == 0){
-	//	read_i2c(file, MCU_E, &resp, 1);
-	//	usleep(1000);
-	// }
-	// log(	std::string("Read stepper motor return: ") + std::to_string(resp));
-	// if (resp == 2){ // hit limit switch
-	// 	throw std::logic_error("hit limit switch");
-	// }
+	
+	// wait for ack
+	log(std::string("i2c: waiting for S_COMMAND_RECIEVED from MCU_E.\n"));
+	uint8_t resp = 0xFF; // not a valid response
+	while(resp != S_COMMAND_RECIEVED) {
+		read_i2c(file, MCU_E, CMD_WRITE_STATUS, &resp, 1);
+		usleep(10000);
+	}
+	log(std::string("i2c: read S_COMMAND_RECIEVED from MCU_E.\n"));
+
+	// wait for done
+	while (true) {
+		read_i2c(file, MCU_E, CMD_WRITE_STATUS, &resp, 1);
+		if (resp == S_ACTION_COMPLETE) {
+			// action done
+			elapsedDistance = pos;
+			log(std::string("i2c: read S_ACTION_COMPLETE from MCU_E.\n"));
+			break;
+		} else if (resp == S_ACTION_ENDED_W_LIMIT) {
+			// hit limit switch
+			// TODO: figure out what hitting limit switch in that direction means (saturate position)
+			log(std::string("i2c: read S_ACTION_ENDED_W_LIMIT from MCU_E.\n"));
+			throw std::logic_error("hit limit switch");
+			break;
+		}
+		usleep(10000);
+	}
 }
