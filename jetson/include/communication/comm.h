@@ -12,7 +12,6 @@
 
 typedef enum {
   S_WAITING,
-  S_COMMAND_RECIEVED,
   S_ACTION_COMPLETE,
   S_ACTION_ENDED_W_LIMIT,
 } mcu_e_status_t;

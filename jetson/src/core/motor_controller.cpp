@@ -70,36 +70,26 @@ void MotorController::simple_pos(double pos) {
 	data[1] = (sat_pos & 0xFF00) >> 8;
 	data[2] = (sat_pos & 0xFF);
 	write_i2c(file, MCU_E, CMD_MOVE_AXIS, data, 3);
-	usleep(10000);
+	sleep(1);
 	log(	std::string("Move stepper motor: ") + std::to_string(motor) +
 			std::string("to position: ") + std::to_string(pos) + 
 			std::string("by sending value: ") + std::to_string(data[1]) 
 			+ std::string(" ") + std::to_string(data[2]) );
-	
-	// wait for ack
-	log(std::string("i2c: waiting for S_COMMAND_RECIEVED from MCU_E.\n"));
-	uint8_t resp = 0xFF; // not a valid response
-	while(resp != S_COMMAND_RECIEVED) {
-		read_i2c(file, MCU_E, CMD_WRITE_STATUS, &resp, 1);
-		usleep(10000);
-	}
-	log(std::string("i2c: read S_COMMAND_RECIEVED from MCU_E.\n"));
 
+	uint8_t resp = 0xFF; // Not a valid resp
 	// wait for done
-	while (true) {
+	while (resp != S_ACTION_COMPLETE && resp != S_ACTION_ENDED_W_LIMIT) {
 		read_i2c(file, MCU_E, CMD_WRITE_STATUS, &resp, 1);
 		if (resp == S_ACTION_COMPLETE) {
 			// action done
 			elapsedDistance = pos;
 			log(std::string("i2c: read S_ACTION_COMPLETE from MCU_E.\n"));
-			break;
 		} else if (resp == S_ACTION_ENDED_W_LIMIT) {
 			// hit limit switch
 			// TODO: figure out what hitting limit switch in that direction means (saturate position)
 			log(std::string("i2c: read S_ACTION_ENDED_W_LIMIT from MCU_E.\n"));
 			throw std::logic_error("hit limit switch");
-			break;
 		}
-		usleep(10000);
+		sleep(1);
 	}
 }

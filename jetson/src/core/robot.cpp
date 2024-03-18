@@ -167,21 +167,14 @@ void Robot::resetServoArm() {
 	uint8_t data[1];
 	write_i2c(i2c_bus_file, MCU_E, CMD_RESET, data, 0);
 	usleep(10000);
-	
-	// wait for ack
-	log(std::string("i2c: waiting for S_COMMAND_RECIEVED from MCU_E.\n"));
-	uint8_t resp = 0xFF; // not a valid response
-	while(resp != S_COMMAND_RECIEVED) {
-		read_i2c(i2c_bus_file, MCU_E, CMD_WRITE_STATUS, &resp, 1);
-		usleep(10000);
-	}
-	log(std::string("i2c: read S_COMMAND_RECIEVED from MCU_E.\n"));
+
+	uint8_t resp = 0xFF; // Not a valid command
 
 	// wait for done
 	log(std::string("i2c: waiting for S_ACTION_COMPLETE from MCU_E.\n"));
 	while(resp != S_ACTION_COMPLETE) {
 		read_i2c(i2c_bus_file, MCU_E, CMD_WRITE_STATUS, &resp, 1);
-		usleep(10000);
+		sleep(1);
 	}
 	log(std::string("i2c: read S_ACTION_COMPLETE from MCU_E.\n"));
 
