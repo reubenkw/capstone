@@ -245,18 +245,22 @@ void test_i2c_stepper_interface() {
 
     // max data len: 1 command byte then 3 data bytes for motor move
     uint8_t rx_data[3] = {0};
+    mcu_e_status_t state = S_ACTION_COMPLETE;
+    i2c_write_jetson(S_ACTION_COMPLETE);
     while(true) {
         // read from jetson
         printf("waiting for command. willing to wait 7 days.\n");
         i2c_slave_read_buffer(I2C_HOST, rx_data, 1, portMAX_DELAY);
         printf("got command: %x\n", rx_data[0]);
+        usleep(10000);
         switch (rx_data[0]) {
             case CMD_WRITE_STATUS:
-                i2c_write_jetson(S_WAITING);
+                i2c_write_jetson(state);
                 break;
             case CMD_MOVE_AXIS:
+                state = S_WAITING;
+                i2c_write_jetson(state);
                 i2c_slave_read_buffer(I2C_HOST, rx_data, 3, portMAX_DELAY);
-                i2c_write_jetson(S_COMMAND_RECIEVED);
 
                 // interpret data recieved
                 uint16_t ideal_pos_10x = rx_data[1] << 8 | rx_data[2];
@@ -265,24 +269,32 @@ void test_i2c_stepper_interface() {
                 printf("Move stepper motor: %d to position %0.2f from position %0.2f\n", 
                     rx_data[0], ideal_pos, end_effector_position[rx_data[0]]);
                 
-                // move_stepper(rx_data[0], ideal_pos);
+                move_stepper(rx_data[0], ideal_pos);
+                printf("moving arm.\n");
 
                 // emulate moving motors
-                usleep(4 * 1000000);
+                // printf("pretending to move motors\n.");
+                // usleep(4 * 1000000);
+
                 // TODO: send if limit switch hit
                 // update status to done
-                i2c_write_jetson(S_ACTION_COMPLETE);
+                state = S_ACTION_COMPLETE;
+                i2c_write_jetson(state);
                 break;
             case CMD_RESET:
-                i2c_write_jetson(S_COMMAND_RECIEVED);
-                // reset_xyz();
+                state = S_WAITING;
+                i2c_write_jetson(state);
+                reset_xyz();
+                printf("reset arm.\n");
 
                 // emulate moving motors
-                usleep(4 * 1000000);
+                // printf("pretending to move motors (reset)\n.");
+                // usleep(4 * 1000000);
 
-                i2c_write_jetson(S_ACTION_COMPLETE);
+                state = S_ACTION_COMPLETE;
+                i2c_write_jetson(state);
                 break;
         }
-        usleep(500000);
+        usleep(5000);
     }
 }

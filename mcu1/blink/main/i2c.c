@@ -38,7 +38,7 @@ void i2c_write_jetson(mcu_e_status_t status) {
     uint8_t data[1] = {status};
     i2c_reset_tx_fifo(I2C_HOST);
     i2c_slave_write_buffer(I2C_HOST, data, 1, portMAX_DELAY);
-    usleep(100000);
+    usleep(10000);
     printf("i2c_write_jetson %x.\n", status);
 }
 
