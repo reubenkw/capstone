@@ -31,4 +31,8 @@ void init_i2c_jetson_mcu_e();
 void test_i2c_write(uint mcu_address);
 void test_i2c_read(uint mcu_address);
 
+void notify_jetson_got_command();
+void notify_jetson_done_motor_move();
+void notify_jetson_hit_limit();
+
 #endif //h

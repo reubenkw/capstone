@@ -23,7 +23,7 @@ void init_i2c_jetson(uint mcu_address) {
     if (err != ESP_OK){
         printf("err driver install: %d\n", err);  
     }
-    printf("jetson i2c init"); 
+    printf("jetson i2c init\n"); 
 }
 
 void init_i2c_jetson_mcu_m() {
@@ -34,13 +34,37 @@ void init_i2c_jetson_mcu_e() {
     init_i2c_jetson(MCU_E_ADDRESS);
 }
 
+void notify_jetson_got_command() {
+    uint8_t data[2] = {0x1};
+    i2c_reset_rx_fifo(I2C_HOST);
+    i2c_reset_tx_fifo(I2C_HOST);
+    i2c_slave_write_buffer(I2C_HOST, data, 1, portMAX_DELAY);
+    printf("i2c: sent notify_jetson_got_command.\n");
+}
+
+void notify_jetson_done_motor_move() {
+    uint8_t data[2] = {0x2};
+    i2c_reset_rx_fifo(I2C_HOST);
+    i2c_reset_tx_fifo(I2C_HOST);
+    i2c_slave_write_buffer(I2C_HOST, data, 1, portMAX_DELAY);
+    printf("i2c: sent notify_jetson_done_motor_move.\n");
+}
+
+void notify_jetson_hit_limit() {
+    uint8_t data[2] = {0x3};
+    i2c_reset_rx_fifo(I2C_HOST);
+    i2c_reset_tx_fifo(I2C_HOST);
+    i2c_slave_write_buffer(I2C_HOST, data, 1, portMAX_DELAY);
+    printf("i2c: sent notify_jetson_hit_limit.\n");
+}
+
 void test_i2c_write(uint mcu_address) {
     // Initialize i2c bus as slave to listen to jetson nano
     init_i2c_jetson(mcu_address);
     uint8_t data[2] = {0x0, 0x0};
     while (1) {
         data[0] += 1;
-        int data_trans = i2c_slave_write_buffer(I2C_HOST, data, 2, 1000 / portTICK_PERIOD_MS);
+        int data_trans = i2c_slave_write_buffer(I2C_HOST, data, 2, portMAX_DELAY);
         printf("data trans: %d, data: %x\n", data_trans, data[0]);
         usleep(100000);
     }
