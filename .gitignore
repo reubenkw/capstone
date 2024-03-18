@@ -1109,3 +1109,5 @@ CapstoneOpenCV.sln
 CapstoneOpenCV.vcxproj
 CapstoneOpenCV.vcxproj.filters
 CapstoneOpenCV.vcxproj.user
+
+**/log.txt
