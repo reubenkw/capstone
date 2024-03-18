@@ -130,6 +130,44 @@ void test_i2c_write() {
 	write_i2c(i2c_bus_file, 0x10, data, 4);
 }
 
+void test_i2c_read_write() {
+	int i2c_bus_file = open_i2c();
+	log(std::string("INFO: bus file: ") + std::to_string(i2c_bus_file));
+	
+	uint8_t data[4] = {0x0, 0x12, 0xba, 0xbe};
+	write_i2c(i2c_bus_file, 0x10, data, 4);
+	usleep(7000000);
+	uint8_t resp[1] = {0};
+	
+	while(resp[0] != 1) {
+		read_i2c(i2c_bus_file, 0x10, resp, 1);
+		usleep(1000000);	
+		printf("resp: %x\n", resp[0]);
+	}
+	
+	read_i2c(i2c_bus_file, 0x10, resp, 1);
+	usleep(1000000);	
+	printf("resp: %x\n", resp[0]);
+		
+	resp[0] = 0;
+
+	printf("send data\n");
+	while(true){
+		write_i2c(i2c_bus_file, 0x10, data, 4);
+		usleep(1000000);
+	
+		while(resp[0] != 1) {
+			read_i2c(i2c_bus_file, 0x10, resp, 1);
+			usleep(1000000);	
+			printf("resp: %x\n", resp[0]);
+		}
+		
+		resp[0] = 0;
+	}
+	
+	
+}
+
 void test_pollinate() {
 	log(std::string("INFO: starting test_pollinate."));
 	Camera cam;
@@ -229,12 +267,6 @@ void test_scan() {
 	log(std::string("INFO: starting test_scan."));
 	Camera cam;
 	Robot r(cam);
-	
-	r.moveServoArm(z, 0.8);
-	r.moveServoArm(x, 0);
-	r.moveServoArm(y, 0);
-	
-	usleep(1000000);
 
 	std::vector<Point3D> flowerCenters = r.scan();
 
@@ -279,9 +311,10 @@ int main(int argc, char** argv)
 	// test_image_processing(cam);
 	// test_clustering();
 	// test_i2c_write();
-	test_i2c_read();
+	// test_i2c_read();
+	// test_i2c_read_write();
 	// test_move_servo_arm();
 	// test_move_servo_arm_to_flowers();
-	// test_scan();
+	test_scan();
 	return 0;
 }

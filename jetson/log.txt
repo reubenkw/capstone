@@ -1,47 +1,138 @@
-17-03-2024_19-34-26 Starting Program!
-17-03-2024_19-34-26 INFO: bus file: 4
-17-03-2024_19-34-26 INFO: ioctl_val: 
-17-03-2024_19-34-26 0
-17-03-2024_19-34-26 INFO: read from i2c bus address: 16
-17-03-2024_19-34-26 INFO: data: 
-17-03-2024_19-34-26 (uint8_t decimal) 0, 
-17-03-2024_19-34-27 INFO: ioctl_val: 
-17-03-2024_19-34-27 0
-17-03-2024_19-34-27 INFO: read from i2c bus address: 16
-17-03-2024_19-34-27 INFO: data: 
-17-03-2024_19-34-27 (uint8_t decimal) 0, 
-17-03-2024_19-34-28 INFO: ioctl_val: 
-17-03-2024_19-34-28 0
-17-03-2024_19-34-28 INFO: read from i2c bus address: 16
-17-03-2024_19-34-28 INFO: data: 
-17-03-2024_19-34-28 (uint8_t decimal) 1, 
-17-03-2024_19-34-29 INFO: ioctl_val: 
-17-03-2024_19-34-29 0
-17-03-2024_19-34-29 INFO: read from i2c bus address: 16
-17-03-2024_19-34-29 INFO: data: 
-17-03-2024_19-34-29 (uint8_t decimal) 2, 
-17-03-2024_19-34-30 INFO: ioctl_val: 
-17-03-2024_19-34-30 0
-17-03-2024_19-34-30 INFO: read from i2c bus address: 16
-17-03-2024_19-34-30 INFO: data: 
-17-03-2024_19-34-30 (uint8_t decimal) 3, 
-17-03-2024_19-34-31 INFO: ioctl_val: 
-17-03-2024_19-34-31 0
-17-03-2024_19-34-31 INFO: read from i2c bus address: 16
-17-03-2024_19-34-31 INFO: data: 
-17-03-2024_19-34-31 (uint8_t decimal) 4, 
-17-03-2024_19-34-32 INFO: ioctl_val: 
-17-03-2024_19-34-32 0
-17-03-2024_19-34-32 INFO: read from i2c bus address: 16
-17-03-2024_19-34-32 INFO: data: 
-17-03-2024_19-34-32 (uint8_t decimal) 5, 
-17-03-2024_19-34-33 INFO: ioctl_val: 
-17-03-2024_19-34-33 0
-17-03-2024_19-34-33 INFO: read from i2c bus address: 16
-17-03-2024_19-34-33 INFO: data: 
-17-03-2024_19-34-33 (uint8_t decimal) 6, 
-17-03-2024_19-34-34 INFO: ioctl_val: 
-17-03-2024_19-34-34 0
-17-03-2024_19-34-34 INFO: read from i2c bus address: 16
-17-03-2024_19-34-34 INFO: data: 
-17-03-2024_19-34-34 (uint8_t decimal) 7, 
+17-03-2024_21-19-06 Starting Program!
+17-03-2024_21-19-06 INFO: bus file: 4
+17-03-2024_21-19-06 INFO: wrote to i2c bus address: 16cmd: 1data: (uint8_t decimal) 0, 18, 186, 190, 
+17-03-2024_21-19-13 INFO: ioctl_val: 
+17-03-2024_21-19-13 0
+17-03-2024_21-19-13 INFO: read from i2c bus address: 16
+17-03-2024_21-19-13 INFO: data: 
+17-03-2024_21-19-13 (uint8_t decimal) 1, 
+17-03-2024_21-19-14 INFO: ioctl_val: 
+17-03-2024_21-19-14 0
+17-03-2024_21-19-14 INFO: read from i2c bus address: 16
+17-03-2024_21-19-14 INFO: data: 
+17-03-2024_21-19-14 (uint8_t decimal) 33, 
+17-03-2024_21-19-15 INFO: wrote to i2c bus address: 16cmd: 1data: (uint8_t decimal) 0, 18, 186, 190, 
+17-03-2024_21-19-16 INFO: ioctl_val: 
+17-03-2024_21-19-16 0
+17-03-2024_21-19-16 INFO: read from i2c bus address: 16
+17-03-2024_21-19-16 INFO: data: 
+17-03-2024_21-19-16 (uint8_t decimal) 33, 
+17-03-2024_21-19-17 INFO: ioctl_val: 
+17-03-2024_21-19-17 0
+17-03-2024_21-19-17 INFO: read from i2c bus address: 16
+17-03-2024_21-19-17 INFO: data: 
+17-03-2024_21-19-17 (uint8_t decimal) 33, 
+17-03-2024_21-19-18 INFO: ioctl_val: 
+17-03-2024_21-19-18 0
+17-03-2024_21-19-18 INFO: read from i2c bus address: 16
+17-03-2024_21-19-18 INFO: data: 
+17-03-2024_21-19-18 (uint8_t decimal) 33, 
+17-03-2024_21-19-19 INFO: ioctl_val: 
+17-03-2024_21-19-19 0
+17-03-2024_21-19-19 INFO: read from i2c bus address: 16
+17-03-2024_21-19-19 INFO: data: 
+17-03-2024_21-19-19 (uint8_t decimal) 33, 
+17-03-2024_21-19-20 INFO: ioctl_val: 
+17-03-2024_21-19-20 0
+17-03-2024_21-19-20 INFO: read from i2c bus address: 16
+17-03-2024_21-19-20 INFO: data: 
+17-03-2024_21-19-20 (uint8_t decimal) 1, 
+17-03-2024_21-19-21 INFO: wrote to i2c bus address: 16cmd: 1data: (uint8_t decimal) 0, 18, 186, 190, 
+17-03-2024_21-19-22 INFO: ioctl_val: 
+17-03-2024_21-19-22 0
+17-03-2024_21-19-22 INFO: read from i2c bus address: 16
+17-03-2024_21-19-22 INFO: data: 
+17-03-2024_21-19-22 (uint8_t decimal) 33, 
+17-03-2024_21-19-23 INFO: ioctl_val: 
+17-03-2024_21-19-23 0
+17-03-2024_21-19-23 INFO: read from i2c bus address: 16
+17-03-2024_21-19-23 INFO: data: 
+17-03-2024_21-19-23 (uint8_t decimal) 33, 
+17-03-2024_21-19-24 INFO: ioctl_val: 
+17-03-2024_21-19-24 0
+17-03-2024_21-19-24 INFO: read from i2c bus address: 16
+17-03-2024_21-19-24 INFO: data: 
+17-03-2024_21-19-24 (uint8_t decimal) 33, 
+17-03-2024_21-19-25 INFO: ioctl_val: 
+17-03-2024_21-19-25 0
+17-03-2024_21-19-25 INFO: read from i2c bus address: 16
+17-03-2024_21-19-25 INFO: data: 
+17-03-2024_21-19-25 (uint8_t decimal) 33, 
+17-03-2024_21-19-26 INFO: ioctl_val: 
+17-03-2024_21-19-26 0
+17-03-2024_21-19-26 INFO: read from i2c bus address: 16
+17-03-2024_21-19-26 INFO: data: 
+17-03-2024_21-19-26 (uint8_t decimal) 1, 
+17-03-2024_21-19-27 INFO: wrote to i2c bus address: 16cmd: 1data: (uint8_t decimal) 0, 18, 186, 190, 
+17-03-2024_21-19-28 INFO: ioctl_val: 
+17-03-2024_21-19-28 0
+17-03-2024_21-19-28 INFO: read from i2c bus address: 16
+17-03-2024_21-19-28 INFO: data: 
+17-03-2024_21-19-28 (uint8_t decimal) 33, 
+17-03-2024_21-19-29 INFO: ioctl_val: 
+17-03-2024_21-19-29 0
+17-03-2024_21-19-29 INFO: read from i2c bus address: 16
+17-03-2024_21-19-29 INFO: data: 
+17-03-2024_21-19-29 (uint8_t decimal) 33, 
+17-03-2024_21-19-30 INFO: ioctl_val: 
+17-03-2024_21-19-30 0
+17-03-2024_21-19-30 INFO: read from i2c bus address: 16
+17-03-2024_21-19-30 INFO: data: 
+17-03-2024_21-19-30 (uint8_t decimal) 33, 
+17-03-2024_21-19-31 INFO: ioctl_val: 
+17-03-2024_21-19-31 0
+17-03-2024_21-19-31 INFO: read from i2c bus address: 16
+17-03-2024_21-19-31 INFO: data: 
+17-03-2024_21-19-31 (uint8_t decimal) 33, 
+17-03-2024_21-19-32 INFO: ioctl_val: 
+17-03-2024_21-19-32 0
+17-03-2024_21-19-32 INFO: read from i2c bus address: 16
+17-03-2024_21-19-32 INFO: data: 
+17-03-2024_21-19-32 (uint8_t decimal) 1, 
+17-03-2024_21-19-33 INFO: wrote to i2c bus address: 16cmd: 1data: (uint8_t decimal) 0, 18, 186, 190, 
+17-03-2024_21-19-34 INFO: ioctl_val: 
+17-03-2024_21-19-34 0
+17-03-2024_21-19-34 INFO: read from i2c bus address: 16
+17-03-2024_21-19-34 INFO: data: 
+17-03-2024_21-19-34 (uint8_t decimal) 33, 
+17-03-2024_21-19-35 INFO: ioctl_val: 
+17-03-2024_21-19-35 0
+17-03-2024_21-19-35 INFO: read from i2c bus address: 16
+17-03-2024_21-19-35 INFO: data: 
+17-03-2024_21-19-35 (uint8_t decimal) 33, 
+17-03-2024_21-19-36 INFO: ioctl_val: 
+17-03-2024_21-19-36 0
+17-03-2024_21-19-36 INFO: read from i2c bus address: 16
+17-03-2024_21-19-36 INFO: data: 
+17-03-2024_21-19-36 (uint8_t decimal) 33, 
+17-03-2024_21-19-37 INFO: ioctl_val: 
+17-03-2024_21-19-37 0
+17-03-2024_21-19-37 INFO: read from i2c bus address: 16
+17-03-2024_21-19-37 INFO: data: 
+17-03-2024_21-19-37 (uint8_t decimal) 33, 
+17-03-2024_21-19-38 INFO: ioctl_val: 
+17-03-2024_21-19-38 0
+17-03-2024_21-19-38 INFO: read from i2c bus address: 16
+17-03-2024_21-19-38 INFO: data: 
+17-03-2024_21-19-38 (uint8_t decimal) 1, 
+17-03-2024_21-19-39 INFO: wrote to i2c bus address: 16cmd: 1data: (uint8_t decimal) 0, 18, 186, 190, 
+17-03-2024_21-19-40 INFO: ioctl_val: 
+17-03-2024_21-19-40 0
+17-03-2024_21-19-40 INFO: read from i2c bus address: 16
+17-03-2024_21-19-40 INFO: data: 
+17-03-2024_21-19-40 (uint8_t decimal) 33, 
+17-03-2024_21-19-41 INFO: ioctl_val: 
+17-03-2024_21-19-41 0
+17-03-2024_21-19-41 INFO: read from i2c bus address: 16
+17-03-2024_21-19-41 INFO: data: 
+17-03-2024_21-19-41 (uint8_t decimal) 33, 
+17-03-2024_21-19-42 INFO: ioctl_val: 
+17-03-2024_21-19-42 0
+17-03-2024_21-19-42 INFO: read from i2c bus address: 16
+17-03-2024_21-19-42 INFO: data: 
+17-03-2024_21-19-42 (uint8_t decimal) 33, 
+17-03-2024_21-19-43 INFO: ioctl_val: 
+17-03-2024_21-19-43 0
+17-03-2024_21-19-43 INFO: read from i2c bus address: 16
+17-03-2024_21-19-43 INFO: data: 
+17-03-2024_21-19-43 (uint8_t decimal) 33, 
