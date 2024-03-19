@@ -19,7 +19,7 @@
 
 // limit switch dimensions
 #define LIMIT_X_MIN_DIST 0
-#define LIMIT_X_MAX_DIST 680
+#define LIMIT_X_MAX_DIST 500
 #define LIMIT_Y_MIN_DIST 0
 #define LIMIT_Y_MAX_DIST 282
 #define LIMIT_Z_MIN_DIST 327
