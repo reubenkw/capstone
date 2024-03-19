@@ -258,7 +258,7 @@ void test_i2c_stepper_interface() {
                 i2c_write_jetson(state);
                 break;
             case CMD_MOVE_AXIS:
-                state = S_WAITING;
+                state = S_PROCESSING_CMD;
                 i2c_write_jetson(state);
                 i2c_slave_read_buffer(I2C_HOST, rx_data, 3, portMAX_DELAY);
 
@@ -282,7 +282,7 @@ void test_i2c_stepper_interface() {
                 i2c_write_jetson(state);
                 break;
             case CMD_RESET:
-                state = S_WAITING;
+                state = S_PROCESSING_CMD;
                 i2c_write_jetson(state);
                 reset_xyz();
                 printf("reset arm.\n");
@@ -294,6 +294,15 @@ void test_i2c_stepper_interface() {
                 state = S_ACTION_COMPLETE;
                 i2c_write_jetson(state);
                 break;
+            case CMD_POLLINATE:
+                state = S_PROCESSING_CMD;
+                i2c_write_jetson(state);
+
+                pollinate();
+                printf("pollinating.\n");
+
+                state = S_ACTION_COMPLETE;
+                i2c_write_jetson(state);
         }
         usleep(5000);
     }

@@ -129,3 +129,50 @@ void move_stepper(uint8_t motor, float ideal_pos) {
     }
     end_effector_position[motor] = final;
 }
+
+void pollinate() {
+    const uint delta = 10;
+    const uint n = 5;
+
+    const uint x_init = end_effector_position[STP_X];
+    for (int i=0; i<n; i++) {
+        move_stepper(STP_X, x_init-delta);
+        usleep(10000);
+        move_stepper(STP_X, x_init+delta);
+        usleep(10000);
+    }
+    move_stepper(STP_X, x_init);
+
+    const uint y_init = end_effector_position[STP_Y];
+    for (int i=0; i<n; i++) {
+        move_stepper(STP_Y, y_init-delta);
+        usleep(10000);
+        move_stepper(STP_Y, y_init+delta);
+        usleep(10000);
+    }
+    move_stepper(STP_Y, y_init);
+
+    // maybe a spiral?
+    move_stepper(STP_X, x_init+delta);
+    usleep(10000);
+    move_stepper(STP_Y, y_init+delta);
+    usleep(10000);
+    move_stepper(STP_X, x_init-delta);
+    usleep(10000);
+    move_stepper(STP_Y, y_init-delta);
+    usleep(10000);
+    move_stepper(STP_X, x_init+2*delta);
+    usleep(10000);
+    move_stepper(STP_Y, y_init+2*delta);
+    usleep(10000);
+    move_stepper(STP_X, x_init-2*delta);
+    usleep(10000);
+    move_stepper(STP_Y, y_init-2*delta);
+
+    // reset
+    usleep(10000);
+    move_stepper(STP_X, x_init);
+    usleep(10000);
+    move_stepper(STP_Y, y_init);
+    usleep(10000);
+}

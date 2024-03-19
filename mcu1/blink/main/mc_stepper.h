@@ -44,5 +44,6 @@ int move_y(int delta);
 int move_z(uint crnt, uint desired);
 void move_stepper(uint8_t motor, float ideal_pos);
 void reset_xyz();
+void pollinate();
 
 #endif // h
