@@ -58,13 +58,14 @@ Point3D Robot::getArmPosition() {
 	return armPosition;
 }
 
-void Robot::readEncoderVals(){
-	read_i2c(i2c_bus_file, MCU_E, (uint8_t * )encoderVal, 14);
-	std::string encoderString = std::string("");
-	for (int i = 0; i < 7; i++){
-		encoderString = std::to_string(encoderVal[i]) + std::string(" ");
-	}
-	debug_log(std::string("Encoders: ") + encoderString);
+// TODO: if used, update with jetson_2_mcu_e_commands_t
+void Robot::readEncoderVals() {
+// 	read_i2c(i2c_bus_file, MCU_E, (uint8_t * )encoderVal, 14);
+// 	std::string encoderString = std::string("");
+// 	for (int i = 0; i < 7; i++){
+// 		encoderString = std::to_string(encoderVal[i]) + std::string(" ");
+// 	}
+// 	debug_log(std::string("Encoders: ") + encoderString);
 	
 }
 
@@ -152,11 +153,6 @@ void Robot::driveRobotForward(Point2D goal) {
 	debug_log(std::string("Robot Reached Goal"));
 }
 
-uint16_t Robot::getServoMotorEncoderVal(ServoMotor motor) {
-	readEncoderVals();
-	return encoderVal[4 + motor];
-}
-
 uint16_t Robot::getDriveMotorEncoderVal(DriveMotor motor) {
 	readEncoderVals();
 	return encoderVal[motor];
@@ -165,6 +161,24 @@ uint16_t Robot::getDriveMotorEncoderVal(DriveMotor motor) {
 void Robot::moveServoArm(ServoMotor motor, double pos) {
 	servoArm[motor].simple_pos(pos);
 	armPosition[motor] = pos;
+}
+
+void Robot::resetServoArm() {
+	uint8_t data[1];
+	write_i2c(i2c_bus_file, MCU_E, CMD_RESET, data, 0);
+	usleep(10000);
+
+	uint8_t resp = 0xFF; // Not a valid command
+
+	// wait for done
+	log(std::string("i2c: waiting for S_ACTION_COMPLETE from MCU_E.\n"));
+	while(resp != S_ACTION_COMPLETE) {
+		read_i2c(i2c_bus_file, MCU_E, CMD_WRITE_STATUS, &resp, 1);
+		sleep(1);
+	}
+	log(std::string("i2c: read S_ACTION_COMPLETE from MCU_E.\n"));
+
+	armPosition = Point3D(0, 0, CARTESIAN_Z_MAX);
 }
 
 void Robot::pollinate() { 

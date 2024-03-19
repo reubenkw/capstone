@@ -10,11 +10,21 @@
 #define SERVO_MC 0x2
 #define LIMIT_SWITCHES 0x3
 
-#define WRITE_CMD 1
-#define READ_CMD 2
+typedef enum {
+  S_WAITING,
+  S_ACTION_COMPLETE,
+  S_ACTION_ENDED_W_LIMIT,
+} mcu_e_status_t;
+
+typedef enum {
+    CMD_WRITE_STATUS,
+    CMD_MOVE_AXIS,  // 3 extra data bytes
+    CMD_RESET,
+    CMD_POLINATE,
+} jetson_2_mcu_e_commands_t;
 
 int open_i2c();
-void read_i2c(int file, uint8_t mcu_addr, uint8_t * data, uint8_t len);
-void write_i2c(int file, uint8_t mcu_addr, uint8_t * data, uint8_t len);
+void read_i2c(int file, uint8_t mcu_addr, uint8_t command, uint8_t * data, uint8_t len);
+void write_i2c(int file, uint8_t mcu_addr, uint8_t command, uint8_t * data, uint8_t len);
 
 #endif //h

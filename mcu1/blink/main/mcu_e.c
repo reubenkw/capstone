@@ -36,8 +36,7 @@ void test_limit() {
     }
 }
 
-
-void test_all_stepper(){
+void test_all_stepper() {
     init_limit_gpio();
     init_stepper_mc();
 
@@ -165,12 +164,12 @@ void test_z_stepper() {
 
     const uint action_delay = 1 * 1000000;
     const uint z_step_delay = 1000;
-    const uint z_dropdown = 2000;
+    const uint z_dropdown = 3000;
 
     // up to limit
+    printf("z 1\n");
     gpio_set_level(GPIO_DIR_Z, 1);
     while(gpio_read(LIMIT_Z)==0) {
-        printf("z 1\n");
         gpio_set_level(GPIO_PULSE_Z, 1);
         usleep(z_step_delay);
         gpio_set_level(GPIO_PULSE_Z, 0);
@@ -180,9 +179,14 @@ void test_z_stepper() {
     usleep(action_delay);
 
     // dropdown fixed number of steps
+    printf("z 0\n");
+    // const uint step_delta_2_stop = 100;
     gpio_set_level(GPIO_DIR_Z, 0);
-    for(int k = 0; k < z_dropdown; k++){
-        printf("z 0\n");
+    for(int k = 0; k < z_dropdown; k++) {
+        // if ((k % step_delta_2_stop) == 0) {
+        //     printf("z steps: %d\n", k);
+        //     usleep(2 * 1000000);
+        // }
         gpio_set_level(GPIO_PULSE_Z, 1);
         usleep(z_step_delay * 2);
         gpio_set_level(GPIO_PULSE_Z, 0);
@@ -192,9 +196,9 @@ void test_z_stepper() {
     usleep(action_delay);
 
     // back up to limit
+    printf("z 3\n");
     gpio_set_level(GPIO_DIR_Z, 1);
     while(gpio_read(LIMIT_Z)==0) {
-        printf("z 3\n");
         gpio_set_level(GPIO_PULSE_Z, 1);
         usleep(z_step_delay);
         gpio_set_level(GPIO_PULSE_Z, 0);
@@ -202,86 +206,95 @@ void test_z_stepper() {
     }
 }
 
-void step(uint8_t pin){
-    uint step_delay = 1000;
-    gpio_set_level(pin, 1);
-    usleep(step_delay);
-    gpio_set_level(pin, 0);
-    usleep(step_delay);  
+void test_stepper_positioning() {
+    init_limit_gpio();
+    init_stepper_mc();
+
+    printf("0 point: %d\n", z_dist_2_steps(0));
+    printf("400 point: %d\n", z_dist_2_steps(400));
+
+    uint action_delay = 2 * 1000000;
+
+    usleep(action_delay);
+    move_stepper(STP_X, 600 - 50);
+    usleep(action_delay);
+    move_stepper(STP_Y, 280 - 50);
+    usleep(action_delay);
+    // move_stepper(STP_Z, 50);
+    // usleep(action_delay);
 }
 
-float pos[3] = {0, 0, LIMIT_Z_DIST};
-bool move_stepper(uint8_t motor, float ideal_pos){
-    bool fwd_dir[3] = {1,0,1};
-    uint8_t dir[3] = {GPIO_DIR_X, GPIO_DIR_Y, GPIO_DIR_Z};
-    uint8_t pulse[3] = {GPIO_PULSE_X, GPIO_PULSE_Y, GPIO_PULSE_Z};
-    uint8_t fwd_limit[3] = {LIMIT_X_MAX, LIMIT_Y_MAX, LIMIT_Z};
-    uint8_t bkwd_limit[2] = {LIMIT_X_MIN, LIMIT_Y_MIN};
-    uint16_t max_limits[3] = {LIMIT_X_MAX_DIST, LIMIT_Y_MAX_DIST, LIMIT_Z_DIST};
-    uint16_t min_limits[3] = {0, 0, 400};
+void test_motor_go_to(int x, int y, int z) {
+    init_limit_gpio();
+    init_stepper_mc();
 
-    float tol = 0.163;
-    float delta = ideal_pos - pos[motor];
+    reset_xyz();
 
-    if (delta > tol){ // move forward
-        gpio_set_level(dir[motor], fwd_dir[motor]);
-        while(delta > tol){
-            if (gpio_get_level(fwd_limit[motor]) == 1){
-                pos[motor] = max_limits[motor];
-                printf("hit fwd limit switch: %d", motor);
-                return true;
-            }
-            step(pulse[motor]);
-            delta -= 0.163;  
-        }
-    } else if (delta < -tol){ // move backward
-        gpio_set_level(dir[motor], !fwd_dir[motor]);
-        while(delta < -tol){
-            if ((motor != STP_Z && gpio_get_level(bkwd_limit[motor]) == 1) || 
-                (motor == STP_Z && pos[motor] <= min_limits[STP_Z])){
-                pos[motor] = min_limits[motor];
-                printf("hit bkwd limit switch: %d", motor);
-                return true;
-            }
-            step(pulse[motor]);
-            delta += 0.163;
-        }
-    }
-    pos[motor] = ideal_pos - delta;    
-    return false;
+    // move_x(x);
+    // move_y(y);
+    // move_z(LIMIT_Z_MAX_DIST, z);
 }
 
-void test_i2c_stepper_interface(){
+void test_i2c_stepper_interface() {
+    printf("starting init\n");
     init_limit_gpio();
     init_stepper_mc();
     init_i2c_jetson_mcu_e();
     printf("done init\n");
+    usleep(500000);
 
-    uint8_t rx_data[I2C_DATA_LENGTH + 1] = {0};
-    while(true){
-        // wait until jetson nano reads from mcu1 over i2c 
-        // based on jetson nano command, do different tasks
+    // max data len: 1 command byte then 3 data bytes for motor move
+    uint8_t rx_data[3] = {0};
+    mcu_e_status_t state = S_ACTION_COMPLETE;
+    i2c_write_jetson(S_ACTION_COMPLETE);
+    while(true) {
+        // read from jetson
         printf("waiting for command. willing to wait 7 days.\n");
-        i2c_slave_read_buffer(I2C_HOST, rx_data, I2C_DATA_LENGTH + 1, portMAX_DELAY);
-        printf("read from jetson: %d %d %d %d \n", rx_data[1], rx_data[2], rx_data[3], rx_data[4]); 
-        
-        switch (rx_data[ADDR_INDEX]) {
-            case STP_X:
-            case STP_Y: 
-            case STP_Z: {
-                uint16_t ideal_pos_10x = rx_data[2] << 8 | rx_data[3];
+        i2c_slave_read_buffer(I2C_HOST, rx_data, 1, portMAX_DELAY);
+        printf("got command: %x\n", rx_data[0]);
+        usleep(10000);
+        switch (rx_data[0]) {
+            case CMD_WRITE_STATUS:
+                i2c_write_jetson(state);
+                break;
+            case CMD_MOVE_AXIS:
+                state = S_WAITING;
+                i2c_write_jetson(state);
+                i2c_slave_read_buffer(I2C_HOST, rx_data, 3, portMAX_DELAY);
+
+                // interpret data recieved
+                uint16_t ideal_pos_10x = rx_data[1] << 8 | rx_data[2];
                 printf("ideal_pos_10x: %d\n", ideal_pos_10x);
                 float ideal_pos = (double) ideal_pos_10x / 10.0;
                 printf("Move stepper motor: %d to position %0.2f from position %0.2f\n", 
-                    rx_data[1], ideal_pos, pos[rx_data[ADDR_INDEX]]); 
-                move_stepper(rx_data[ADDR_INDEX], ideal_pos);
-                // int data_trans = i2c_slave_write_buffer(I2C_HOST, data, 2, portMAX_DELAY);
-                // printf("data trans: %d\n", data_trans);
+                    rx_data[0], ideal_pos, end_effector_position[rx_data[0]]);
+                
+                move_stepper(rx_data[0], ideal_pos);
+                printf("moving arm.\n");
+
+                // emulate moving motors
+                // printf("pretending to move motors\n.");
+                // usleep(4 * 1000000);
+
+                // TODO: send if limit switch hit
+                // update status to done
+                state = S_ACTION_COMPLETE;
+                i2c_write_jetson(state);
                 break;
-            }
-            case ENC:
-                printf("encoder address!");
-            break;
+            case CMD_RESET:
+                state = S_WAITING;
+                i2c_write_jetson(state);
+                reset_xyz();
+                printf("reset arm.\n");
+
+                // emulate moving motors
+                // printf("pretending to move motors (reset)\n.");
+                // usleep(4 * 1000000);
+
+                state = S_ACTION_COMPLETE;
+                i2c_write_jetson(state);
+                break;
         }
+        usleep(5000);
     }
 }

@@ -1,3 +1,5 @@
+#include <unistd.h>
+
 #include "mcu_gpio.h"
 
 uint8_t limit_pins[5] = {LIMIT_X_MIN, LIMIT_X_MAX, LIMIT_Y_MIN, LIMIT_Y_MAX, LIMIT_Z};
@@ -20,6 +22,7 @@ void init_dev_led() {
     ESP_ERROR_CHECK(led_strip_new_rmt_device(&strip_config, &rmt_config, &led_strip));
     /* Set all LED off to clear all pixels */
     led_strip_clear(led_strip);
+    usleep(10000);
 }
 
 void initialize_led() {
@@ -32,6 +35,7 @@ void initialize_led() {
         .pull_up_en = 0,
     };
     gpio_config(&io_conf);
+    usleep(10000);
 }
 
 void init_boost() {
@@ -47,6 +51,7 @@ void init_boost() {
 
     // set boost low (turn on)
     gpio_set_level(GPIO_BOOST, 1);
+    usleep(10000);
 }
 
 void init_limit_gpio() {
@@ -60,4 +65,5 @@ void init_limit_gpio() {
     };
     //configure GPIO with the given settings
     gpio_config(&io_conf);
+    usleep(10000);
 }
