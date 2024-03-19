@@ -33,16 +33,21 @@
 #define X_DIST_PER_STEP (600.0/2002)
 #define Y_DIST_PER_STEP (280.0/910)
 
+#define X_STEP_DELAY 1000
+#define Y_STEP_DELAY 1000
+#define Z_STEP_DELAY 500
+
 extern float end_effector_position[3];
+extern uint default_step_delays[3];
 
 void init_stepper_mc();
 uint z_dist_2_steps(uint tip_z);
-void step(uint8_t pin);
+void step(uint8_t pin, uint step_delay);
 
-int move_x(int delta);
-int move_y(int delta);
-int move_z(uint crnt, uint desired);
-void move_stepper(uint8_t motor, float ideal_pos);
+int move_x(int delta, uint step_delay);
+int move_y(int delta, uint step_delay);
+int move_z(uint crnt, uint desired, uint step_delay);
+void move_stepper(uint8_t motor, float ideal_pos, int step_delay);
 void reset_xyz();
 void pollinate();
 

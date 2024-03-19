@@ -216,9 +216,9 @@ void test_stepper_positioning() {
     uint action_delay = 2 * 1000000;
 
     usleep(action_delay);
-    move_stepper(STP_X, 600 - 50);
+    move_stepper(STP_X, 600 - 50, 1000);
     usleep(action_delay);
-    move_stepper(STP_Y, 280 - 50);
+    move_stepper(STP_Y, 280 - 50, 1000);
     usleep(action_delay);
     // move_stepper(STP_Z, 50);
     // usleep(action_delay);
@@ -228,11 +228,15 @@ void test_motor_go_to(int x, int y, int z) {
     init_limit_gpio();
     init_stepper_mc();
 
-    reset_xyz();
+    // reset_xyz();
+    // move_z(0, LIMIT_Z_MAX_DIST, 500);
+    move_stepper(STP_Z, LIMIT_Z_MAX_DIST*2, Z_STEP_DELAY);
+
+    move_stepper(STP_Z, 350, Z_STEP_DELAY);
 
     // move_x(x);
     // move_y(y);
-    // move_z(LIMIT_Z_MAX_DIST, z);
+    // move_z(LIMIT_Z_MAX_DIST, z, 500);
 }
 
 void test_i2c_stepper_interface() {
@@ -269,7 +273,7 @@ void test_i2c_stepper_interface() {
                 printf("Move stepper motor: %d to position %0.2f from position %0.2f\n", 
                     rx_data[0], ideal_pos, end_effector_position[rx_data[0]]);
                 
-                move_stepper(rx_data[0], ideal_pos);
+                move_stepper(rx_data[0], ideal_pos, default_step_delays[rx_data[0]]);
                 printf("moving arm.\n");
 
                 // emulate moving motors
