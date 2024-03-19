@@ -246,9 +246,11 @@ void test_scan() {
 		r.moveServoArm(z, flowerCenter.z);
 
 		usleep(1000000);
-		r.moveServoArm(z, 0.8);
+		// reset arm to top
+		r.moveServoArm(z, CARTESIAN_Z_MAX + 0.1);
 
 	}
+	r.resetServoArm();
 	log(std::string("INFO: done test_scan."));
 	
 }

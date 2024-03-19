@@ -56,8 +56,8 @@ double MotorController::getElapsedDistance() {
 // Stepper Motor Controller
 // 1st byte: which stepper motor (X: 0, Y: 1, Z: 2)
 // 2nd + 3rd byte: 16 bit position, mm location x 100
-// Here we want to move keep moving forward (program will stop after hitting a limit switch)
-void MotorController::simple_pos(double pos) {
+// Returns true if the robot hit a limit
+bool MotorController::simple_pos(double pos) {
 	pos = pos * 1000; // convert from [m] to [mm]
 	uint16_t sat_pos;
 	if (pos > 6535){
@@ -84,12 +84,13 @@ void MotorController::simple_pos(double pos) {
 			// action done
 			elapsedDistance = pos;
 			log(std::string("i2c: read S_ACTION_COMPLETE from MCU_E.\n"));
+			return false;
 		} else if (resp == S_ACTION_ENDED_W_LIMIT) {
 			// hit limit switch
-			// TODO: figure out what hitting limit switch in that direction means (saturate position)
 			log(std::string("i2c: read S_ACTION_ENDED_W_LIMIT from MCU_E.\n"));
-			throw std::logic_error("hit limit switch");
+			return true;
 		}
 		sleep(1);
 	}
+	return false;
 }

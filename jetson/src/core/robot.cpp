@@ -158,9 +158,19 @@ uint16_t Robot::getDriveMotorEncoderVal(DriveMotor motor) {
 	return encoderVal[motor];
 }
 
+float max_dist[3] = {CARTESIAN_X_MIN, CARTESIAN_Y_MIN, CARTESIAN_Z_MIN};
+float min_dist[3] = {CARTESIAN_X_MAX, CARTESIAN_Y_MAX, CARTESIAN_Z_MAX};
 void Robot::moveServoArm(ServoMotor motor, double pos) {
-	servoArm[motor].simple_pos(pos);
-	armPosition[motor] = pos;
+	bool hitLimitSwitch = servoArm[motor].simple_pos(pos);
+	if (hitLimitSwitch){
+		if (pos > max_dist[motor]/2) {
+			armPosition[motor] = max_dist[motor];
+		} else {
+			armPosition[motor] = min_dist[motor];
+		}
+	} else {
+		armPosition[motor] = pos;
+	}
 }
 
 void Robot::resetServoArm() {
