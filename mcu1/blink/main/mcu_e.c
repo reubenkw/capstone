@@ -225,7 +225,7 @@ void test_motor_go_to(int x, int y, int z) {
     // move_z(0, LIMIT_Z_MAX_DIST, 500);
     move_stepper(STP_Z, LIMIT_Z_MAX_DIST*2, Z_STEP_DELAY);
 
-    move_stepper(STP_Z, 300, Z_STEP_DELAY);
+    move_stepper(STP_Z, 350, Z_STEP_DELAY);
 
     // move_x(x);
     // move_y(y);
