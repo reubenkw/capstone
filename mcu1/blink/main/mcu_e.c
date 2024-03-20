@@ -41,7 +41,7 @@ void test_all_stepper() {
     init_stepper_mc();
 
     const uint action_delay = 1 * 1000000;
-    const uint step_delay = 3000;
+    const uint step_delay = X_STEP_DELAY;
     const uint z_step_delay = 1000;
     const uint z_dropdown = 3000;
 
@@ -162,12 +162,10 @@ void test_z_stepper() {
     init_limit_gpio();
     init_stepper_mc();
 
-    const uint action_delay = 1 * 1000000;
-    const uint z_step_delay = 1000;
-    const uint z_dropdown = 3000;
+    const uint action_delay = 3 * 1000000;
+    const uint z_step_delay = 500;
 
     // up to limit
-    printf("z 1\n");
     gpio_set_level(GPIO_DIR_Z, 1);
     while(gpio_read(LIMIT_Z)==0) {
         gpio_set_level(GPIO_PULSE_Z, 1);
@@ -178,31 +176,26 @@ void test_z_stepper() {
     
     usleep(action_delay);
 
-    // dropdown fixed number of steps
-    printf("z 0\n");
-    // const uint step_delta_2_stop = 100;
-    gpio_set_level(GPIO_DIR_Z, 0);
-    for(int k = 0; k < z_dropdown; k++) {
-        // if ((k % step_delta_2_stop) == 0) {
-        //     printf("z steps: %d\n", k);
-        //     usleep(2 * 1000000);
-        // }
-        gpio_set_level(GPIO_PULSE_Z, 1);
-        usleep(z_step_delay * 2);
-        gpio_set_level(GPIO_PULSE_Z, 0);
-        usleep(z_step_delay * 2);    
-    }
+    for (int z_dropdown = 250; z_dropdown <= 3000; z_dropdown += 250) {
+        gpio_set_level(GPIO_DIR_Z, 0);
+        for(int k = 0; k < z_dropdown; k++) {
+            gpio_set_level(GPIO_PULSE_Z, 1);
+            usleep(z_step_delay);
+            gpio_set_level(GPIO_PULSE_Z, 0);
+            usleep(z_step_delay);    
+        }
+        printf("Number of steps: %d\n", z_dropdown);
+        usleep(action_delay);
 
-    usleep(action_delay);
-
-    // back up to limit
-    printf("z 3\n");
-    gpio_set_level(GPIO_DIR_Z, 1);
-    while(gpio_read(LIMIT_Z)==0) {
-        gpio_set_level(GPIO_PULSE_Z, 1);
-        usleep(z_step_delay);
-        gpio_set_level(GPIO_PULSE_Z, 0);
-        usleep(z_step_delay);    
+        // back up to limit
+        gpio_set_level(GPIO_DIR_Z, 1);
+        while(gpio_read(LIMIT_Z)==0) {
+            gpio_set_level(GPIO_PULSE_Z, 1);
+            usleep(z_step_delay);
+            gpio_set_level(GPIO_PULSE_Z, 0);
+            usleep(z_step_delay);    
+        }
+        usleep(action_delay);
     }
 }
 
@@ -216,9 +209,9 @@ void test_stepper_positioning() {
     uint action_delay = 2 * 1000000;
 
     usleep(action_delay);
-    move_stepper(STP_X, 600 - 50);
+    move_stepper(STP_X, 600 - 50, 1000);
     usleep(action_delay);
-    move_stepper(STP_Y, 280 - 50);
+    move_stepper(STP_Y, 280 - 50, 1000);
     usleep(action_delay);
     // move_stepper(STP_Z, 50);
     // usleep(action_delay);
@@ -228,11 +221,31 @@ void test_motor_go_to(int x, int y, int z) {
     init_limit_gpio();
     init_stepper_mc();
 
-    reset_xyz();
+    // reset_xyz();
+    // move_z(0, LIMIT_Z_MAX_DIST, 500);
+    move_stepper(STP_Z, LIMIT_Z_MAX_DIST*2, Z_STEP_DELAY);
+
+    move_stepper(STP_Z, 350, Z_STEP_DELAY);
 
     // move_x(x);
     // move_y(y);
-    // move_z(LIMIT_Z_MAX_DIST, z);
+    // move_z(LIMIT_Z_MAX_DIST, z, 500);
+}
+
+void test_pollinate() {
+    printf("starting init\n");
+    init_limit_gpio();
+    init_stepper_mc();
+    printf("done init\n");
+    usleep(500000);
+
+    reset_xyz();
+    move_stepper(STP_X, LIMIT_X_MAX_DIST / 2, X_STEP_DELAY);
+    move_stepper(STP_Y, LIMIT_Y_MAX_DIST / 2, Y_STEP_DELAY);
+    move_stepper(STP_Z, 350, Z_STEP_DELAY);
+    pollinate();
+
+    printf("done pollinate\n");
 }
 
 void test_i2c_stepper_interface() {
@@ -258,7 +271,7 @@ void test_i2c_stepper_interface() {
                 i2c_write_jetson(state);
                 break;
             case CMD_MOVE_AXIS:
-                state = S_WAITING;
+                state = S_PROCESSING_CMD;
                 i2c_write_jetson(state);
                 i2c_slave_read_buffer(I2C_HOST, rx_data, 3, portMAX_DELAY);
 
@@ -269,7 +282,7 @@ void test_i2c_stepper_interface() {
                 printf("Move stepper motor: %d to position %0.2f from position %0.2f\n", 
                     rx_data[0], ideal_pos, end_effector_position[rx_data[0]]);
                 
-                move_stepper(rx_data[0], ideal_pos);
+                move_stepper(rx_data[0], ideal_pos, default_step_delays[rx_data[0]]);
                 printf("moving arm.\n");
 
                 // emulate moving motors
@@ -282,7 +295,7 @@ void test_i2c_stepper_interface() {
                 i2c_write_jetson(state);
                 break;
             case CMD_RESET:
-                state = S_WAITING;
+                state = S_PROCESSING_CMD;
                 i2c_write_jetson(state);
                 reset_xyz();
                 printf("reset arm.\n");
@@ -294,6 +307,15 @@ void test_i2c_stepper_interface() {
                 state = S_ACTION_COMPLETE;
                 i2c_write_jetson(state);
                 break;
+            case CMD_POLLINATE:
+                state = S_PROCESSING_CMD;
+                i2c_write_jetson(state);
+
+                pollinate();
+                printf("pollinating.\n");
+
+                state = S_ACTION_COMPLETE;
+                i2c_write_jetson(state);
         }
         usleep(5000);
     }

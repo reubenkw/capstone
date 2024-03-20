@@ -158,9 +158,19 @@ uint16_t Robot::getDriveMotorEncoderVal(DriveMotor motor) {
 	return encoderVal[motor];
 }
 
+float max_dist[3] = {CARTESIAN_X_MIN, CARTESIAN_Y_MIN, CARTESIAN_Z_MIN};
+float min_dist[3] = {CARTESIAN_X_MAX, CARTESIAN_Y_MAX, CARTESIAN_Z_MAX};
 void Robot::moveServoArm(ServoMotor motor, double pos) {
-	servoArm[motor].simple_pos(pos);
-	armPosition[motor] = pos;
+	bool hitLimitSwitch = servoArm[motor].simple_pos(pos);
+	if (hitLimitSwitch){
+		if (pos > max_dist[motor]/2) {
+			armPosition[motor] = max_dist[motor];
+		} else {
+			armPosition[motor] = min_dist[motor];
+		}
+	} else {
+		armPosition[motor] = pos;
+	}
 }
 
 void Robot::resetServoArm() {
@@ -182,14 +192,19 @@ void Robot::resetServoArm() {
 }
 
 void Robot::pollinate() { 
-	double delta = 2.5;
-	Point3D currPos = getArmPosition();
-	moveServoArm(x, currPos.x - delta);
-	moveServoArm(y, currPos.y - delta);
-	moveServoArm(x, currPos.x + delta);
-	moveServoArm(y, currPos.y + delta);
-	moveServoArm(x, currPos.x);
-	moveServoArm(y, currPos.y);
+	uint8_t data[1];
+	write_i2c(i2c_bus_file, MCU_E, CMD_POLLINATE, data, 0);
+	usleep(10000);
+
+	uint8_t resp = 0xFF; // Not a valid command
+
+	// wait for done
+	log(std::string("i2c: waiting for S_ACTION_COMPLETE from MCU_E.\n"));
+	while(resp != S_ACTION_COMPLETE) {
+		read_i2c(i2c_bus_file, MCU_E, CMD_WRITE_STATUS, &resp, 1);
+		sleep(1);
+	}
+	log(std::string("i2c: read S_ACTION_COMPLETE from MCU_E.\n"));
 }
 
 std::vector<Point3D> Robot::scan() {

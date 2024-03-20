@@ -11,7 +11,7 @@
 #define LIMIT_SWITCHES 0x3
 
 typedef enum {
-  S_WAITING,
+  S_PROCESSING_CMD,
   S_ACTION_COMPLETE,
   S_ACTION_ENDED_W_LIMIT,
 } mcu_e_status_t;
@@ -20,7 +20,7 @@ typedef enum {
     CMD_WRITE_STATUS,
     CMD_MOVE_AXIS,  // 3 extra data bytes
     CMD_RESET,
-    CMD_POLINATE,
+    CMD_POLLINATE,
 } jetson_2_mcu_e_commands_t;
 
 int open_i2c();
