@@ -34,7 +34,8 @@
     "stdio.h": "c",
     "mc_stepper.h": "c",
     "mcu_e.h": "c",
-    "math.h": "c"
+    "math.h": "c",
+    "unistd.h": "c"
   },
   "C_Cpp.errorSquiggles": "disabled"
 }

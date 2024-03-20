@@ -232,6 +232,22 @@ void test_motor_go_to(int x, int y, int z) {
     // move_z(LIMIT_Z_MAX_DIST, z, 500);
 }
 
+void test_pollinate() {
+    printf("starting init\n");
+    init_limit_gpio();
+    init_stepper_mc();
+    printf("done init\n");
+    usleep(500000);
+
+    reset_xyz();
+    move_stepper(STP_X, LIMIT_X_MAX_DIST / 2, X_STEP_DELAY);
+    move_stepper(STP_Y, LIMIT_Y_MAX_DIST / 2, Y_STEP_DELAY);
+    move_stepper(STP_Z, 350, Z_STEP_DELAY);
+    pollinate();
+
+    printf("done pollinate\n");
+}
+
 void test_i2c_stepper_interface() {
     printf("starting init\n");
     init_limit_gpio();

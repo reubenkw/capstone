@@ -9,7 +9,8 @@ void app_main(void)
     printf("starting main\n");
 
     // test_z_stepper();
-    test_motor_go_to(260, 210, 700);
+    // test_motor_go_to(260, 210, 700);
+    test_pollinate();
     
     // test_stepper_positioning();
     // test_drive_full();
