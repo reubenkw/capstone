@@ -16,8 +16,8 @@ void app_main(void)
     // test_drive_full();
     // test_drive_alternating();
     // test_limit();
-    test_all_stepper();
-    // test_i2c_stepper_interface();
+    // test_all_stepper();
+    test_i2c_stepper_interface();
     // test_i2c_write(MCU_E_ADDRESS);
     // test_all_stepper();
     // test_i2c_stepper_interface();

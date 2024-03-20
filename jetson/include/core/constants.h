@@ -6,7 +6,7 @@
 #define CARTESIAN_X_MIN 0           // [m]
 #define CARTESIAN_X_MAX 0.520       // [m]
 #define CARTESIAN_Y_MIN 0           // [m]
-#define CARTESIAN_Y_MAX 0.300       // [m]
+#define CARTESIAN_Y_MAX 0.310       // [m]
 #define CARTESIAN_Z_MIN 0.327       // [m] 
 #define CARTESIAN_Z_MAX 0.721       // [m] 
 #define FLOOR_2_CAM 0.807           // [m]

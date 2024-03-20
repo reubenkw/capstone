@@ -132,7 +132,7 @@ void move_stepper(uint8_t motor, float ideal_pos, int step_delay) {
 }
 
 void pollinate() {
-    const uint delta = 12;
+    const uint delta = 15;
     const uint n = 2;
     const uint action_delay = 100000;
     const uint step_delay = 10000;
