@@ -30,9 +30,7 @@ public:
 	void update(uint16_t encoderVal);
 	void resetElapsedDistance();
 	double getElapsedDistance();
-	void simple_go();
-	void simple_bkwd();
-	void simple_pos(double pos);
+	bool simple_pos(double pos); 
 };
 
 #endif //h

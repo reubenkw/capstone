@@ -162,12 +162,10 @@ void test_z_stepper() {
     init_limit_gpio();
     init_stepper_mc();
 
-    const uint action_delay = 1 * 1000000;
-    const uint z_step_delay = 1000;
-    const uint z_dropdown = 3000;
+    const uint action_delay = 3 * 1000000;
+    const uint z_step_delay = 500;
 
     // up to limit
-    printf("z 1\n");
     gpio_set_level(GPIO_DIR_Z, 1);
     while(gpio_read(LIMIT_Z)==0) {
         gpio_set_level(GPIO_PULSE_Z, 1);
@@ -178,31 +176,26 @@ void test_z_stepper() {
     
     usleep(action_delay);
 
-    // dropdown fixed number of steps
-    printf("z 0\n");
-    // const uint step_delta_2_stop = 100;
-    gpio_set_level(GPIO_DIR_Z, 0);
-    for(int k = 0; k < z_dropdown; k++) {
-        // if ((k % step_delta_2_stop) == 0) {
-        //     printf("z steps: %d\n", k);
-        //     usleep(2 * 1000000);
-        // }
-        gpio_set_level(GPIO_PULSE_Z, 1);
-        usleep(z_step_delay * 2);
-        gpio_set_level(GPIO_PULSE_Z, 0);
-        usleep(z_step_delay * 2);    
-    }
+    for (int z_dropdown = 250; z_dropdown <= 3000; z_dropdown += 250) {
+        gpio_set_level(GPIO_DIR_Z, 0);
+        for(int k = 0; k < z_dropdown; k++) {
+            gpio_set_level(GPIO_PULSE_Z, 1);
+            usleep(z_step_delay);
+            gpio_set_level(GPIO_PULSE_Z, 0);
+            usleep(z_step_delay);    
+        }
+        printf("Number of steps: %d\n", z_dropdown);
+        usleep(action_delay);
 
-    usleep(action_delay);
-
-    // back up to limit
-    printf("z 3\n");
-    gpio_set_level(GPIO_DIR_Z, 1);
-    while(gpio_read(LIMIT_Z)==0) {
-        gpio_set_level(GPIO_PULSE_Z, 1);
-        usleep(z_step_delay);
-        gpio_set_level(GPIO_PULSE_Z, 0);
-        usleep(z_step_delay);    
+        // back up to limit
+        gpio_set_level(GPIO_DIR_Z, 1);
+        while(gpio_read(LIMIT_Z)==0) {
+            gpio_set_level(GPIO_PULSE_Z, 1);
+            usleep(z_step_delay);
+            gpio_set_level(GPIO_PULSE_Z, 0);
+            usleep(z_step_delay);    
+        }
+        usleep(action_delay);
     }
 }
 

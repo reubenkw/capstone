@@ -13,12 +13,12 @@ void app_main(void)
     // test_drive_alternating();
     // test_limit();
     // test_all_stepper();
-    // test_z_stepper();
+    test_z_stepper();
     // test_i2c_stepper_interface();
     // test_i2c_write(MCU_E_ADDRESS);
     // test_all_stepper();
     // test_i2c_stepper_interface();
-    test_motor_go_to(260, 210, 700);
+    // test_motor_go_to(260, 210, 700);
     printf("done main\n");
     while(1) {
         usleep(10000000);

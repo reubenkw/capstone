@@ -212,7 +212,7 @@ void test_move_servo_arm_to_flowers(){
 	
 }
 
-void test_scan() {
+void test_main_loop() {
 	log(std::string("INFO: starting test_scan."));
 	Camera cam;
 	Robot r(cam);
@@ -245,10 +245,14 @@ void test_scan() {
 		r.moveServoArm(y, flowerCenter.y);
 		r.moveServoArm(z, flowerCenter.z);
 
+		r.pollinate();
+
 		usleep(1000000);
-		r.moveServoArm(z, 0.8);
+		// reset arm to top
+		r.moveServoArm(z, CARTESIAN_Z_MAX + 0.1);
 
 	}
+	r.resetServoArm();
 	log(std::string("INFO: done test_scan."));
 	
 }
@@ -266,7 +270,7 @@ int main(int argc, char** argv)
 	// test_i2c_read_write();
 	// test_move_servo_arm();
 	// test_move_servo_arm_to_flowers();
-	test_scan();
+	test_main_loop();
 	// test_i2c_read_mcu_e();
 	// test_move_servo_arm();
 	return 0;
