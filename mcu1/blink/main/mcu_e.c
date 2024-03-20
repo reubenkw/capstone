@@ -41,7 +41,7 @@ void test_all_stepper() {
     init_stepper_mc();
 
     const uint action_delay = 1 * 1000000;
-    const uint step_delay = 3000;
+    const uint step_delay = X_STEP_DELAY;
     const uint z_step_delay = 1000;
     const uint z_dropdown = 3000;
 
