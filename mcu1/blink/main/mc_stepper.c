@@ -132,7 +132,7 @@ void move_stepper(uint8_t motor, float ideal_pos, int step_delay) {
 }
 
 void pollinate() {
-    const uint delta = 15;
+    const uint delta = 30;
     const uint n = 2;
     const uint action_delay = 100000;
     const uint step_delay = 10000;
@@ -156,6 +156,14 @@ void pollinate() {
     move_stepper(STP_Y, y_init, step_delay);
 
     // maybe a spiral?
+    move_stepper(STP_X, x_init+delta/4, step_delay);
+    usleep(action_delay);
+    move_stepper(STP_Y, y_init+delta/4, step_delay);
+    usleep(action_delay);
+    move_stepper(STP_X, x_init-delta/4, step_delay);
+    usleep(action_delay);
+    move_stepper(STP_Y, y_init-delta/4, step_delay);
+    usleep(action_delay);
     move_stepper(STP_X, x_init+delta/2, step_delay);
     usleep(action_delay);
     move_stepper(STP_Y, y_init+delta/2, step_delay);
@@ -163,14 +171,6 @@ void pollinate() {
     move_stepper(STP_X, x_init-delta/2, step_delay);
     usleep(action_delay);
     move_stepper(STP_Y, y_init-delta/2, step_delay);
-    usleep(action_delay);
-    move_stepper(STP_X, x_init+delta, step_delay);
-    usleep(action_delay);
-    move_stepper(STP_Y, y_init+delta, step_delay);
-    usleep(action_delay);
-    move_stepper(STP_X, x_init-delta, step_delay);
-    usleep(action_delay);
-    move_stepper(STP_Y, y_init-delta, step_delay);
 
     // reset
     usleep(action_delay);
