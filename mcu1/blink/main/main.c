@@ -5,9 +5,7 @@
 
 void app_main(void)
 {
-    usleep(5000000);
     printf("starting main\n");
-
     // test_z_stepper();
     // test_motor_go_to(260, 210, 700);
     // test_pollinate();

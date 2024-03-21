@@ -10,7 +10,7 @@ void init_dc_mc() {
     
     gpio_config_t io_conf_motor = {
         .intr_type = GPIO_INTR_DISABLE,
-        .mode = GPIO_MODE_INPUT,
+        .mode = GPIO_MODE_OUTPUT,
         .pin_bit_mask = GPIO_DRIVE_MOTOR_PIN_SEL, 
         .pull_down_en = 1,
         .pull_up_en = 0,

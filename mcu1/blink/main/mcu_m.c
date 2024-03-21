@@ -18,8 +18,13 @@ void test_drive_full() {
 
 void test_drive_one() {
     init_boost();
+    // need a delay after boost enable for precharge
+    sleep(10);
     init_dc_mc();
-    drive_wheels(1.0, 0, 0, 0, 10);
+    while(1){
+        drive_wheels(1.0, 0, 0, 0, 10);
+    }
+    
 }
 
 
