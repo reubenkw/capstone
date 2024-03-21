@@ -36,7 +36,7 @@ void stop() {
     gpio_set_level(DIR_2, 0);
 }
 
-#define DRIVE_PWM_DELAY 100
+#define DRIVE_PWM_DELAY 10
 // only positive numbers should be passed in
 void pwm(double fl, double fr, double bl, double br) {
     if (fl < 0 || fr < 0 || bl < 0 || br < 0){
@@ -80,22 +80,24 @@ void drive_wheels(double fl, double fr, double bl, double br, double sec) {
     // start timer
     gettimeofday(&t1, NULL);
 
-    if (fl > 0 && fr > 0 && bl > 0 && br < 0){ // if all directions are pos go fwd
+    if (fl >= 0 && fr >= 0 && bl >= 0 && br >= 0){ // if all directions are pos go fwd
         set_wheel_directions(true);
         while (elapsedTime < sec){
             pwm(fl, fr, bl, br);
             gettimeofday(&t2, NULL);
-            elapsedTime = (t2.tv_usec - t1.tv_usec) / 1000000.0;
+            elapsedTime = (t2.tv_sec - t1.tv_sec); 
+            elapsedTime += (t2.tv_usec - t1.tv_usec) / 1000000.0;
             printf("elapsed time: %0.2f\n", elapsedTime);
         }
         stop();
 
-    } else if (fl < 0 && fr < 0 && bl < 0 && br < 0) { // if all directions are neg go bkwd
+    } else if (fl <= 0 && fr <= 0 && bl <= 0 && br <= 0) { // if all directions are neg go bkwd
         set_wheel_directions(false);
         while (elapsedTime < sec){
             pwm(-fl, -fr, -bl, -br);
             gettimeofday(&t2, NULL);
-            elapsedTime = (t2.tv_usec - t1.tv_usec) / 1000000.0;
+            elapsedTime = (t2.tv_sec - t1.tv_sec); 
+            elapsedTime += (t2.tv_usec - t1.tv_usec) / 1000000.0;
             printf("elapsed time: %0.2f\n", elapsedTime);
         }
         stop();
