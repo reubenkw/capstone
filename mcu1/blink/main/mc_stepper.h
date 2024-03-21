@@ -11,7 +11,7 @@
 // TODO: Add this to GPIO_MOTOR_PIN_SEL and uncomment enable
 // #define GPIO_STP_ENABLE 7
 
-#define GPIO_MOTOR_PIN_SEL  ( \
+#define GPIO_STEPPER_MOTOR_PIN_SEL  ( \
     (1ULL<<GPIO_DIR_Z) | (1ULL<<GPIO_PULSE_Z) | \
     (1ULL<<GPIO_DIR_Y) | (1ULL<<GPIO_PULSE_Y) | \
     (1ULL<<GPIO_DIR_X) | (1ULL<<GPIO_PULSE_X)  \

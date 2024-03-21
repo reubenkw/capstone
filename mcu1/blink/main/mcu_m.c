@@ -9,27 +9,20 @@
 #include "mc_drive.h"
 
 // NOTE: integration tests should be standalone and perform all required initialization
-void test_drive_alternating() {
-    init_boost();
-    init_spi();
 
+void test_drive_one() {
+    init_boost();
+    // need a delay after boost enable for precharge
+    sleep(10);
     init_dc_mc();
 
-    drive_alternate_direction();
+    drive(200, 200, 200, 200, false, 10);
+
+    sleep(3);
+
+    drive(200, 200, 200, 200, true, 10);
 }
 
-void test_drive_full() {
-    init_boost();
-    // init_spi();
-
-    // init_dc_mc();
-
-    // drive_full_forward();
-    while(true) {
-        // check_and_clear_fault();
-        usleep(10000);
-    }
-}
 
 void test_i2c_drive_interface() {
     init_i2c_jetson_mcu_m();
@@ -67,20 +60,3 @@ void test_jetson_ctrl() {
     }
 }
 
-void test_hello_world() {
-    while(1){
-        printf("hello world2\n");
-        printf("%x", 6);
-    }
-}
-
-void test_mc() {
-    init_spi();
-
-    uint8_t tx_buf = 1;
-    gpio_set_level(LED_2, 1);
-    while (1){
-        write_spi(spi_mc_dc_handle, 0x07, tx_buf);
-        read_spi(spi_mc_dc_handle, 0x0);
-    }
-}

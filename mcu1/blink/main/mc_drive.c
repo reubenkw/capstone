@@ -1,169 +1,120 @@
 #include <unistd.h>
 
+#include <stdio.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "driver/ledc.h"
+#include "hal/ledc_types.h"
 #include "driver/gpio.h"
 #include "mc_drive.h"
 #include "spi.h"
-
-void config_motor_fault() {
-    gpio_config_t io_conf_motor = {
-        .intr_type = GPIO_INTR_DISABLE,
-        .mode = GPIO_MODE_INPUT,
-        .pin_bit_mask = (1ULL<<FAULT_DC_GPIO),
-        .pull_down_en = 0,
-        .pull_up_en = 1,
-    };
-    gpio_config(&io_conf_motor);
-}
+#include <sys/time.h>   
 
 void init_dc_mc() {
     printf("starting init_dc_mc");
-    config_motor_fault();
 
-    // disable OLD for all
-    write_spi(spi_mc_dc_handle, 0x19, 0xFF);
-    write_spi(spi_mc_dc_handle, 0x1A, 0b11001111);
+    // set direction to output
+    gpio_config_t io_conf_motor = {
+        .intr_type = GPIO_INTR_DISABLE,
+        .mode = GPIO_MODE_OUTPUT,
+        .pin_bit_mask = GPIO_DRIVE_MOTOR_PIN_SEL, 
+        .pull_down_en = 1,
+        .pull_up_en = 0,
+    };
+    gpio_config(&io_conf_motor);
+    
+    // Configure PWM timer settings
+    ledc_timer_config_t timer_conf = {
+        .speed_mode = LEDC_LOW_SPEED_MODE,
+        .duty_resolution = LEDC_TIMER_8_BIT, // Adjust as needed
+        .timer_num = LEDC_TIMER_0,
+        .freq_hz = 5000 // PWM frequency (in Hz)
+    };
+    ledc_timer_config(&timer_conf);
 
-    // Set OVP limit to 33 V
-    uint8_t reg = read_spi(spi_mc_dc_handle, CONFIG_CTRL);
-    write_spi(spi_mc_dc_handle, CONFIG_CTRL, reg | 0b10);
+    // Configure PWM channels
+    // fl wheel
+    ledc_channel_config_t pwm_channel_conf1 = {
+        .gpio_num = PWM_FL,
+        .speed_mode = LEDC_LOW_SPEED_MODE,
+        .channel = LEDC_CHANNEL_0,
+        .intr_type = LEDC_INTR_DISABLE,
+        .timer_sel = LEDC_TIMER_0,
+        .duty = 0 // Initial duty cycle (0-255 for 8-bit resolution)
+    };
+    ledc_channel_config(&pwm_channel_conf1);
 
-    // set pwm mode for ...
-    write_spi(spi_mc_dc_handle, PWM_CTRL_1, 0b11000000);
+    // fr wheel
+    ledc_channel_config_t pwm_channel_conf2 = {
+        .gpio_num = PWM_FR,
+        .speed_mode = LEDC_LOW_SPEED_MODE,
+        .channel = LEDC_CHANNEL_1,
+        .intr_type = LEDC_INTR_DISABLE,
+        .timer_sel = LEDC_TIMER_0,
+        .duty = 0 // Initial duty cycle (0-255 for 8-bit resolution)
+    };
+    ledc_channel_config(&pwm_channel_conf2);
 
-    // Clear fault reg
-    reg = read_spi(spi_mc_dc_handle, CONFIG_CTRL);
-    write_spi(spi_mc_dc_handle, CONFIG_CTRL, reg | 0b01);
+    // bl wheel
+    ledc_channel_config_t pwm_channel_conf3 = {
+        .gpio_num = PWM_BL,
+        .speed_mode = LEDC_LOW_SPEED_MODE,
+        .channel = LEDC_CHANNEL_2,
+        .intr_type = LEDC_INTR_DISABLE,
+        .timer_sel = LEDC_TIMER_0,
+        .duty = 0 // Initial duty cycle (0-255 for 8-bit resolution)
+    };
+    ledc_channel_config(&pwm_channel_conf3);
 
-    if (gpio_get_level(FAULT_DC_GPIO) == 0){
-        printf("fault\n");
-        read_spi(spi_mc_dc_handle, 0);
-    }
+    // br wheel
+    ledc_channel_config_t pwm_channel_conf4 = {
+        .gpio_num = PWM_BR,
+        .speed_mode = LEDC_LOW_SPEED_MODE,
+        .channel = LEDC_CHANNEL_3,
+        .intr_type = LEDC_INTR_DISABLE,
+        .timer_sel = LEDC_TIMER_0,
+        .duty = 0 // Initial duty cycle (0-255 for 8-bit resolution)
+    };
+    ledc_channel_config(&pwm_channel_conf4);
 
     printf("done init_dc_mc");
 }
 
-bool check_and_clear_fault() {
-    if (gpio_get_level(FAULT_DC_GPIO) == 0){
-        printf("fault\n");
-        read_spi(spi_mc_dc_handle, 0);
-        uint8_t reg = read_spi(spi_mc_dc_handle, CONFIG_CTRL);
-        write_spi(spi_mc_dc_handle, CONFIG_CTRL, reg | 0b01);
-        return true;
-    }
-    printf("no fault\n");
-    read_spi(spi_mc_dc_handle, 0);
-    return false;
+void set_wheel_directions(bool isFwd) {
+    if (isFwd) {
+        gpio_set_level(DIR_1, 0);
+        gpio_set_level(DIR_2, 1);
+    } else {
+        gpio_set_level(DIR_1, 1);
+        gpio_set_level(DIR_2, 0); 
+    }  
 }
 
-// negative: backwards, 0: none, positive: forwards
-// motors in order: 1, 2, 3, 4
-void set_wheel_directions(int fl, int fr, int bl, int br) {
-    // 0b01100000;  front right fwd
-    // 0b0000110;   front left bkwd
-    // 0b01100000;  back right fwd
-    // 0b01100000;  back right bkwd
-    uint8_t op_ctrl_1_val = 0;
-    uint8_t op_ctrl_2_val = 0;
-
-    if (fl > 0) {
-        op_ctrl_1_val |= 0b0000110;
-    } else if (fl < 0) {
-        op_ctrl_1_val |= 0b0001001;
-    }
-
-    if (fr > 0) {
-        op_ctrl_1_val |= 0b01100000;
-    } else if (fr < 0) {
-        op_ctrl_1_val |= 0b10010000;
-    }
-
-    if (bl > 0) {
-        op_ctrl_2_val |= 0b0001001;
-    } else if (bl < 0) {
-        op_ctrl_2_val |= 0b0000110;
-    }
-
-    if (br > 0) {
-        op_ctrl_2_val |= 0b01100000;
-    } else if (br < 0) {
-        op_ctrl_2_val |= 0b10010000;
-    }
-
-    write_spi(spi_mc_dc_handle, OP_CTRL_1, op_ctrl_1_val);
-    write_spi(spi_mc_dc_handle, OP_CTRL_2, op_ctrl_2_val);
+void drive_stop() {
+    ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, 0);
+    ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0);
+    ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_1, 0);
+    ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_1);
+    ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_2, 0);
+    ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_2);
+    ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_3, 0);
+    ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_3);
 }
 
-void drive_full_forward() {
-    set_wheel_directions(1,1,1,1);
-    write_spi(spi_mc_dc_handle, PWM_DUTY_CTRL_1, 0x7F);
-}
+void drive(uint8_t fl, uint8_t fr, uint8_t bl, uint8_t br, bool fwd, double sec) {
+    printf("drive start\n");
+    set_wheel_directions(fwd);
 
-void drive_alternate_direction() {
-    const uint accel_delay = 1000;
-    const uint full_speed_delay = 5 * 1000000;
-    const uint stopped_delay = 2 * 1000000;
-    const uint8_t min_pwm = 20;
-    uint8_t speed = 0;
-    while(true) {
-        set_wheel_directions(1, 1, 1, 1);
-        printf("speeding up forward!\n");
-        for (speed=min_pwm; speed<254; speed++) {
-            write_spi(spi_mc_dc_handle, PWM_DUTY_CTRL_1, speed);
-            if (check_and_clear_fault()) {
-                speed--;
-                printf("%d\n", speed);
-            }
-            usleep(accel_delay);
-        }
+    ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, fl);
+    ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0);
+    ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_1, fr);
+    ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_1);
+    ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_2, bl);
+    ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_2);
+    ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_3, br);
+    ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_3);
 
-        // stay at speed
-        printf("full speed forward!\n");
-        usleep(full_speed_delay);
-
-        printf("slowing down!\n");
-        for (speed=254; speed>10; speed--) {
-            write_spi(spi_mc_dc_handle, PWM_DUTY_CTRL_1, speed);
-            if (check_and_clear_fault()) {
-                speed++;
-                printf("%d\n", speed);
-            }
-            usleep(accel_delay);
-        } 
-        write_spi(spi_mc_dc_handle, PWM_DUTY_CTRL_1, 0);
-
-        // stay at stopped
-        printf("stopped!\n");
-        usleep(stopped_delay);
-
-        // set direction to reversed
-        set_wheel_directions(-1, -1, -1, -1);
-        printf("speeding up backwards!\n");
-        for (speed=min_pwm; speed<254; speed++) {
-            write_spi(spi_mc_dc_handle, PWM_DUTY_CTRL_1, speed);
-            if (check_and_clear_fault()) {
-                speed--;
-                printf("%d\n", speed);
-            }
-            usleep(accel_delay);
-        }
-
-        // stay at speed
-        printf("full speed backwards!\n");
-        usleep(full_speed_delay);
-
-        printf("slowing down!\n");
-        for (speed=254; speed>10; speed--) {
-            write_spi(spi_mc_dc_handle, PWM_DUTY_CTRL_1, speed);
-            if (check_and_clear_fault()) {
-                speed++;
-                printf("%d\n", speed);
-            }
-            usleep(accel_delay);
-        } 
-        write_spi(spi_mc_dc_handle, PWM_DUTY_CTRL_1, 0);
-
-        // stay at stopped
-        printf("stopped!\n");
-        usleep(stopped_delay);
-    }
+    sleep(sec);
+    drive_stop();
+    printf("drive done\n");
 }
