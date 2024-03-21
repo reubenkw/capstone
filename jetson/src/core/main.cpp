@@ -106,7 +106,7 @@ void test_i2c_read(uint address) {
 	log(std::string("INFO: bus file: ") + std::to_string(i2c_bus_file));
 	uint8_t data[1] = {0};
 	while(true) {
-		read_i2c(i2c_bus_file, CMD_WRITE_STATUS, address, data, 1);
+		read_i2c(i2c_bus_file, CMD_E_WRITE_STATUS, address, data, 1);
 		usleep(1000000);
 		printf("data: %x, %x, %x, %x\n", data[0], data[1], data[2], data[3]);
 	}

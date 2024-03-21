@@ -16,16 +16,27 @@
 #define SERVO_MC 0x2    // must be same as comm.h
 
 typedef enum {
-  S_PROCESSING_CMD,
-  S_ACTION_COMPLETE,
-  S_ACTION_ENDED_W_LIMIT,
+  S_M_PROCESSING_CMD,
+  S_M_ACTION_COMPLETE,
+} mcu_m_status_t;
+
+typedef enum {
+  CMD_M_WRITE_STATUS,
+  CMD_M_FWD,  // 5 extra data bytes: uint8_t pwm speed + 4 byte float for time (seconds)
+  CMD_M_BKWD, // 5 extra data bytes: uint8_t pwm speed + 4 byte float for time (seconds)
+} jetson_2_mcu_m_commands_t;
+
+typedef enum {
+  S_E_PROCESSING_CMD,
+  S_E_ACTION_COMPLETE,
+  S_E_ACTION_ENDED_W_LIMIT,
 } mcu_e_status_t;
 
 typedef enum {
-    CMD_WRITE_STATUS,
-    CMD_MOVE_AXIS,  // 3 extra data bytes
-    CMD_RESET,
-    CMD_POLLINATE,
+    CMD_E_WRITE_STATUS,
+    CMD_E_MOVE_AXIS,  // 3 extra data bytes
+    CMD_E_RESET,
+    CMD_E_POLLINATE,
 } jetson_2_mcu_e_commands_t;
 
 void init_i2c_jetson_mcu_m();
@@ -34,5 +45,6 @@ void test_i2c_write(uint mcu_address);
 void test_i2c_read(uint mcu_address);
 
 void i2c_write_jetson(mcu_e_status_t status);
+float uint8_array_to_float(uint8_t *array);
 
 #endif //h

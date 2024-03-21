@@ -69,7 +69,7 @@ bool MotorController::simple_pos(double pos) {
 	data[0] = motor;
 	data[1] = (sat_pos & 0xFF00) >> 8;
 	data[2] = (sat_pos & 0xFF);
-	write_i2c(file, MCU_E, CMD_MOVE_AXIS, data, 3);
+	write_i2c(file, MCU_E, CMD_E_MOVE_AXIS, data, 3);
 	sleep(1);
 	log(	std::string("Move stepper motor: ") + std::to_string(motor) +
 			std::string("to position: ") + std::to_string(pos) + 
@@ -78,16 +78,16 @@ bool MotorController::simple_pos(double pos) {
 
 	uint8_t resp = 0xFF; // Not a valid resp
 	// wait for done
-	while (resp != S_ACTION_COMPLETE && resp != S_ACTION_ENDED_W_LIMIT) {
-		read_i2c(file, MCU_E, CMD_WRITE_STATUS, &resp, 1);
-		if (resp == S_ACTION_COMPLETE) {
+	while (resp != S_E_ACTION_COMPLETE && resp != S_E_ACTION_ENDED_W_LIMIT) {
+		read_i2c(file, MCU_E, CMD_E_WRITE_STATUS, &resp, 1);
+		if (resp == S_E_ACTION_COMPLETE) {
 			// action done
 			elapsedDistance = pos;
-			log(std::string("i2c: read S_ACTION_COMPLETE from MCU_E.\n"));
+			log(std::string("i2c: read S_E_ACTION_COMPLETE from MCU_E.\n"));
 			return false;
-		} else if (resp == S_ACTION_ENDED_W_LIMIT) {
+		} else if (resp == S_E_ACTION_ENDED_W_LIMIT) {
 			// hit limit switch
-			log(std::string("i2c: read S_ACTION_ENDED_W_LIMIT from MCU_E.\n"));
+			log(std::string("i2c: read S_E_ACTION_ENDED_W_LIMIT from MCU_E.\n"));
 			return true;
 		}
 		sleep(1);

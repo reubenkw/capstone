@@ -175,36 +175,36 @@ void Robot::moveServoArm(ServoMotor motor, double pos) {
 
 void Robot::resetServoArm() {
 	uint8_t data[1];
-	write_i2c(i2c_bus_file, MCU_E, CMD_RESET, data, 0);
+	write_i2c(i2c_bus_file, MCU_E, CMD_E_RESET, data, 0);
 	usleep(10000);
 
 	uint8_t resp = 0xFF; // Not a valid command
 
 	// wait for done
-	log(std::string("i2c: waiting for S_ACTION_COMPLETE from MCU_E.\n"));
-	while(resp != S_ACTION_COMPLETE) {
-		read_i2c(i2c_bus_file, MCU_E, CMD_WRITE_STATUS, &resp, 1);
+	log(std::string("i2c: waiting for S_E_ACTION_COMPLETE from MCU_E.\n"));
+	while(resp != S_E_ACTION_COMPLETE) {
+		read_i2c(i2c_bus_file, MCU_E, CMD_E_WRITE_STATUS, &resp, 1);
 		sleep(1);
 	}
-	log(std::string("i2c: read S_ACTION_COMPLETE from MCU_E.\n"));
+	log(std::string("i2c: read S_E_ACTION_COMPLETE from MCU_E.\n"));
 
 	armPosition = Point3D(0, 0, CARTESIAN_Z_MAX);
 }
 
 void Robot::pollinate() { 
 	uint8_t data[1];
-	write_i2c(i2c_bus_file, MCU_E, CMD_POLLINATE, data, 0);
+	write_i2c(i2c_bus_file, MCU_E, CMD_E_POLLINATE, data, 0);
 	usleep(10000);
 
 	uint8_t resp = 0xFF; // Not a valid command
 
 	// wait for done
-	log(std::string("i2c: waiting for S_ACTION_COMPLETE from MCU_E.\n"));
-	while(resp != S_ACTION_COMPLETE) {
-		read_i2c(i2c_bus_file, MCU_E, CMD_WRITE_STATUS, &resp, 1);
+	log(std::string("i2c: waiting for S_E_ACTION_COMPLETE from MCU_E.\n"));
+	while(resp != S_E_ACTION_COMPLETE) {
+		read_i2c(i2c_bus_file, MCU_E, CMD_E_WRITE_STATUS, &resp, 1);
 		sleep(1);
 	}
-	log(std::string("i2c: read S_ACTION_COMPLETE from MCU_E.\n"));
+	log(std::string("i2c: read S_E_ACTION_COMPLETE from MCU_E.\n"));
 }
 
 std::vector<Point3D> Robot::scan() {
