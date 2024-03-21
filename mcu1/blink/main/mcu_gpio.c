@@ -52,6 +52,7 @@ void init_boost() {
     // set boost low (turn on)
     gpio_set_level(GPIO_BOOST, 1);
     usleep(10000);
+    printf("finished init boost\n");
 }
 
 void init_limit_gpio() {

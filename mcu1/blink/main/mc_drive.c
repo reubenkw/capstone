@@ -3,167 +3,103 @@
 #include "driver/gpio.h"
 #include "mc_drive.h"
 #include "spi.h"
-
-void config_motor_fault() {
-    gpio_config_t io_conf_motor = {
-        .intr_type = GPIO_INTR_DISABLE,
-        .mode = GPIO_MODE_INPUT,
-        .pin_bit_mask = (1ULL<<FAULT_DC_GPIO),
-        .pull_down_en = 0,
-        .pull_up_en = 1,
-    };
-    gpio_config(&io_conf_motor);
-}
+#include <sys/time.h>   
 
 void init_dc_mc() {
     printf("starting init_dc_mc");
-    config_motor_fault();
+    
+    gpio_config_t io_conf_motor = {
+        .intr_type = GPIO_INTR_DISABLE,
+        .mode = GPIO_MODE_INPUT,
+        .pin_bit_mask = GPIO_DRIVE_MOTOR_PIN_SEL, 
+        .pull_down_en = 1,
+        .pull_up_en = 0,
+    };
+    gpio_config(&io_conf_motor);
 
-    // disable OLD for all
-    write_spi(spi_mc_dc_handle, 0x19, 0xFF);
-    write_spi(spi_mc_dc_handle, 0x1A, 0b11001111);
-
-    // Set OVP limit to 33 V
-    uint8_t reg = read_spi(spi_mc_dc_handle, CONFIG_CTRL);
-    write_spi(spi_mc_dc_handle, CONFIG_CTRL, reg | 0b10);
-
-    // set pwm mode for ...
-    write_spi(spi_mc_dc_handle, PWM_CTRL_1, 0b11000000);
-
-    // Clear fault reg
-    reg = read_spi(spi_mc_dc_handle, CONFIG_CTRL);
-    write_spi(spi_mc_dc_handle, CONFIG_CTRL, reg | 0b01);
-
-    if (gpio_get_level(FAULT_DC_GPIO) == 0){
-        printf("fault\n");
-        read_spi(spi_mc_dc_handle, 0);
-    }
 
     printf("done init_dc_mc");
 }
 
-bool check_and_clear_fault() {
-    if (gpio_get_level(FAULT_DC_GPIO) == 0){
-        printf("fault\n");
-        read_spi(spi_mc_dc_handle, 0);
-        uint8_t reg = read_spi(spi_mc_dc_handle, CONFIG_CTRL);
-        write_spi(spi_mc_dc_handle, CONFIG_CTRL, reg | 0b01);
-        return true;
+void set_wheel_directions(bool isFwd) {
+    if (isFwd) {
+        gpio_set_level(DIR_1, 1);
+        gpio_set_level(DIR_2, 0); 
+    } else {
+        gpio_set_level(DIR_1, 0);
+        gpio_set_level(DIR_2, 1);
+    }  
+}
+
+void stop() {
+    gpio_set_level(DIR_1, 0);
+    gpio_set_level(DIR_2, 0);
+}
+
+#define DRIVE_PWM_DELAY 100
+// only positive numbers should be passed in
+void pwm(double fl, double fr, double bl, double br) {
+    if (fl < 0 || fr < 0 || bl < 0 || br < 0){
+        return;
     }
-    printf("no fault\n");
-    read_spi(spi_mc_dc_handle, 0);
-    return false;
+    gpio_set_level(PWM_FL, 1);
+    gpio_set_level(PWM_FR, 1);
+    gpio_set_level(PWM_BL, 1);
+    gpio_set_level(PWM_BR, 1);
+    bool fl_stop = false, fr_stop = false, bl_stop = false, br_stop = false;
+    for (int i = 0; i <= 100; i++){
+        if (!fl_stop && i > fl * 100){
+            gpio_set_level(PWM_FL, 0); 
+            fl_stop = true;
+            printf("stopped fl at i = %d\n", i);
+        }
+        if (!fr_stop && i > fr * 100){
+            gpio_set_level(PWM_FR, 0); 
+            fr_stop = true;
+            printf("stopped fr at i = %d\n", i);
+        }
+        if (!bl_stop && i > bl * 100){
+            gpio_set_level(PWM_BL, 0); 
+            bl_stop = true;
+            printf("stopped bl at i = %d\n", i);
+        }
+        if (!br_stop && i > br * 100){
+            gpio_set_level(PWM_BR, 0); 
+            br_stop = true;
+            printf("stopped br at i = %d\n", i);
+        }
+        usleep(DRIVE_PWM_DELAY);
+    }   
 }
 
 // negative: backwards, 0: none, positive: forwards
 // motors in order: 1, 2, 3, 4
-void set_wheel_directions(int fl, int fr, int bl, int br) {
-    // 0b01100000;  front right fwd
-    // 0b0000110;   front left bkwd
-    // 0b01100000;  back right fwd
-    // 0b01100000;  back right bkwd
-    uint8_t op_ctrl_1_val = 0;
-    uint8_t op_ctrl_2_val = 0;
+void drive_wheels(double fl, double fr, double bl, double br, double sec) {
+    struct timeval t1, t2;
+    double elapsedTime = 0;
+    // start timer
+    gettimeofday(&t1, NULL);
 
-    if (fl > 0) {
-        op_ctrl_1_val |= 0b0000110;
-    } else if (fl < 0) {
-        op_ctrl_1_val |= 0b0001001;
-    }
-
-    if (fr > 0) {
-        op_ctrl_1_val |= 0b01100000;
-    } else if (fr < 0) {
-        op_ctrl_1_val |= 0b10010000;
-    }
-
-    if (bl > 0) {
-        op_ctrl_2_val |= 0b0001001;
-    } else if (bl < 0) {
-        op_ctrl_2_val |= 0b0000110;
-    }
-
-    if (br > 0) {
-        op_ctrl_2_val |= 0b01100000;
-    } else if (br < 0) {
-        op_ctrl_2_val |= 0b10010000;
-    }
-
-    write_spi(spi_mc_dc_handle, OP_CTRL_1, op_ctrl_1_val);
-    write_spi(spi_mc_dc_handle, OP_CTRL_2, op_ctrl_2_val);
-}
-
-void drive_full_forward() {
-    set_wheel_directions(1,1,1,1);
-    write_spi(spi_mc_dc_handle, PWM_DUTY_CTRL_1, 0x7F);
-}
-
-void drive_alternate_direction() {
-    const uint accel_delay = 1000;
-    const uint full_speed_delay = 5 * 1000000;
-    const uint stopped_delay = 2 * 1000000;
-    const uint8_t min_pwm = 20;
-    uint8_t speed = 0;
-    while(true) {
-        set_wheel_directions(1, 1, 1, 1);
-        printf("speeding up forward!\n");
-        for (speed=min_pwm; speed<254; speed++) {
-            write_spi(spi_mc_dc_handle, PWM_DUTY_CTRL_1, speed);
-            if (check_and_clear_fault()) {
-                speed--;
-                printf("%d\n", speed);
-            }
-            usleep(accel_delay);
+    if (fl > 0 && fr > 0 && bl > 0 && br < 0){ // if all directions are pos go fwd
+        set_wheel_directions(true);
+        while (elapsedTime < sec){
+            pwm(fl, fr, bl, br);
+            gettimeofday(&t2, NULL);
+            elapsedTime = (t2.tv_usec - t1.tv_usec) / 1000000.0;
+            printf("elapsed time: %0.2f\n", elapsedTime);
         }
+        stop();
 
-        // stay at speed
-        printf("full speed forward!\n");
-        usleep(full_speed_delay);
-
-        printf("slowing down!\n");
-        for (speed=254; speed>10; speed--) {
-            write_spi(spi_mc_dc_handle, PWM_DUTY_CTRL_1, speed);
-            if (check_and_clear_fault()) {
-                speed++;
-                printf("%d\n", speed);
-            }
-            usleep(accel_delay);
-        } 
-        write_spi(spi_mc_dc_handle, PWM_DUTY_CTRL_1, 0);
-
-        // stay at stopped
-        printf("stopped!\n");
-        usleep(stopped_delay);
-
-        // set direction to reversed
-        set_wheel_directions(-1, -1, -1, -1);
-        printf("speeding up backwards!\n");
-        for (speed=min_pwm; speed<254; speed++) {
-            write_spi(spi_mc_dc_handle, PWM_DUTY_CTRL_1, speed);
-            if (check_and_clear_fault()) {
-                speed--;
-                printf("%d\n", speed);
-            }
-            usleep(accel_delay);
+    } else if (fl < 0 && fr < 0 && bl < 0 && br < 0) { // if all directions are neg go bkwd
+        set_wheel_directions(false);
+        while (elapsedTime < sec){
+            pwm(-fl, -fr, -bl, -br);
+            gettimeofday(&t2, NULL);
+            elapsedTime = (t2.tv_usec - t1.tv_usec) / 1000000.0;
+            printf("elapsed time: %0.2f\n", elapsedTime);
         }
-
-        // stay at speed
-        printf("full speed backwards!\n");
-        usleep(full_speed_delay);
-
-        printf("slowing down!\n");
-        for (speed=254; speed>10; speed--) {
-            write_spi(spi_mc_dc_handle, PWM_DUTY_CTRL_1, speed);
-            if (check_and_clear_fault()) {
-                speed++;
-                printf("%d\n", speed);
-            }
-            usleep(accel_delay);
-        } 
-        write_spi(spi_mc_dc_handle, PWM_DUTY_CTRL_1, 0);
-
-        // stay at stopped
-        printf("stopped!\n");
-        usleep(stopped_delay);
+        stop();
+    } else {
+        stop();
     }
 }

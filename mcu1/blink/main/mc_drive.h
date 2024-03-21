@@ -1,37 +1,23 @@
 #ifndef MC_DRIVE_H
 #define MC_DRIVE_H
 
-#define DRIVE_MC_ADDR 0x1000
-#define SERVO_MC_ADDR 0x2000
+#define PWM_FL 13
+#define PWM_FR 14
+#define PWM_BL 15
+#define PWM_BR 16
 
-#define PWM_1 0x13
-#define PWM_2 0x14
-#define PWM_3 0x15
-#define PWM_4 0x16
-#define MC_STAT_REG 0x00
+#define DIR_1 17
+#define DIR_2 18
 
-#define MC_STAT_OK 0x0
-#define DRIVE_MC_ERR 0x42
-#define SERVO_MC_ERR 0x24
-
-#define FAULT_DC_GPIO 4
-
-// stepper motors only uses these registers to disabl PWM
-#define PWM_CTRL_1 0x0B // HB8_PWM HB7_PWM HB6_PWM HB5_PWM HB4_PWM HB3_PWM HB2_PWM HB1_PWM
-#define PWM_CTRL_2 0x0C // PWM_CH4_DIS PWM_CH3_DIS PWM_CH2_DIS PWM_CH1_DIS HB12_PWM HB11_PWM HB10_PWM HB9_PWM 
-
-#define OP_CTRL_1 0x08
-#define OP_CTRL_2 0x09
-#define OP_CTRL_3 0x0A
-// HB8_HS_EN HB8_LS_EN HB7_HS_EN HB7_LS_EN
-// HB6_HS_EN HB6_LS_EN HB5_HS_EN HB5_LS_EN
-
-#define PWM_DUTY_CTRL_1 0x13
-#define CONFIG_CTRL 0x7
+#define GPIO_DRIVE_MOTOR_PIN_SEL  ( \
+    (1ULL<<PWM_FL) | (1ULL<<PWM_FR) | \
+    (1ULL<<PWM_BL) | (1ULL<<PWM_BR) | \
+    (1ULL<<DIR_1) | (1ULL<<DIR_2)  \
+)
 
 void init_dc_mc();
-void drive_full_forward();
-void drive_alternate_direction();
-bool check_and_clear_fault();
+void stop();
+void drive_wheels(double fl, double fr, double bl, double br, double sec);
+void drive_full_forward(double sec);
 
 #endif // h
