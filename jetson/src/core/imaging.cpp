@@ -81,7 +81,7 @@ cv::Mat whiteMask(cv::Mat& image, uint8_t brightest) {
 			double r = p->x;
 			double g = p->y;
 			double b = p->z;
-			if (g/r > 0.6 && g/r < 1.4 && g/b > 0.6 && g/b < 1.4 && (r + g + b)/3 > 200) {
+			if (g/r > 0.6 && g/r < 1.4 && g/b > 0.6 && g/b < 1.4 && (r + g + b)/3 > 180) {
 				thresholded.at<uchar>(i, j) = 255;
 			}
 		}
@@ -118,11 +118,6 @@ std::vector<Point2D> findFlowerCenters(cv::Mat& image, Camera & cam, std::string
 	cv::Mat white = whiteMask(image, brightest);
 	cv::imwrite("./plots/" + tag + "_white.png", white);
 
-	cv::Mat green = greenMask(image);
-	cv::imwrite("./plots/" + tag + "_green.png", green);
-	cv::blur(green, green, cv::Size(80, 80));
-	cv::imwrite("./plots/" + tag + "_blurredGreen.png", green);
-
 	cv::Mat labels, stats, centroids;
 	int label_count = cv::connectedComponentsWithStats(white, labels, stats, centroids);
 	
@@ -134,12 +129,10 @@ std::vector<Point2D> findFlowerCenters(cv::Mat& image, Camera & cam, std::string
 	for (int i = 1; i < label_count; i++) {
 		double centerX = centroids.at<double>(i, 0);
 		double centerY = centroids.at<double>(i, 1);
-		int blurredGreenVal = green.at<uchar>((int)centerY, (int)centerX);
 		float x = centerX/width;
 		float y = centerY/height;
-		if ( blurredGreenVal > 10 
-				&& stats.at<int>(i, cv::CC_STAT_AREA) > 20 
-				&& cam.getDepthVal(x, y) < 0.4) {
+		if (	stats.at<int>(i, cv::CC_STAT_AREA) > 10 
+			&& cam.getDepthVal(x, y) < 0.65) {
 			whiteBlobs.push_back({ centroids.at<double>(i, 0), centroids.at<double>(i, 1) });
 		}
 	}
