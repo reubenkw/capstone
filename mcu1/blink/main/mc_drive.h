@@ -10,14 +10,11 @@
 #define DIR_2 13
 
 #define GPIO_DRIVE_MOTOR_PIN_SEL  ( \
-    (1ULL<<PWM_FL) | (1ULL<<PWM_FR) | \
-    (1ULL<<PWM_BL) | (1ULL<<PWM_BR) | \
     (1ULL<<DIR_1) | (1ULL<<DIR_2)  \
 )
 
 void init_dc_mc();
-void stop();
-void drive_wheels(double fl, double fr, double bl, double br, double sec);
-void drive_full_forward(double sec);
+void drive_stop();
+void drive(uint8_t fl, uint8_t fr, uint8_t bl, uint8_t br, bool fwd, double sec);
 
 #endif // h

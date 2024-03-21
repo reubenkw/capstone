@@ -10,21 +10,17 @@
 
 // NOTE: integration tests should be standalone and perform all required initialization
 
-void test_drive_full() {
-    init_boost();
-    init_dc_mc();
-    drive_wheels(1.0, 1.0, 1.0, 1.0, 10);
-}
-
 void test_drive_one() {
     init_boost();
     // need a delay after boost enable for precharge
     sleep(10);
     init_dc_mc();
-    while(1){
-        drive_wheels(1.0, 0, 0, 0, 10);
-    }
-    
+
+    drive(200, 200, 200, 200, false, 10);
+
+    sleep(3);
+
+    drive(200, 200, 200, 200, true, 10);
 }
 
 

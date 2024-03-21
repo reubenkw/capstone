@@ -1,5 +1,10 @@
 #include <unistd.h>
 
+#include <stdio.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "driver/ledc.h"
+#include "hal/ledc_types.h"
 #include "driver/gpio.h"
 #include "mc_drive.h"
 #include "spi.h"
@@ -7,7 +12,8 @@
 
 void init_dc_mc() {
     printf("starting init_dc_mc");
-    
+
+    // set direction to output
     gpio_config_t io_conf_motor = {
         .intr_type = GPIO_INTR_DISABLE,
         .mode = GPIO_MODE_OUTPUT,
@@ -16,92 +22,99 @@ void init_dc_mc() {
         .pull_up_en = 0,
     };
     gpio_config(&io_conf_motor);
+    
+    // Configure PWM timer settings
+    ledc_timer_config_t timer_conf = {
+        .speed_mode = LEDC_LOW_SPEED_MODE,
+        .duty_resolution = LEDC_TIMER_8_BIT, // Adjust as needed
+        .timer_num = LEDC_TIMER_0,
+        .freq_hz = 5000 // PWM frequency (in Hz)
+    };
+    ledc_timer_config(&timer_conf);
 
+    // Configure PWM channels
+    // fl wheel
+    ledc_channel_config_t pwm_channel_conf1 = {
+        .gpio_num = PWM_FL,
+        .speed_mode = LEDC_LOW_SPEED_MODE,
+        .channel = LEDC_CHANNEL_0,
+        .intr_type = LEDC_INTR_DISABLE,
+        .timer_sel = LEDC_TIMER_0,
+        .duty = 0 // Initial duty cycle (0-255 for 8-bit resolution)
+    };
+    ledc_channel_config(&pwm_channel_conf1);
+
+    // fr wheel
+    ledc_channel_config_t pwm_channel_conf2 = {
+        .gpio_num = PWM_FR,
+        .speed_mode = LEDC_LOW_SPEED_MODE,
+        .channel = LEDC_CHANNEL_1,
+        .intr_type = LEDC_INTR_DISABLE,
+        .timer_sel = LEDC_TIMER_0,
+        .duty = 0 // Initial duty cycle (0-255 for 8-bit resolution)
+    };
+    ledc_channel_config(&pwm_channel_conf2);
+
+    // bl wheel
+    ledc_channel_config_t pwm_channel_conf3 = {
+        .gpio_num = PWM_BL,
+        .speed_mode = LEDC_LOW_SPEED_MODE,
+        .channel = LEDC_CHANNEL_2,
+        .intr_type = LEDC_INTR_DISABLE,
+        .timer_sel = LEDC_TIMER_0,
+        .duty = 0 // Initial duty cycle (0-255 for 8-bit resolution)
+    };
+    ledc_channel_config(&pwm_channel_conf3);
+
+    // br wheel
+    ledc_channel_config_t pwm_channel_conf4 = {
+        .gpio_num = PWM_BR,
+        .speed_mode = LEDC_LOW_SPEED_MODE,
+        .channel = LEDC_CHANNEL_3,
+        .intr_type = LEDC_INTR_DISABLE,
+        .timer_sel = LEDC_TIMER_0,
+        .duty = 0 // Initial duty cycle (0-255 for 8-bit resolution)
+    };
+    ledc_channel_config(&pwm_channel_conf4);
 
     printf("done init_dc_mc");
 }
 
 void set_wheel_directions(bool isFwd) {
     if (isFwd) {
-        gpio_set_level(DIR_1, 1);
-        gpio_set_level(DIR_2, 0); 
-    } else {
         gpio_set_level(DIR_1, 0);
         gpio_set_level(DIR_2, 1);
+    } else {
+        gpio_set_level(DIR_1, 1);
+        gpio_set_level(DIR_2, 0); 
     }  
 }
 
-void stop() {
-    gpio_set_level(DIR_1, 0);
-    gpio_set_level(DIR_2, 0);
+void drive_stop() {
+    ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, 0);
+    ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0);
+    ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_1, 0);
+    ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_1);
+    ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_2, 0);
+    ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_2);
+    ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_3, 0);
+    ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_3);
 }
 
-#define DRIVE_PWM_DELAY 10
-// only positive numbers should be passed in
-void pwm(double fl, double fr, double bl, double br) {
-    if (fl < 0 || fr < 0 || bl < 0 || br < 0){
-        return;
-    }
-    gpio_set_level(PWM_FL, 1);
-    gpio_set_level(PWM_FR, 1);
-    gpio_set_level(PWM_BL, 1);
-    gpio_set_level(PWM_BR, 1);
-    bool fl_stop = false, fr_stop = false, bl_stop = false, br_stop = false;
-    for (int i = 0; i <= 100; i++){
-        if (!fl_stop && i > fl * 100){
-            gpio_set_level(PWM_FL, 0); 
-            fl_stop = true;
-            printf("stopped fl at i = %d\n", i);
-        }
-        if (!fr_stop && i > fr * 100){
-            gpio_set_level(PWM_FR, 0); 
-            fr_stop = true;
-            printf("stopped fr at i = %d\n", i);
-        }
-        if (!bl_stop && i > bl * 100){
-            gpio_set_level(PWM_BL, 0); 
-            bl_stop = true;
-            printf("stopped bl at i = %d\n", i);
-        }
-        if (!br_stop && i > br * 100){
-            gpio_set_level(PWM_BR, 0); 
-            br_stop = true;
-            printf("stopped br at i = %d\n", i);
-        }
-        usleep(DRIVE_PWM_DELAY);
-    }   
-}
+void drive(uint8_t fl, uint8_t fr, uint8_t bl, uint8_t br, bool fwd, double sec) {
+    printf("drive start\n");
+    set_wheel_directions(fwd);
 
-// negative: backwards, 0: none, positive: forwards
-// motors in order: 1, 2, 3, 4
-void drive_wheels(double fl, double fr, double bl, double br, double sec) {
-    struct timeval t1, t2;
-    double elapsedTime = 0;
-    // start timer
-    gettimeofday(&t1, NULL);
+    ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, fl);
+    ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0);
+    ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_1, fr);
+    ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_1);
+    ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_2, bl);
+    ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_2);
+    ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_3, br);
+    ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_3);
 
-    if (fl >= 0 && fr >= 0 && bl >= 0 && br >= 0){ // if all directions are pos go fwd
-        set_wheel_directions(true);
-        while (elapsedTime < sec){
-            pwm(fl, fr, bl, br);
-            gettimeofday(&t2, NULL);
-            elapsedTime = (t2.tv_sec - t1.tv_sec); 
-            elapsedTime += (t2.tv_usec - t1.tv_usec) / 1000000.0;
-            printf("elapsed time: %0.2f\n", elapsedTime);
-        }
-        stop();
-
-    } else if (fl <= 0 && fr <= 0 && bl <= 0 && br <= 0) { // if all directions are neg go bkwd
-        set_wheel_directions(false);
-        while (elapsedTime < sec){
-            pwm(-fl, -fr, -bl, -br);
-            gettimeofday(&t2, NULL);
-            elapsedTime = (t2.tv_sec - t1.tv_sec); 
-            elapsedTime += (t2.tv_usec - t1.tv_usec) / 1000000.0;
-            printf("elapsed time: %0.2f\n", elapsedTime);
-        }
-        stop();
-    } else {
-        stop();
-    }
+    sleep(sec);
+    drive_stop();
+    printf("drive done\n");
 }

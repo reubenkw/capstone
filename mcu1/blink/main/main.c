@@ -21,4 +21,7 @@ void app_main(void)
     // test_i2c_stepper_interface();
     test_drive_one();
     printf("done main\n");
+    while(1){
+        sleep(10);
+    }
 }
