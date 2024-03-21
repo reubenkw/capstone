@@ -158,6 +158,61 @@ uint16_t Robot::getDriveMotorEncoderVal(DriveMotor motor) {
 	return encoderVal[motor];
 }
 
+void Robot::driveForwards(uint8_t pwm_speed, float seconds) {
+	uint8_t data[5] = {0};
+	data[0] = pwm_speed;
+	// get float as array
+	uint8_t *float_array = reinterpret_cast<uint8_t*>(&seconds);
+	data[1] = float_array[0];
+	data[2] = float_array[1];
+	data[3] = float_array[2];
+	data[4] = float_array[3];
+	write_i2c(i2c_bus_file, MCU_M, CMD_M_FWD, data, 5);
+	sleep(1);
+	log(std::string("Going forward (pwm speed: ") + std::to_string(pwm_speed) +
+		std::string(", time: ") + std::to_string(seconds) + std::string(" [s]"));
+
+	uint8_t resp = 0xFF; // Not a valid resp
+	// wait for done
+	while (resp != S_M_ACTION_COMPLETE) {
+		read_i2c(i2c_bus_file, MCU_M, CMD_M_WRITE_STATUS, &resp, 1);
+		if (resp == S_M_ACTION_COMPLETE) {
+			// action done
+			log(std::string("i2c: read S_M_ACTION_COMPLETE from MCU_M.\n"));
+			return;
+		}
+		sleep(1);
+	}
+}
+
+
+void Robot::driveBackwards(uint8_t pwm_speed, float seconds) {
+	uint8_t data[5] = {0};
+	data[0] = pwm_speed;
+	// get float as array
+	uint8_t *float_array = reinterpret_cast<uint8_t*>(&seconds);
+	data[1] = float_array[0];
+	data[2] = float_array[1];
+	data[3] = float_array[2];
+	data[4] = float_array[3];
+	write_i2c(i2c_bus_file, MCU_M, CMD_M_BKWD, data, 5);
+	sleep(1);
+	log(std::string("Going backwards (pwm speed: ") + std::to_string(pwm_speed) +
+		std::string(", time: ") + std::to_string(seconds) + std::string(" [s]"));
+
+	uint8_t resp = 0xFF; // Not a valid resp
+	// wait for done
+	while (resp != S_M_ACTION_COMPLETE) {
+		read_i2c(i2c_bus_file, MCU_M, CMD_M_WRITE_STATUS, &resp, 1);
+		if (resp == S_M_ACTION_COMPLETE) {
+			// action done
+			log(std::string("i2c: read S_M_ACTION_COMPLETE from MCU_M.\n"));
+			return;
+		}
+		sleep(1);
+	}
+}
+
 float max_dist[3] = {CARTESIAN_X_MIN, CARTESIAN_Y_MIN, CARTESIAN_Z_MIN};
 float min_dist[3] = {CARTESIAN_X_MAX, CARTESIAN_Y_MAX, CARTESIAN_Z_MAX};
 void Robot::moveServoArm(ServoMotor motor, double pos) {

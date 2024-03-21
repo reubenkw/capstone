@@ -212,6 +212,22 @@ void test_move_servo_arm_to_flowers(){
 	
 }
 
+void test_drive_interace() {
+	log(std::string("INFO: starting test_drive_interace."));
+	Camera cam;
+	Robot r(cam);
+
+	while(true) {
+		r.driveForwards(200, 5);
+		sleep(2);
+		r.driveBackwards(200, 5);
+		sleep(2);
+	}
+
+	log(std::string("INFO: done test_drive_interace."));
+	
+}
+
 void test_main_loop() {
 	log(std::string("INFO: starting test_scan."));
 	Camera cam;
@@ -270,7 +286,7 @@ int main(int argc, char** argv)
 	// test_i2c_read_write();
 	// test_move_servo_arm();
 	// test_move_servo_arm_to_flowers();
-	test_main_loop();
+	test_drive_interace();
 	// test_i2c_read_mcu_e();
 	// test_move_servo_arm();
 	return 0;
