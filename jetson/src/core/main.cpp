@@ -53,7 +53,7 @@ std::vector<Point3D> test_image_processing(Camera & cam) {
 	for (Point2D const& blob : yellowBlobs) {
 		log(std::string("yellow blob") + std::to_string(blob.x) + std::string(",") + std::to_string(blob.y));
 	}
-	std::vector<Point2D> avgCenter = avgClusterCenters(yellowBlobs, 10);
+	std::vector<Point2D> avgCenter = avgClusterCenters(yellowBlobs, 25);
 	log(std::string("finding avgCenters!!!!!!"));
 	for (Point2D const& blob : avgCenter) {
 		cv::circle(image, cv::Point((int)blob.x, (int)blob.y), 5, { 255, 0, 255 }, 5);
@@ -295,10 +295,10 @@ int main(int argc, char** argv)
 {
 	initialize_log();
 	log(std::string("Starting Program!"));
-	test_find_flowers();
+	// test_find_flowers();
 	// test_camera_image();
-	// Camera cam;
-	// test_image_processing(cam);
+	Camera cam;
+	test_image_processing(cam);
 	// test_clustering();
 	// test_i2c_write();
 	// test_i2c_read();

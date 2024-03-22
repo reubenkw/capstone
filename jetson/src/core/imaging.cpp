@@ -81,7 +81,7 @@ cv::Mat whiteMask(cv::Mat& image) {
 			double r = p->x;
 			double g = p->y;
 			double b = p->z;
-			if (g/r > 0.6 && g/r < 1.4 && g/b > 0.6 && g/b < 1.4 && (r + g + b)/3 > 190) {
+			if (g/r > 0.6 && g/r < 1.4 && g/b > 0.6 && g/b < 1.4 && (r + g + b)/3 > 160) {
 				thresholded.at<uchar>(i, j) = 255;
 			}
 		}
@@ -140,7 +140,7 @@ bool nearYellow(cv::Mat& image, cv::Mat& yellow, Point2D topLeft, int width, int
 	}
 	log(std::string("numYellow: ") + std::to_string(numYellow));
 	log(std::string("area: ") + std::to_string(area));
-	return numYellow > area * 0.5 && numYellow > 25;
+	return numYellow > 10;
 }
 
 std::vector<Point2D> findFlowerCenters(cv::Mat& image, std::string const & tag){
@@ -190,7 +190,7 @@ Camera::Camera() : color{rs2::frame()}, depth{rs2::frame()} {
 	// set manual exposure
 	auto colorSensor = p.get_active_profile().get_device().query_sensors()[0];
 	colorSensor.set_option(RS2_OPTION_ENABLE_AUTO_EXPOSURE, 0);
-	colorSensor.set_option(RS2_OPTION_EXPOSURE, 80000);
+	colorSensor.set_option(RS2_OPTION_EXPOSURE, 70000);
 
 	// Block program until frames arrive
 	storeSnapshot();
