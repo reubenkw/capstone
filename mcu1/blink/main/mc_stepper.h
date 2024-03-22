@@ -47,7 +47,7 @@ void step(uint8_t pin, uint step_delay);
 int move_x(int delta, uint step_delay);
 int move_y(int delta, uint step_delay);
 int move_z(uint crnt, uint desired, uint step_delay);
-void move_stepper(uint8_t motor, float ideal_pos, int step_delay);
+bool move_stepper(uint8_t motor, float ideal_pos, int step_delay);
 void reset_xyz();
 void pollinate();
 

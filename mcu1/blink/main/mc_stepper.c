@@ -117,7 +117,8 @@ void reset_xyz() {
     end_effector_position[STP_Z] = LIMIT_Z_MAX_DIST;
 }
 
-void move_stepper(uint8_t motor, float ideal_pos, int step_delay) {
+// return false if hit limit
+bool move_stepper(uint8_t motor, float ideal_pos, int step_delay) {
     int final = 0;
     if (motor == STP_X) {
         float delta = ideal_pos - end_effector_position[motor];
@@ -129,6 +130,7 @@ void move_stepper(uint8_t motor, float ideal_pos, int step_delay) {
         final = move_z(end_effector_position[STP_Z], ideal_pos, step_delay);
     }
     end_effector_position[motor] = final;
+    return (final == ideal_pos);
 }
 
 void pollinate() {
