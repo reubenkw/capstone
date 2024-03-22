@@ -228,55 +228,39 @@ void test_drive_interace() {
 	
 }
 
-void test_main_loop() {
-	log(std::string("INFO: starting test_scan."));
+void main_loop() {
+	log(std::string("INFO: starting main_loop."));
 	Camera cam;
 	Robot r(cam);
 
+	float drive_time = 3.0;
+	uint8_t drive_pwm = 150; 
+
 	r.resetServoArm();
-
-	std::vector<Point3D> flowerCenters = r.scan();
-
-	for (auto const & flowerCenter : flowerCenters){
-
-		// check if point is within bounds
-		if (flowerCenter.x > CARTESIAN_X_MAX || flowerCenter.x < CARTESIAN_X_MIN ||
-			flowerCenter.y > CARTESIAN_Y_MAX || flowerCenter.y < CARTESIAN_Y_MIN ||
-			flowerCenter.z > CARTESIAN_Z_MAX || flowerCenter.z < CARTESIAN_Z_MIN) {
-			std::stringstream ss;
-			ss << "INFO robot: ignoring out of bound flower at: (" 
-				<< flowerCenter.x << ", " << flowerCenter.y << ", " << flowerCenter.x << ").";
-			log(ss.str());
-			continue;
-		}
-
-		log(std::string("move arm to point: ") 
-		+ std::to_string(flowerCenter.x) + std::string(", ") 
-		+ std::to_string(flowerCenter.y) + std::string(", ")
-		+ std::to_string(flowerCenter.z));
-
-		usleep(1000000);
-
-		r.moveServoArm(x, flowerCenter.x);
-		r.moveServoArm(y, flowerCenter.y);
-		r.moveServoArm(z, flowerCenter.z);
-
-		r.pollinate();
-
-		usleep(1000000);
-		// reset arm to top
-		r.moveServoArm(z, CARTESIAN_Z_MAX + 0.1);
-
+	while(true) {
+		std::vector<Point3D> flowerCenters = r.scan();
+		r.pollinate_all_in_zone(flowerCenters);
+		sleep(1);
+		r.resetServoArm();
+		sleep(1);
+		r.driveForwards(drive_pwm, drive_time);
+		sleep(1);
+		std::vector<Point3D> flowerCenters = r.scan();
+		r.pollinate_all_in_zone(flowerCenters);
+		sleep(1);
+		r.resetServoArm();
+		sleep(1);
+		r.driveBackwards(drive_pwm, drive_time);
+		sleep(1);
 	}
-	r.resetServoArm();
-	log(std::string("INFO: done test_scan."));
-	
+	log(std::string("INFO: done main_loop."));
 }
 
 int main(int argc, char** argv)
 {
 	initialize_log();
 	log(std::string("Starting Program!"));
+	main_loop();
 	// test_camera_image();
 	// Camera cam;
 	// test_image_processing(cam);
@@ -286,7 +270,7 @@ int main(int argc, char** argv)
 	// test_i2c_read_write();
 	// test_move_servo_arm();
 	// test_move_servo_arm_to_flowers();
-	test_drive_interace();
+	// test_drive_interace();
 	// test_i2c_read_mcu_e();
 	// test_move_servo_arm();
 	return 0;

@@ -326,6 +326,40 @@ std::vector<Point3D> Robot::findFlowers(){
 	return camera2robot(cam3DPoints, armPosition.x, armPosition.y);
 }
 
+void Robot::pollinate_all_in_zone(std::vector<Point3D> flowerCenters) {
+	for (auto const & flowerCenter : flowerCenters) {
+
+		// check if point is within bounds
+		if (flowerCenter.x > CARTESIAN_X_MAX || flowerCenter.x < CARTESIAN_X_MIN ||
+			flowerCenter.y > CARTESIAN_Y_MAX || flowerCenter.y < CARTESIAN_Y_MIN ||
+			flowerCenter.z > CARTESIAN_Z_MAX || flowerCenter.z < CARTESIAN_Z_MIN) {
+			std::stringstream ss;
+			ss << "INFO robot: ignoring out of bound flower at: (" 
+				<< flowerCenter.x << ", " << flowerCenter.y << ", " << flowerCenter.x << ").";
+			log(ss.str());
+			continue;
+		}
+
+		log(std::string("move arm to point: ") 
+		+ std::to_string(flowerCenter.x) + std::string(", ") 
+		+ std::to_string(flowerCenter.y) + std::string(", ")
+		+ std::to_string(flowerCenter.z));
+
+		sleep(1);
+
+		moveServoArm(x, flowerCenter.x);
+		moveServoArm(y, flowerCenter.y);
+		moveServoArm(z, flowerCenter.z);
+
+		pollinate();
+
+		sleep(1);
+		// reset arm to top
+		moveServoArm(z, CARTESIAN_Z_MAX + 0.1);
+
+	}
+}
+
 void Robot::pollinate_row(int n) {
 	log(std::string("INFO robot: starting row."));
 	for (int i = 0; i < n; i++) {

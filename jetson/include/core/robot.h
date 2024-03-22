@@ -64,6 +64,7 @@ public:
 	void pollinate_row(int n = 1);
 	void driveForwards(uint8_t pwm_speed, float seconds);
 	void driveBackwards(uint8_t pwm_speed, float seconds);
+	void pollinate_all_in_zone(std::vector<Point3D> flowerCenters);
 };
 
 #endif // h
