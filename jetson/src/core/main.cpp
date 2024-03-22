@@ -218,9 +218,9 @@ void test_drive_interace() {
 	Robot r(cam);
 
 	while(true) {
-		r.driveForwards(200, 5);
+		r.driveForwards(150, 5);
 		sleep(2);
-		r.driveBackwards(200, 5);
+		r.driveBackwards(150, 5);
 		sleep(2);
 	}
 

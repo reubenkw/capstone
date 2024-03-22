@@ -70,7 +70,7 @@ void test_jetson_drive_interface() {
                 float drive_time = uint8_array_to_float(&rx_data[1]);
                 printf("drive forward (pwm_speed: %d/255, time: %f [s])\n", pwm_speed, drive_time);
 
-                // drive(pwm_speed, pwm_speed, pwm_speed, pwm_speed, true, drive_time);
+                drive(pwm_speed, pwm_speed, pwm_speed, pwm_speed, true, drive_time);
 
                 state = S_M_ACTION_COMPLETE;
                 i2c_write_jetson(state);
@@ -86,7 +86,7 @@ void test_jetson_drive_interface() {
                 float drive_time = uint8_array_to_float(&rx_data[1]);
                 printf("drive backward (pwm_speed: %d/255, time: %f [s])\n", pwm_speed, drive_time);
 
-                // drive(pwm_speed, pwm_speed, pwm_speed, pwm_speed, false, drive_time);
+                drive(pwm_speed, pwm_speed, pwm_speed, pwm_speed, false, drive_time);
 
                 state = S_M_ACTION_COMPLETE;
                 i2c_write_jetson(state);
