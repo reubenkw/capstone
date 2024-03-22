@@ -248,7 +248,7 @@ void test_pollinate() {
     printf("done pollinate\n");
 }
 
-void test_i2c_stepper_interface() {
+void mcu_e_main() {
     printf("starting init\n");
     init_limit_gpio();
     init_stepper_mc();
@@ -299,10 +299,6 @@ void test_i2c_stepper_interface() {
                 i2c_write_jetson(state);
                 reset_xyz();
                 printf("reset arm.\n");
-
-                // emulate moving motors
-                // printf("pretending to move motors (reset)\n.");
-                // usleep(4 * 1000000);
 
                 state = S_E_ACTION_COMPLETE;
                 i2c_write_jetson(state);
