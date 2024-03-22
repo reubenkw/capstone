@@ -1,4 +1,3 @@
-#include "pid_ctrl.h"
 #include "imaging.h"
 #include "log.h"
 #include "comm.h"
@@ -67,17 +66,6 @@ std::vector<Point3D> test_image_processing(Camera & cam) {
 	cv::imwrite("plots/" + tag + "_flowers.jpg", image);
 
 	return robotPoints;
-}
-
-void pid_motor_ctrl_test() {
-	PID_Ctrl pid_ctrl(10, 1, 2, 5);
-    
-    std::ofstream myfile;
-    myfile.open ("test_pid_ctrl.csv");
-    for (int i = 20; i > 0; i--){
-        myfile << pid_ctrl.update_ctrl_signal(i, 0.1) << ",";
-    }
-    myfile.close();
 }
 
 void test_camera_image() {
