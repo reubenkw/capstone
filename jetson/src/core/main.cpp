@@ -236,16 +236,18 @@ void main_loop() {
 	float drive_time = 3.0;
 	uint8_t drive_pwm = 150; 
 
+	std::vector<Point3D> flowerCenters;
+
 	r.resetServoArm();
 	while(true) {
-		std::vector<Point3D> flowerCenters = r.scan();
+		flowerCenters = r.scan();
 		r.pollinate_all_in_zone(flowerCenters);
 		sleep(1);
 		r.resetServoArm();
 		sleep(1);
 		r.driveForwards(drive_pwm, drive_time);
 		sleep(1);
-		std::vector<Point3D> flowerCenters = r.scan();
+		flowerCenters = r.scan();
 		r.pollinate_all_in_zone(flowerCenters);
 		sleep(1);
 		r.resetServoArm();
