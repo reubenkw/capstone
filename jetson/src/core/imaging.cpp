@@ -81,7 +81,7 @@ cv::Mat whiteMask(cv::Mat& image) {
 			double r = p->x;
 			double g = p->y;
 			double b = p->z;
-			if (g/r > 0.6 && g/r < 1.4 && g/b > 0.6 && g/b < 1.4 && (r + g + b)/3 > 160) {
+			if (g/r > 0.6 && g/r < 1.4 && g/b > 0.6 && g/b < 1.4 && (r + g + b)/3 > 180) {
 				thresholded.at<uchar>(i, j) = 255;
 			}
 		}
@@ -130,9 +130,8 @@ bool nearYellow(cv::Mat& image, cv::Mat& yellow, Point2D topLeft, int width, int
 			double r = p->x;
 			double g = p->y;
 			double b = p->z;
-			if (r > brightest * 0.5 && g > brightest * 0.5 && 
-				g > b * 1.3 && r > b * 1.3 &&
-				r < g * 1.2 && g < r * 1.2) {
+			if (g > b * 1.2 && r > b * 1.2 && r < g * 1.1 && g < r * 1.1 && 
+			    (r + g + b)/3 > brightest * 0.7) {
 				yellow.at<uchar>(i, j) = 255;
 				numYellow++;
 			}
