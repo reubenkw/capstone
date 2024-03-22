@@ -147,8 +147,9 @@ void test_drive() {
 	log(std::string("INFO: starting test_drive."));
 	Camera cam;
 	Robot r(cam);
-	Point2D delta{0, CARTESIAN_Y_MAX};
-	r.driveRobotForward(delta);
+	float drive_time = 3;
+	uint8_t drive_pwm = 150;
+	r.driveForwards(drive_pwm, drive_time);
 	log(std::string("INFO: done test_drive."));
 }
 
@@ -156,8 +157,8 @@ void test_arm_x() {
 	log(std::string("INFO: starting test_arm_x"));
 	Camera cam;
 	Robot r(cam);
-	r.moveServoArm(x, 0);
-	r.moveServoArm(x, CARTESIAN_X_MAX);
+	r.setArmPosition(x, 0);
+	r.setArmPosition(x, CARTESIAN_X_MAX);
 	log(std::string("done testing test_arm_x"));
 }
 
@@ -165,8 +166,8 @@ void test_arm_y() {
 	log(std::string("INFO: starting test_arm_y"));
 	Camera cam;
 	Robot r(cam);
-	r.moveServoArm(y, 0);
-	r.moveServoArm(y, CARTESIAN_Y_MAX);
+	r.setArmPosition(y, 0);
+	r.setArmPosition(y, CARTESIAN_Y_MAX);
 	log(std::string("done testing test_arm_y"));
 }
 
@@ -174,8 +175,8 @@ void test_arm_z() {
 	log(std::string("INFO: starting test_arm_z"));
 	Camera cam;
 	Robot r(cam);
-	r.moveServoArm(z, 0.748); 
-	r.moveServoArm(z, CARTESIAN_Z_MIN);
+	r.setArmPosition(z, 0.748); 
+	r.setArmPosition(z, CARTESIAN_Z_MIN);
 	log(std::string("done testing test_arm_z"));
 }
 
@@ -183,18 +184,18 @@ void test_move_servo_arm(){
 	Camera cam;
 	Robot r(cam);
 	printf("done init\n");
-	r.moveServoArm(x, 0.05);
-	r.moveServoArm(y, 0.05);
-	r.moveServoArm(z, 0.7);
+	r.setArmPosition(x, 0.05);
+	r.setArmPosition(y, 0.05);
+	r.setArmPosition(z, 0.7);
 }
 
 void test_move_servo_arm_to_flowers(){
 	Camera cam;
 	Robot r(cam);
 	
-	r.moveServoArm(z, 0.8);
-	r.moveServoArm(x, 0);
-	r.moveServoArm(y, 0);
+	r.setArmPosition(z, 0.8);
+	r.setArmPosition(x, 0);
+	r.setArmPosition(y, 0);
 
 	usleep(30000000);
 
@@ -205,9 +206,9 @@ void test_move_servo_arm_to_flowers(){
 		+ std::to_string(robotPoint.x) + std::string(", ") 
 		+ std::to_string(robotPoint.y) + std::string(", ")
 		+ std::to_string(robotPoint.z));
-		r.moveServoArm(x, robotPoint.x);
-		r.moveServoArm(y, robotPoint.y);
-		r.moveServoArm(z, robotPoint.z);
+		r.setArmPosition(x, robotPoint.x);
+		r.setArmPosition(y, robotPoint.y);
+		r.setArmPosition(z, robotPoint.z);
 	}
 	
 }
