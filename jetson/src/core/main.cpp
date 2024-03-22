@@ -16,6 +16,30 @@
 
 std::string const HOME = std::getenv("HOME") ? std::getenv("HOME") : ".";
 
+void test_find_flowers(){
+	cv::Mat image = cv::imread("./plots/original_image.png");
+
+	std::string tag = std::string("");
+	cv::imwrite("./plots/original_image.png", image);
+	cv::cvtColor(image, image, cv::COLOR_BGR2RGB);
+		
+	log(std::string("finding yellow blobs!!!!!!"));
+	std::vector<Point2D> yellowBlobs = findFlowerCenters(image, tag);
+	for (Point2D const& blob : yellowBlobs) {
+		log(std::string("yellow blob") + std::to_string(blob.x) + std::string(",") + std::to_string(blob.y));
+	}
+
+	std::vector<Point2D> avgCenter = avgClusterCenters(yellowBlobs, 25);
+	log(std::string("finding avgCenters!!!!!!"));
+	for (Point2D const& blob : avgCenter) {
+		cv::circle(image, cv::Point((int)blob.x, (int)blob.y), 5, { 255, 0, 255 }, 5);
+		log(std::string("avgCenter: ") + std::to_string(blob.x) + std::string(",") + std::to_string(blob.y));
+	}
+
+	cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
+	cv::imwrite("plots/" + tag + "_flowers.jpg", image);
+}
+
 std::vector<Point3D> test_image_processing(Camera & cam) {
 	cv::Mat image = cam.getColorImage();
 
@@ -25,13 +49,14 @@ std::vector<Point3D> test_image_processing(Camera & cam) {
 	cv::cvtColor(image, image, cv::COLOR_BGR2RGB);
 		
 	log(std::string("finding yellow blobs!!!!!!"));
-	std::vector<Point2D> yellowBlobs = findFlowerCenters(image, cam, tag);
+	std::vector<Point2D> yellowBlobs = findFlowerCenters(image, tag);
 	for (Point2D const& blob : yellowBlobs) {
 		log(std::string("yellow blob") + std::to_string(blob.x) + std::string(",") + std::to_string(blob.y));
 	}
 	std::vector<Point2D> avgCenter = avgClusterCenters(yellowBlobs, 10);
 	log(std::string("finding avgCenters!!!!!!"));
 	for (Point2D const& blob : avgCenter) {
+		cv::circle(image, cv::Point((int)blob.x, (int)blob.y), 5, { 255, 0, 255 }, 5);
 		log(std::string("avgCenter: ") + std::to_string(blob.x) + std::string(",") + std::to_string(blob.y));
 	}
 
@@ -41,7 +66,6 @@ std::vector<Point3D> test_image_processing(Camera & cam) {
 	int height = image.rows;
 
 	for (Point2D const& blob : avgCenter) {
-		cv::circle(image, cv::Point((int)blob.x, (int)blob.y), 5, { 255, 0, 255 }, 5);
 		float x = blob.x/width;
 		float y = blob.y/height;
 		log(std::string("depth val: ") + std::to_string(cam.getDepthVal(x, y)));
@@ -201,6 +225,16 @@ void test_move_servo_arm_to_flowers(){
 	std::vector<Point3D> robotPoints = test_image_processing(cam);
 
 	for (auto const & robotPoint : robotPoints){
+		// check if point is within bounds
+		if (robotPoint.x > CARTESIAN_X_MAX || robotPoint.x < CARTESIAN_X_MIN ||
+			robotPoint.y > CARTESIAN_Y_MAX || robotPoint.y < CARTESIAN_Y_MIN ||
+			robotPoint.z > CARTESIAN_Z_MAX || robotPoint.z < CARTESIAN_Z_MIN) {
+			std::stringstream ss;
+			ss << "INFO robot: ignoring out of bound flower at: (" 
+				<< robotPoint.x << ", " << robotPoint.y << ", " << robotPoint.x << ").";
+			log(ss.str());
+			continue;
+		}
 		log(std::string("move arm to point: ") 
 		+ std::to_string(robotPoint.x) + std::string(", ") 
 		+ std::to_string(robotPoint.y) + std::string(", ")
@@ -261,9 +295,10 @@ int main(int argc, char** argv)
 {
 	initialize_log();
 	log(std::string("Starting Program!"));
+	test_find_flowers();
 	// test_camera_image();
-	Camera cam;
-	test_image_processing(cam);
+	// Camera cam;
+	// test_image_processing(cam);
 	// test_clustering();
 	// test_i2c_write();
 	// test_i2c_read();
