@@ -62,6 +62,8 @@ public:
 	std::vector<Point3D> findFlowers();
 	void readEncoderVals();
 	void pollinate_row(int n = 1);
+	void driveForwards(uint8_t pwm_speed, float seconds);
+	void driveBackwards(uint8_t pwm_speed, float seconds);
 };
 
 #endif // h

@@ -65,3 +65,16 @@ void test_i2c_read(uint mcu_address) {
         printf("\n");
     }
 }
+
+// TODO: confirm sizeof(float) evaluates to 4 on both mcu_m and jetson
+float uint8_array_to_float(uint8_t *array) {
+    float f;
+    uint8_t *ptr = (uint8_t *)&f;
+
+    // Assuming little-endian system
+    for (int i = 0; i < sizeof(float); i++) {
+        ptr[i] = array[i];
+    }
+
+    return f;
+}

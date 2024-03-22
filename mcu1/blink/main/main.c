@@ -19,7 +19,7 @@ void app_main(void)
     // test_i2c_write(MCU_E_ADDRESS);
     // test_all_stepper();
     // test_i2c_stepper_interface();
-    test_drive_one();
+    test_jetson_drive_interface();
     printf("done main\n");
     while(1){
         sleep(10);

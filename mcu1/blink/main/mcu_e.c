@@ -258,8 +258,8 @@ void test_i2c_stepper_interface() {
 
     // max data len: 1 command byte then 3 data bytes for motor move
     uint8_t rx_data[3] = {0};
-    mcu_e_status_t state = S_ACTION_COMPLETE;
-    i2c_write_jetson(S_ACTION_COMPLETE);
+    mcu_e_status_t state = S_E_ACTION_COMPLETE;
+    i2c_write_jetson(S_E_ACTION_COMPLETE);
     while(true) {
         // read from jetson
         printf("waiting for command. willing to wait 7 days.\n");
@@ -267,11 +267,11 @@ void test_i2c_stepper_interface() {
         printf("got command: %x\n", rx_data[0]);
         usleep(10000);
         switch (rx_data[0]) {
-            case CMD_WRITE_STATUS:
+            case CMD_E_WRITE_STATUS:
                 i2c_write_jetson(state);
                 break;
-            case CMD_MOVE_AXIS:
-                state = S_PROCESSING_CMD;
+            case CMD_E_MOVE_AXIS:
+                state = S_E_PROCESSING_CMD;
                 i2c_write_jetson(state);
                 i2c_slave_read_buffer(I2C_HOST, rx_data, 3, portMAX_DELAY);
 
@@ -291,11 +291,11 @@ void test_i2c_stepper_interface() {
 
                 // TODO: send if limit switch hit
                 // update status to done
-                state = S_ACTION_COMPLETE;
+                state = S_E_ACTION_COMPLETE;
                 i2c_write_jetson(state);
                 break;
-            case CMD_RESET:
-                state = S_PROCESSING_CMD;
+            case CMD_E_RESET:
+                state = S_E_PROCESSING_CMD;
                 i2c_write_jetson(state);
                 reset_xyz();
                 printf("reset arm.\n");
@@ -304,17 +304,17 @@ void test_i2c_stepper_interface() {
                 // printf("pretending to move motors (reset)\n.");
                 // usleep(4 * 1000000);
 
-                state = S_ACTION_COMPLETE;
+                state = S_E_ACTION_COMPLETE;
                 i2c_write_jetson(state);
                 break;
-            case CMD_POLLINATE:
-                state = S_PROCESSING_CMD;
+            case CMD_E_POLLINATE:
+                state = S_E_PROCESSING_CMD;
                 i2c_write_jetson(state);
 
                 pollinate();
                 printf("pollinating.\n");
 
-                state = S_ACTION_COMPLETE;
+                state = S_E_ACTION_COMPLETE;
                 i2c_write_jetson(state);
         }
         usleep(5000);
