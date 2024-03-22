@@ -30,7 +30,7 @@ public:
 	std::vector<Point3D> getDeprojection(std::vector<Point2D> const & color_pixels);
 };
 
-std::vector<Point2D> findFlowerCenters(cv::Mat &  image, Camera & cam, std::string const & tag);
+std::vector<Point2D> findFlowerCenters(cv::Mat &  image, std::string const & tag);
 double findYCenterOfPlant(cv::Mat & image);
 
 #endif // h

@@ -202,7 +202,7 @@ std::vector<Point3D> Robot::findFlowers(){
 		cv::imwrite("./plots/" + tag + "_image.png", image);
 		cv::cvtColor(image, image, cv::COLOR_BGR2RGB);
 	}
-	std::vector<Point2D> flowerCenters = findFlowerCenters(image, camera, tag);
+	std::vector<Point2D> flowerCenters = findFlowerCenters(image, tag);
 	if (DEBUG) {
 		int width = image.cols;
 		int height = image.rows;
