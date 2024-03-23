@@ -182,3 +182,28 @@ void pollinate() {
     move_stepper(STP_Y, y_init, step_delay);
     usleep(action_delay);
 }
+
+void pollinate_v2(){
+    const int x_delta = 30;
+    const int y_delta = 15;
+    const uint action_delay = 100000;
+    const uint step_delay = 10000;
+
+    const int x_init = end_effector_position[STP_X] - 20; // seems offset
+    const int y_init = end_effector_position[STP_Y];
+    
+    move_stepper(STP_X, x_init-x_delta, step_delay);
+    usleep(action_delay);
+    move_stepper(STP_Y, y_init-y_delta, step_delay);
+    usleep(action_delay);
+    move_stepper(STP_X, x_init+x_delta, step_delay);
+    usleep(action_delay);
+    move_stepper(STP_Y, y_init, step_delay);
+    usleep(action_delay);
+    move_stepper(STP_X, x_init-x_delta, step_delay);
+    usleep(action_delay);
+    move_stepper(STP_Y, y_init+y_delta, step_delay);
+    usleep(action_delay);
+    move_stepper(STP_X, x_init+x_delta, step_delay);
+    usleep(action_delay); 
+}

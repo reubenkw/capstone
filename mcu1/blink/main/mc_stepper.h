@@ -50,5 +50,6 @@ int move_z(uint crnt, uint desired, uint step_delay);
 bool move_stepper(uint8_t motor, float ideal_pos, int step_delay);
 void reset_xyz();
 void pollinate();
+void pollinate_v2();
 
 #endif // h

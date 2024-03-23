@@ -307,7 +307,7 @@ void mcu_e_main() {
                 state = S_E_PROCESSING_CMD;
                 i2c_write_jetson(state);
 
-                pollinate();
+                pollinate_v2();
                 printf("pollinating.\n");
 
                 state = S_E_ACTION_COMPLETE;

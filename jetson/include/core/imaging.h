@@ -23,6 +23,7 @@ class Camera {
 public:
 	Camera();
 	void storeSnapshot();
+	void setExposure(int exp);
 	cv::Mat getColorImage();
 	cv::Mat getDepthImage();
 	double getDepthVal(float x, float y);

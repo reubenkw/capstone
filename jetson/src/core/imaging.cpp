@@ -214,6 +214,13 @@ cv::Mat Camera::getColorImage() {
     return cv::Mat(cv::Size(w, h), CV_8UC3, (void*)color.get_data(), cv::Mat::AUTO_STEP);
 }
 
+void Camera::setExposure(int exp) {
+	// set manual exposure
+	auto colorSensor = p.get_active_profile().get_device().query_sensors()[0];
+	colorSensor.set_option(RS2_OPTION_EXPOSURE, esp);
+	storeSnapshot();
+}
+
 // returns the most recent snapshot
 cv::Mat Camera::getDepthImage() {
 	const int w = depth.as<rs2::video_frame>().get_width();
