@@ -28,6 +28,22 @@ void addStateLabel(cv::Mat& image, const std::string & text) {
     cv::putText(image, text, textOrg, fontFace, fontScale, color, thickness);
 }
 
+void addStateInfo(cv::Mat& image, const std::string & text) {
+	// Define the text properties
+	double fontScale = 1.0;
+    int thickness = 2;
+    int fontFace = cv::FONT_HERSHEY_DUPLEX ; 
+    int baseline = 0;
+    cv::Size textSize = cv::getTextSize(text, fontFace, fontScale, thickness, &baseline);
+
+    // Calculate the position to center the text
+    cv::Point textOrg(DISP_IMG_WIDTH/2 - textSize.width / 2, DISP_IMG_HEIGHT + 150 + textSize.height / 2);
+
+    // Write the text on the image
+	cv::Scalar color(255, 255, 255); // White color
+    cv::putText(image, text, textOrg, fontFace, fontScale, color, thickness);
+}
+
 Robot::Robot(Camera & camera) 
     : camera(camera){
     
@@ -35,7 +51,7 @@ Robot::Robot(Camera & camera)
 	i2c_bus_file = open_i2c(); 
 
 	// initial scan image 
-	cv::Mat state_img = cv::Mat::zeros(cv::Size(DISP_IMG_WIDTH, DISP_IMG_HEIGHT + 100), CV_8UC3);
+	cv::Mat state_img = cv::Mat::zeros(cv::Size(DISP_IMG_WIDTH, DISP_IMG_HEIGHT + 200), CV_8UC3);
 	addStateLabel(state_img, std::string("INITIALIZED"));
 	cv::Mat scan_img = cv::Mat::zeros(cv::Size(DISP_IMG_WIDTH, DISP_IMG_HEIGHT), CV_8UC3);
 	cv::imwrite("./display/state.png", state_img);
@@ -108,7 +124,7 @@ void Robot::setArmPosition(uint8_t motor_num, double pos) {
 
 void Robot::driveForwards(uint8_t pwm_speed, float seconds) {
 	// clear state image
-	cv::Mat state_img = cv::Mat::zeros(cv::Size(DISP_IMG_WIDTH, DISP_IMG_HEIGHT + 100), CV_8UC3);
+	cv::Mat state_img = cv::Mat::zeros(cv::Size(DISP_IMG_WIDTH, DISP_IMG_HEIGHT + 200), CV_8UC3);
 	addStateLabel(state_img, std::string("DRIVE"));
 	cv::Mat scan_img = cv::Mat::zeros(cv::Size(DISP_IMG_WIDTH, DISP_IMG_HEIGHT), CV_8UC3);
 	cv::imwrite("./display/state.png", state_img);
@@ -142,7 +158,7 @@ void Robot::driveForwards(uint8_t pwm_speed, float seconds) {
 
 void Robot::driveBackwards(uint8_t pwm_speed, float seconds) {
 	// clear state image
-	cv::Mat state_img = cv::Mat::zeros(cv::Size(DISP_IMG_WIDTH, DISP_IMG_HEIGHT + 100), CV_8UC3);
+	cv::Mat state_img = cv::Mat::zeros(cv::Size(DISP_IMG_WIDTH, DISP_IMG_HEIGHT + 200), CV_8UC3);
 	addStateLabel(state_img, std::string("DRIVE"));
 	cv::Mat scan_img = cv::Mat::zeros(cv::Size(DISP_IMG_WIDTH, DISP_IMG_HEIGHT), CV_8UC3);
 	cv::imwrite("./display/state.png", state_img);
@@ -258,16 +274,18 @@ void write_scan_image(cv::Mat & scanPlot, cv::Mat & image, int i, Point3D armPos
     image.copyTo(largerROIRect);
 	cv::imwrite("./display/scan.png", scanPlot);
 
-	cv::Mat state_img = cv::Mat::zeros(cv::Size(DISP_IMG_WIDTH, DISP_IMG_HEIGHT + 100), CV_8UC3);
+	cv::Mat state_img = cv::Mat::zeros(cv::Size(DISP_IMG_WIDTH, DISP_IMG_HEIGHT + 200), CV_8UC3);
 	cv::Rect state_roi(0, 0, DISP_IMG_WIDTH, DISP_IMG_HEIGHT);
 	cv::Mat state_largerROIRect = state_img(state_roi);
     scanPlot.copyTo(state_largerROIRect);
-	addStateLabel(state_img, std::string("SCAN") + std::string("\nArm Position - x:") +
-	std::to_string(armPosition.x) +
+	addStateLabel(state_img, std::string("SCAN"));
+	addStateInfo(state_img, std::string("\nArm Position [mm] - x:") +
+	std::to_string((int)armPosition.x * 1000) +
 	std::string(", y: ") +
-	std::to_string(armPosition.y) +
+	std::to_string((int)armPosition.y * 1000) +
 	std::string(", z: ") +
-	std::to_string(armPosition.z));
+	std::to_string((int)armPosition.z * 1000)) ;
+	cv::imwrite("./display/state.png", state_img);
 	cv::imwrite("./display/state.png", state_img);
 }
 
@@ -303,24 +321,26 @@ std::vector<Point3D> Robot::findFlowers(int index){
 	return camera2robot(cam3DPoints, armPosition.x, armPosition.y);
 }
 
-void Robot::pollinate_all_in_zone(std::vector<Point3D> flowerCenters) {
-	cv::Mat scanPlot = cv::imread("./display/scan.png");
-
-	cv::Mat state_img = cv::Mat::zeros(cv::Size(DISP_IMG_WIDTH, DISP_IMG_HEIGHT + 100), CV_8UC3);
+void update_pollinate(cv::Mat & scanPlot, int numFlowers, Point3D armPosition) {
+	cv::Mat state_img = cv::Mat::zeros(cv::Size(DISP_IMG_WIDTH, DISP_IMG_HEIGHT + 200), CV_8UC3);
 	cv::Rect state_roi(0, 0, DISP_IMG_WIDTH, DISP_IMG_HEIGHT);
 	cv::Mat state_largerROIRect = state_img(state_roi);
     scanPlot.copyTo(state_largerROIRect);
-	addStateLabel(state_img, 
-	std::string("POLLINATE\n Number of Flowers: ") + 
-	std::to_string(flowerCenters.size()) + 
-	std::string("\nArm Position - x:") +
-	std::to_string(armPosition.x) +
+	addStateLabel(state_img, std::string("POLLINATE"));
+	addStateInfo(state_img, std::string("Number of Flowers: ") + 
+	std::to_string(numFlowers ) + 
+	std::string("\nArm Position [mm] - x:") +
+	std::to_string((int)armPosition.x * 1000) +
 	std::string(", y: ") +
-	std::to_string(armPosition.y) +
+	std::to_string((int)armPosition.y * 1000) +
 	std::string(", z: ") +
-	std::to_string(armPosition.z)) ;
+	std::to_string((int)armPosition.z * 1000)) ;
 	cv::imwrite("./display/state.png", state_img);
+}
 
+void Robot::pollinate_all_in_zone(std::vector<Point3D> flowerCenters) {
+	cv::Mat scanPlot = cv::imread("./display/scan.png");
+	update_pollinate(scanPlot, flowerCenters.size(), getArmPosition());
 	for (auto const & flowerCenter : flowerCenters) {
 
 		// check if point is within bounds
@@ -345,6 +365,7 @@ void Robot::pollinate_all_in_zone(std::vector<Point3D> flowerCenters) {
 		setArmPosition(y, flowerCenter.y);
 		setArmPosition(z, flowerCenter.z);
 
+		update_pollinate(scanPlot, flowerCenters.size(), getArmPosition());
 		pollinate();
 
 		sleep(1);
