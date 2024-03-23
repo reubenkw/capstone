@@ -68,7 +68,7 @@ void Robot::setArmPosition(uint8_t motor_num, double pos) {
 	// interpret response
 	if (resp == S_E_ACTION_COMPLETE) {
 		// action done
-		armPosition[motor_num] = pos;
+		armPosition[motor_num] = pos / 1000; // convert back to m
 		log(std::string("i2c: read S_E_ACTION_COMPLETE from MCU_E.\n"));
 	} else if (resp == S_E_ACTION_ENDED_W_LIMIT) {
 		if (pos > armPosition[motor_num]) { // hit fwd limit

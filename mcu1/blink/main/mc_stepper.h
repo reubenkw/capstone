@@ -44,8 +44,8 @@ void init_stepper_mc();
 uint z_dist_2_steps(uint tip_z);
 void step(uint8_t pin, uint step_delay);
 
-int move_x(int delta, uint step_delay);
-int move_y(int delta, uint step_delay);
+float move_x(float delta, uint step_delay);
+float move_y(float delta, uint step_delay);
 int move_z(uint crnt, uint desired, uint step_delay);
 bool move_stepper(uint8_t motor, float ideal_pos, int step_delay);
 void reset_xyz();
