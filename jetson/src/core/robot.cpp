@@ -279,7 +279,7 @@ void write_scan_image(cv::Mat & scanPlot, cv::Mat & image, int i, Point3D armPos
 	cv::Mat state_largerROIRect = state_img(state_roi);
     scanPlot.copyTo(state_largerROIRect);
 	addStateLabel(state_img, std::string("SCAN"));
-	addStateInfo(state_img, std::string("\nArm Position [mm] - x:") +
+	addStateInfo(state_img, std::string("Arm Position [mm] - x:") +
 	std::to_string((int)armPosition.x * 1000) +
 	std::string(", y: ") +
 	std::to_string((int)armPosition.y * 1000) +
@@ -329,7 +329,7 @@ void update_pollinate(cv::Mat & scanPlot, int numFlowers, Point3D armPosition) {
 	addStateLabel(state_img, std::string("POLLINATE"));
 	addStateInfo(state_img, std::string("Number of Flowers: ") + 
 	std::to_string(numFlowers ) + 
-	std::string("\nArm Position [mm] - x:") +
+	std::string("Arm Position [mm] - x:") +
 	std::to_string((int)armPosition.x * 1000) +
 	std::string(", y: ") +
 	std::to_string((int)armPosition.y * 1000) +
