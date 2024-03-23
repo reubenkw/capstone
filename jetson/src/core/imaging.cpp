@@ -217,7 +217,7 @@ cv::Mat Camera::getColorImage() {
 void Camera::setExposure(int exp) {
 	// set manual exposure
 	auto colorSensor = p.get_active_profile().get_device().query_sensors()[0];
-	colorSensor.set_option(RS2_OPTION_EXPOSURE, esp);
+	colorSensor.set_option(RS2_OPTION_EXPOSURE, exp);
 	storeSnapshot();
 }
 
