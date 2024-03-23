@@ -253,26 +253,14 @@ void main_loop() {
 	Camera cam;
 	Robot r(cam);
 
-	float drive_time = 3.0;
+	float drive_time = 7.5;
 	uint8_t drive_pwm = 150; 
 
 	std::vector<Point3D> flowerCenters;
 
 	r.resetServoArm();
 	sleep(5);
-	while(true) {
-		r.driveForwards(drive_pwm, drive_time);
-		sleep(5);
-		cam.setExposure(50000); // lower for fake plant
-		sleep(5);
-		flowerCenters = r.scan();
-		r.pollinate_all_in_zone(flowerCenters);
-		sleep(5);
-		r.resetServoArm();
-		sleep(5);
 
-		r.driveBackwards(drive_pwm, drive_time);
-		sleep(5);
 		cam.setExposure(80000); // higher for real plant
 		sleep(5);
 		flowerCenters = r.scan();
@@ -280,8 +268,21 @@ void main_loop() {
 		sleep(5);
 		r.resetServoArm();
 		sleep(5);
+		r.driveForwards(drive_pwm, drive_time);
+		sleep(5);
+
 		
-	}
+		cam.setExposure(50000); // lower for fake plant
+		sleep(5);
+		flowerCenters = r.scan();
+		r.pollinate_all_in_zone(flowerCenters);
+		sleep(5);
+		r.resetServoArm();
+		sleep(5);
+		r.driveBackwards(drive_pwm, drive_time);
+		sleep(5);
+		
+
 	log(std::string("INFO: done main_loop."));
 }
 
@@ -289,6 +290,7 @@ int main(int argc, char** argv)
 {
 	initialize_log();
 	log(std::string("Starting Program!"));
+	sleep(15);
 	main_loop();
 
 	// test_drive_interface();
