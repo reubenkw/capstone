@@ -248,8 +248,25 @@ void test_drive_interface() {
 	
 }
 
+void test_scan(){
+	log(std::string("INFO: starting test_scan."));
+	Camera cam;
+	Robot r(cam);
+	std::vector<Point3D> flowerCenters;
+	// r.resetServoArm();
+	sleep(5);
+	cam.setExposure(50000); // lower for fake plant
+	sleep(5);
+	flowerCenters = r.scan();
+	r.pollinate_all_in_zone(flowerCenters);	
+	sleep(5);
+	// r.resetServoArm();
+	sleep(5);
+}
+
 void main_loop() {
 	log(std::string("INFO: starting main_loop."));
+	sleep(15);
 	Camera cam;
 	Robot r(cam);
 
@@ -261,27 +278,26 @@ void main_loop() {
 	r.resetServoArm();
 	sleep(5);
 
-		cam.setExposure(80000); // higher for real plant
-		sleep(5);
-		flowerCenters = r.scan();
-		r.pollinate_all_in_zone(flowerCenters);
-		sleep(5);
-		r.resetServoArm();
-		sleep(5);
-		r.driveForwards(drive_pwm, drive_time);
-		sleep(5);
+	cam.setExposure(80000); // higher for real plant
+	sleep(5);
+	flowerCenters = r.scan();
+	r.pollinate_all_in_zone(flowerCenters);
+	sleep(5);
+	r.resetServoArm();
+	sleep(5);
+	r.driveForwards(drive_pwm, drive_time);
+	sleep(5);
 
 		
-		cam.setExposure(50000); // lower for fake plant
-		sleep(5);
-		flowerCenters = r.scan();
-		r.pollinate_all_in_zone(flowerCenters);
-		sleep(5);
-		r.resetServoArm();
-		sleep(5);
-		r.driveBackwards(drive_pwm, drive_time);
-		sleep(5);
-		
+	cam.setExposure(50000); // lower for fake plant
+	sleep(5);
+	flowerCenters = r.scan();
+	r.pollinate_all_in_zone(flowerCenters);
+	sleep(5);
+	r.resetServoArm();
+	sleep(5);
+	r.driveBackwards(drive_pwm, drive_time);
+	sleep(5);	
 
 	log(std::string("INFO: done main_loop."));
 }
@@ -290,8 +306,8 @@ int main(int argc, char** argv)
 {
 	initialize_log();
 	log(std::string("Starting Program!"));
-	sleep(15);
-	main_loop();
+	test_scan();
+	// main_loop();
 
 	// test_drive_interface();
 	// test_camera_image();

@@ -195,8 +195,8 @@ std::vector<Point3D> Robot::scan() {
 				+ std::to_string( scanLoc.at(i).x )
 				+ std::string(", ")
 				+ std::to_string( scanLoc.at(i).y ));
-			setArmPosition(x, scanLoc.at(i).x);
-			setArmPosition(y, scanLoc.at(i).y);
+			// setArmPosition(x, scanLoc.at(i).x);
+			// setArmPosition(y, scanLoc.at(i).y);
 			usleep(1000000);
 			std::vector<Point3D> newFlowers = findFlowers(i);
 			flowersToVisit.insert(flowersToVisit.end(), newFlowers.begin(), newFlowers.end());
@@ -213,23 +213,23 @@ void write_scan_image(cv::Mat & scanPlot, cv::Mat & image, int i){
 	int startY = 0;
 	switch(i){
 		case 0: 
-			startY = DISP_IMG_HEIGHT/2;
+			startY = DISP_IMG_HEIGHT/2-1;
 		break;
 		case 1 :
-			startX = DISP_IMG_WIDTH/2;
-			startY = DISP_IMG_HEIGHT/2;
+			startX = DISP_IMG_WIDTH/2-1;
+			startY = DISP_IMG_HEIGHT/2-1;
 		break;
 		case 2 : 
-			startX = DISP_IMG_WIDTH/2;
+			startX = DISP_IMG_WIDTH/2-1;
 		break;	
 	}
-
-	cv::Rect roi(startX, startY, DISP_IMG_HEIGHT/2, DISP_IMG_WIDTH/2);
+	cv::Rect roi(startX, startY, DISP_IMG_WIDTH/2, DISP_IMG_HEIGHT/2);
 
     // Get the ROI in the larger image
     cv::Mat largerROIRect = scanPlot(roi);
 
     // Write the smaller image to the ROI in the larger image
+	cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
     image.copyTo(largerROIRect);
 	cv::imwrite("./display/state.png", scanPlot);
 }
