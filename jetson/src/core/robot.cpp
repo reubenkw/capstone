@@ -21,7 +21,7 @@ void addStateLabel(cv::Mat& image, const std::string & text) {
     cv::Size textSize = cv::getTextSize(text, fontFace, fontScale, thickness, &baseline);
 
     // Calculate the position to center the text
-    cv::Point textOrg(DISP_IMG_WIDTH/2 - textSize.width / 2, DISP_IMG_HEIGHT + textSize.height / 2);
+    cv::Point textOrg(DISP_IMG_WIDTH/2 - textSize.width / 2, DISP_IMG_HEIGHT + 50 + textSize.height / 2);
 
     // Write the text on the image
 	cv::Scalar color(255, 255, 255); // White color
@@ -233,7 +233,7 @@ std::vector<Point3D> Robot::scan() {
 	return avgClusterCenters(flowersToVisit, 0.06);
 }
 
-void write_scan_image(cv::Mat & scanPlot, cv::Mat & image, int i){
+void write_scan_image(cv::Mat & scanPlot, cv::Mat & image, int i, Point3D armPosition){
 	int startX = 0;
 	int startY = 0;
 	switch(i){
@@ -262,7 +262,12 @@ void write_scan_image(cv::Mat & scanPlot, cv::Mat & image, int i){
 	cv::Rect state_roi(0, 0, DISP_IMG_WIDTH, DISP_IMG_HEIGHT);
 	cv::Mat state_largerROIRect = state_img(state_roi);
     scanPlot.copyTo(state_largerROIRect);
-	addStateLabel(state_img, std::string("SCAN"));
+	addStateLabel(state_img, std::string("SCAN") + std::string("\nArm Position - x:") +
+	std::to_string(armPosition.x) +
+	std::string(", y: ") +
+	std::to_string(armPosition.y) +
+	std::string(", z: ") +
+	std::to_string(armPosition.z));
 	cv::imwrite("./display/state.png", state_img);
 }
 
@@ -291,7 +296,7 @@ std::vector<Point3D> Robot::findFlowers(int index){
 		cv::circle(image, cv::Point((int)blob.x, (int)blob.y), 20, { 255, 0, 255 }, 5);
 	}
 	cv::Mat scanPlot = cv::imread("./display/scan.png");
-	write_scan_image(scanPlot, image, index);
+	write_scan_image(scanPlot, image, index, getArmPosition());
 	
 	std::vector<Point3D> cam3DPoints = camera.getDeprojection(flowerCenters);
 	Point3D armPosition = getArmPosition();
@@ -305,7 +310,15 @@ void Robot::pollinate_all_in_zone(std::vector<Point3D> flowerCenters) {
 	cv::Rect state_roi(0, 0, DISP_IMG_WIDTH, DISP_IMG_HEIGHT);
 	cv::Mat state_largerROIRect = state_img(state_roi);
     scanPlot.copyTo(state_largerROIRect);
-	addStateLabel(state_img, std::string("SCAN"));
+	addStateLabel(state_img, 
+	std::string("POLLINATE\n Number of Flowers: ") + 
+	std::to_string(flowerCenters.size()) + 
+	std::string("\nArm Position - x:") +
+	std::to_string(armPosition.x) +
+	std::string(", y: ") +
+	std::to_string(armPosition.y) +
+	std::string(", z: ") +
+	std::to_string(armPosition.z)) ;
 	cv::imwrite("./display/state.png", state_img);
 
 	for (auto const & flowerCenter : flowerCenters) {
