@@ -30,14 +30,14 @@ void addStateLabel(cv::Mat& image, const std::string & text) {
 
 void addStateInfo(cv::Mat& image, const std::string & text) {
 	// Define the text properties
-	double fontScale = 1.0;
+	double fontScale = 1.5;
     int thickness = 2;
     int fontFace = cv::FONT_HERSHEY_DUPLEX ; 
     int baseline = 0;
     cv::Size textSize = cv::getTextSize(text, fontFace, fontScale, thickness, &baseline);
 
     // Calculate the position to center the text
-    cv::Point textOrg(DISP_IMG_WIDTH/2 - textSize.width / 2, DISP_IMG_HEIGHT + 150 + textSize.height / 2);
+    cv::Point textOrg(DISP_IMG_WIDTH/2 - textSize.width / 2, DISP_IMG_HEIGHT + 135 + textSize.height / 2);
 
     // Write the text on the image
 	cv::Scalar color(255, 255, 255); // White color
@@ -246,6 +246,7 @@ std::vector<Point3D> Robot::scan() {
 		log(std::string("flower: ") + std::to_string(flowerToVisit.x) + std::string(", ") + std::to_string(flowerToVisit.y)
 		 + std::string(", ") + std::to_string(flowerToVisit.z));
 	}
+	sleep(2);
 	return avgClusterCenters(flowersToVisit, 0.06);
 }
 
@@ -329,7 +330,7 @@ void update_pollinate(cv::Mat & scanPlot, int numFlowers, Point3D armPosition) {
 	addStateLabel(state_img, std::string("POLLINATE"));
 	addStateInfo(state_img, std::string("Number of Flowers: ") + 
 	std::to_string(numFlowers ) + 
-	std::string("Arm Position [mm] - x:") +
+	std::string(" | Arm Position [mm] - x:") +
 	std::to_string((int)armPosition.x * 1000) +
 	std::string(", y: ") +
 	std::to_string((int)armPosition.y * 1000) +
