@@ -11,6 +11,7 @@
 
 #define DISP_IMG_WIDTH 1696
 #define DISP_IMG_HEIGHT 960
+#define SCALE_FACTOR 0.25
 
 void addStateLabel(cv::Mat& image, const std::string & text) {
 	// Define the text properties
@@ -54,6 +55,7 @@ Robot::Robot(Camera & camera)
 	cv::Mat state_img = cv::Mat::zeros(cv::Size(DISP_IMG_WIDTH, DISP_IMG_HEIGHT + 200), CV_8UC3);
 	addStateLabel(state_img, std::string("INITIALIZED"));
 	cv::Mat scan_img = cv::Mat::zeros(cv::Size(DISP_IMG_WIDTH, DISP_IMG_HEIGHT), CV_8UC3);
+	cv::resize(state_img, state_img, cv::Size(), SCALE_FACTOR, SCALE_FACTOR);
 	cv::imwrite("./display/state.png", state_img);
 	cv::imwrite("./display/scan.png", scan_img);
 
@@ -127,6 +129,7 @@ void Robot::driveForwards(uint8_t pwm_speed, float seconds) {
 	cv::Mat state_img = cv::Mat::zeros(cv::Size(DISP_IMG_WIDTH, DISP_IMG_HEIGHT + 200), CV_8UC3);
 	addStateLabel(state_img, std::string("DRIVE"));
 	cv::Mat scan_img = cv::Mat::zeros(cv::Size(DISP_IMG_WIDTH, DISP_IMG_HEIGHT), CV_8UC3);
+	cv::resize(state_img, state_img, cv::Size(), SCALE_FACTOR, SCALE_FACTOR);
 	cv::imwrite("./display/state.png", state_img);
 	cv::imwrite("./display/scan.png", scan_img);
 
@@ -161,6 +164,7 @@ void Robot::driveBackwards(uint8_t pwm_speed, float seconds) {
 	cv::Mat state_img = cv::Mat::zeros(cv::Size(DISP_IMG_WIDTH, DISP_IMG_HEIGHT + 200), CV_8UC3);
 	addStateLabel(state_img, std::string("DRIVE"));
 	cv::Mat scan_img = cv::Mat::zeros(cv::Size(DISP_IMG_WIDTH, DISP_IMG_HEIGHT), CV_8UC3);
+	cv::resize(state_img, state_img, cv::Size(), SCALE_FACTOR, SCALE_FACTOR);
 	cv::imwrite("./display/state.png", state_img);
 	cv::imwrite("./display/scan.png", scan_img);
 
@@ -286,7 +290,7 @@ void write_scan_image(cv::Mat & scanPlot, cv::Mat & image, int i, Point3D armPos
 	std::to_string((int)armPosition.y * 1000) +
 	std::string(", z: ") +
 	std::to_string((int)armPosition.z * 1000)) ;
-	cv::imwrite("./display/state.png", state_img);
+	cv::resize(state_img, state_img, cv::Size(), SCALE_FACTOR, SCALE_FACTOR);
 	cv::imwrite("./display/state.png", state_img);
 }
 
@@ -336,6 +340,7 @@ void update_pollinate(cv::Mat & scanPlot, int numFlowers, Point3D armPosition) {
 	std::to_string((int)armPosition.y * 1000) +
 	std::string(", z: ") +
 	std::to_string((int)armPosition.z * 1000)) ;
+	cv::resize(state_img, state_img, cv::Size(), SCALE_FACTOR, SCALE_FACTOR);
 	cv::imwrite("./display/state.png", state_img);
 }
 
