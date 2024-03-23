@@ -9,11 +9,18 @@
 #include <unistd.h> // linux sleep
 #include <optional>
 
+#define DISP_IMG_WIDTH 1696
+#define DISP_IMG_HEIGHT 960
+
 Robot::Robot(Camera & camera) 
     : camera(camera){
     
 	initialize_log();
-	i2c_bus_file = open_i2c();
+	i2c_bus_file = open_i2c(); 
+
+	// initial scan image 
+	cv::Mat state = cv::Mat::zeros(cv::Size(DISP_IMG_WIDTH, DISP_IMG_HEIGHT), CV_8UC3);;
+	cv::imwrite("./display/state.png", state);
 
 	// arm starts in upright position
 	armPosition = Point3D(0, 0, CARTESIAN_Z_MAX);
@@ -81,6 +88,10 @@ void Robot::setArmPosition(uint8_t motor_num, double pos) {
 }
 
 void Robot::driveForwards(uint8_t pwm_speed, float seconds) {
+	// clear scan image
+	cv::Mat state = cv::Mat::zeros(cv::Size(DISP_IMG_WIDTH, DISP_IMG_HEIGHT), CV_8UC3);;
+	cv::imwrite("./display/state.png", state);
+
 	uint8_t data[5] = {0};
 	data[0] = pwm_speed;
 	// get float as array
@@ -108,6 +119,10 @@ void Robot::driveForwards(uint8_t pwm_speed, float seconds) {
 }
 
 void Robot::driveBackwards(uint8_t pwm_speed, float seconds) {
+	// clear scan image
+	cv::Mat state = cv::Mat::zeros(cv::Size(DISP_IMG_WIDTH, DISP_IMG_HEIGHT), CV_8UC3);;
+	cv::imwrite("./display/state.png", state);
+	
 	uint8_t data[5] = {0};
 	data[0] = pwm_speed;
 	// get float as array
@@ -183,7 +198,7 @@ std::vector<Point3D> Robot::scan() {
 			setArmPosition(x, scanLoc.at(i).x);
 			setArmPosition(y, scanLoc.at(i).y);
 			usleep(1000000);
-			std::vector<Point3D> newFlowers = findFlowers();
+			std::vector<Point3D> newFlowers = findFlowers(i);
 			flowersToVisit.insert(flowersToVisit.end(), newFlowers.begin(), newFlowers.end());
 	}
 	for (auto flowerToVisit : flowersToVisit){
@@ -193,7 +208,33 @@ std::vector<Point3D> Robot::scan() {
 	return avgClusterCenters(flowersToVisit, 0.06);
 }
 
-std::vector<Point3D> Robot::findFlowers(){
+void write_scan_image(cv::Mat & scanPlot, cv::Mat & image, int i){
+	int startX = 0;
+	int startY = 0;
+	switch(i){
+		case 0: 
+			startY = DISP_IMG_HEIGHT/2;
+		break;
+		case 1 :
+			startX = DISP_IMG_WIDTH/2;
+			startY = DISP_IMG_HEIGHT/2;
+		break;
+		case 2 : 
+			startX = DISP_IMG_WIDTH/2;
+		break;	
+	}
+
+	cv::Rect roi(startX, startY, DISP_IMG_HEIGHT/2, DISP_IMG_WIDTH/2);
+
+    // Get the ROI in the larger image
+    cv::Mat largerROIRect = scanPlot(roi);
+
+    // Write the smaller image to the ROI in the larger image
+    image.copyTo(largerROIRect);
+	cv::imwrite("./display/state.png", scanPlot);
+}
+
+std::vector<Point3D> Robot::findFlowers(int index){
 	camera.storeSnapshot();
 	cv::Mat image = camera.getColorImage();
 	std::string tag = getFormattedTimeStamp();
@@ -209,23 +250,16 @@ std::vector<Point3D> Robot::findFlowers(){
 		for (Point2D const& blob : flowerCenters) {
 			float x = blob.x/width;
 			float y = blob.y/height;
-			cv::circle(image, cv::Point((int)blob.x, (int)blob.y), 5, { 255, 0, 255 }, 5);
 			log(std::string("depth val: ") + std::to_string(camera.getDepthVal(x, y)));
 		}
-
-		cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
-		cv::imwrite("./plots/" + tag + "_yellow_blobs.png", image);
-		cv::cvtColor(image, image, cv::COLOR_BGR2RGB);
 	}
-	flowerCenters = avgClusterCenters(flowerCenters, 10);
-	if (DEBUG) {
-		for (Point2D const& blob : flowerCenters) {
-			cv::circle(image, cv::Point((int)blob.x, (int)blob.y), 5, { 255, 0, 255 }, 5);
-		}
-		cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
-		cv::imwrite("./plots/" + tag + "_clustered.png", image);
-		cv::cvtColor(image, image, cv::COLOR_BGR2RGB);
+	flowerCenters = avgClusterCenters(flowerCenters, 25);
+	
+	for (Point2D const& blob : flowerCenters) {
+		cv::circle(image, cv::Point((int)blob.x, (int)blob.y), 20, { 255, 0, 255 }, 5);
 	}
+	cv::Mat scanPlot = cv::imread("./display/state.png");
+	write_scan_image(scanPlot, image, index);
 	
 	std::vector<Point3D> cam3DPoints = camera.getDeprojection(flowerCenters);
 	Point3D armPosition = getArmPosition();
