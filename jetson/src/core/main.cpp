@@ -205,11 +205,8 @@ void test_move_servo_arm_to_flowers(){
 	Camera cam;
 	Robot r(cam);
 	
-	r.setArmPosition(z, 0.8);
-	r.setArmPosition(x, 0);
-	r.setArmPosition(y, 0);
-
-	usleep(30000000);
+	r.resetServoArm();
+	sleep(1);
 
 	std::vector<Point3D> robotPoints = test_image_processing(cam);
 
@@ -235,7 +232,7 @@ void test_move_servo_arm_to_flowers(){
 	
 }
 
-void test_drive_interace() {
+void test_drive_interface() {
 	log(std::string("INFO: starting test_drive_interace."));
 	Camera cam;
 	Robot r(cam);
@@ -262,21 +259,24 @@ void main_loop() {
 	std::vector<Point3D> flowerCenters;
 
 	r.resetServoArm();
+	sleep(5);
 	while(true) {
-		flowerCenters = r.scan();
-		r.pollinate_all_in_zone(flowerCenters);
-		sleep(1);
-		r.resetServoArm();
-		sleep(1);
 		r.driveForwards(drive_pwm, drive_time);
-		sleep(1);
+		sleep(5);
 		flowerCenters = r.scan();
 		r.pollinate_all_in_zone(flowerCenters);
-		sleep(1);
+		sleep(5);
 		r.resetServoArm();
-		sleep(1);
+		sleep(5);
+
 		r.driveBackwards(drive_pwm, drive_time);
-		sleep(1);
+		sleep(5);
+		flowerCenters = r.scan();
+		r.pollinate_all_in_zone(flowerCenters);
+		sleep(5);
+		r.resetServoArm();
+		sleep(5);
+		
 	}
 	log(std::string("INFO: done main_loop."));
 }
@@ -286,16 +286,18 @@ int main(int argc, char** argv)
 	initialize_log();
 	log(std::string("Starting Program!"));
 	main_loop();
+
+	// test_drive_interface();
 	// test_camera_image();
-	Camera cam;
-	test_image_processing(cam);
+	// Camera cam;
+	// test_image_processing(cam);
 	// test_clustering();
 	// test_i2c_write();
 	// test_i2c_read();
 	// test_i2c_read_write();
 	// test_move_servo_arm();
 	// test_move_servo_arm_to_flowers();
-	// test_main_loop();
+	//test_main_loop();
 	// test_i2c_read_mcu_e();
 	// test_move_servo_arm();
 	return 0;

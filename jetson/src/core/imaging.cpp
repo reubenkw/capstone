@@ -189,7 +189,7 @@ Camera::Camera() : color{rs2::frame()}, depth{rs2::frame()} {
 	// set manual exposure
 	auto colorSensor = p.get_active_profile().get_device().query_sensors()[0];
 	colorSensor.set_option(RS2_OPTION_ENABLE_AUTO_EXPOSURE, 0);
-	colorSensor.set_option(RS2_OPTION_EXPOSURE, 80000);
+	colorSensor.set_option(RS2_OPTION_EXPOSURE, 50000);
 
 	// Block program until frames arrive
 	storeSnapshot();
