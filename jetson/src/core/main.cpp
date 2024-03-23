@@ -1,4 +1,3 @@
-#include "pid_ctrl.h"
 #include "imaging.h"
 #include "log.h"
 #include "comm.h"
@@ -16,6 +15,30 @@
 
 std::string const HOME = std::getenv("HOME") ? std::getenv("HOME") : ".";
 
+void test_find_flowers(){
+	cv::Mat image = cv::imread("./plots/original_image.png");
+
+	std::string tag = std::string("");
+	cv::imwrite("./plots/original_image.png", image);
+	cv::cvtColor(image, image, cv::COLOR_BGR2RGB);
+		
+	log(std::string("finding yellow blobs!!!!!!"));
+	std::vector<Point2D> yellowBlobs = findFlowerCenters(image, tag);
+	for (Point2D const& blob : yellowBlobs) {
+		log(std::string("yellow blob") + std::to_string(blob.x) + std::string(",") + std::to_string(blob.y));
+	}
+
+	std::vector<Point2D> avgCenter = avgClusterCenters(yellowBlobs, 25);
+	log(std::string("finding avgCenters!!!!!!"));
+	for (Point2D const& blob : avgCenter) {
+		cv::circle(image, cv::Point((int)blob.x, (int)blob.y), 5, { 255, 0, 255 }, 5);
+		log(std::string("avgCenter: ") + std::to_string(blob.x) + std::string(",") + std::to_string(blob.y));
+	}
+
+	cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
+	cv::imwrite("plots/" + tag + "_flowers.jpg", image);
+}
+
 std::vector<Point3D> test_image_processing(Camera & cam) {
 	cv::Mat image = cam.getColorImage();
 
@@ -25,13 +48,14 @@ std::vector<Point3D> test_image_processing(Camera & cam) {
 	cv::cvtColor(image, image, cv::COLOR_BGR2RGB);
 		
 	log(std::string("finding yellow blobs!!!!!!"));
-	std::vector<Point2D> yellowBlobs = findFlowerCenters(image, cam, tag);
+	std::vector<Point2D> yellowBlobs = findFlowerCenters(image, tag);
 	for (Point2D const& blob : yellowBlobs) {
 		log(std::string("yellow blob") + std::to_string(blob.x) + std::string(",") + std::to_string(blob.y));
 	}
-	std::vector<Point2D> avgCenter = avgClusterCenters(yellowBlobs, 10);
+	std::vector<Point2D> avgCenter = avgClusterCenters(yellowBlobs, 25);
 	log(std::string("finding avgCenters!!!!!!"));
 	for (Point2D const& blob : avgCenter) {
+		cv::circle(image, cv::Point((int)blob.x, (int)blob.y), 5, { 255, 0, 255 }, 5);
 		log(std::string("avgCenter: ") + std::to_string(blob.x) + std::string(",") + std::to_string(blob.y));
 	}
 
@@ -41,7 +65,6 @@ std::vector<Point3D> test_image_processing(Camera & cam) {
 	int height = image.rows;
 
 	for (Point2D const& blob : avgCenter) {
-		cv::circle(image, cv::Point((int)blob.x, (int)blob.y), 5, { 255, 0, 255 }, 5);
 		float x = blob.x/width;
 		float y = blob.y/height;
 		log(std::string("depth val: ") + std::to_string(cam.getDepthVal(x, y)));
@@ -67,17 +90,6 @@ std::vector<Point3D> test_image_processing(Camera & cam) {
 	cv::imwrite("plots/" + tag + "_flowers.jpg", image);
 
 	return robotPoints;
-}
-
-void pid_motor_ctrl_test() {
-	PID_Ctrl pid_ctrl(10, 1, 2, 5);
-    
-    std::ofstream myfile;
-    myfile.open ("test_pid_ctrl.csv");
-    for (int i = 20; i > 0; i--){
-        myfile << pid_ctrl.update_ctrl_signal(i, 0.1) << ",";
-    }
-    myfile.close();
 }
 
 void test_camera_image() {
@@ -147,8 +159,9 @@ void test_drive() {
 	log(std::string("INFO: starting test_drive."));
 	Camera cam;
 	Robot r(cam);
-	Point2D delta{0, CARTESIAN_Y_MAX};
-	r.driveRobotForward(delta);
+	float drive_time = 3;
+	uint8_t drive_pwm = 150;
+	r.driveForwards(drive_pwm, drive_time);
 	log(std::string("INFO: done test_drive."));
 }
 
@@ -156,8 +169,8 @@ void test_arm_x() {
 	log(std::string("INFO: starting test_arm_x"));
 	Camera cam;
 	Robot r(cam);
-	r.moveServoArm(x, 0);
-	r.moveServoArm(x, CARTESIAN_X_MAX);
+	r.setArmPosition(x, 0);
+	r.setArmPosition(x, CARTESIAN_X_MAX);
 	log(std::string("done testing test_arm_x"));
 }
 
@@ -165,8 +178,8 @@ void test_arm_y() {
 	log(std::string("INFO: starting test_arm_y"));
 	Camera cam;
 	Robot r(cam);
-	r.moveServoArm(y, 0);
-	r.moveServoArm(y, CARTESIAN_Y_MAX);
+	r.setArmPosition(y, 0);
+	r.setArmPosition(y, CARTESIAN_Y_MAX);
 	log(std::string("done testing test_arm_y"));
 }
 
@@ -174,8 +187,8 @@ void test_arm_z() {
 	log(std::string("INFO: starting test_arm_z"));
 	Camera cam;
 	Robot r(cam);
-	r.moveServoArm(z, 0.748); 
-	r.moveServoArm(z, CARTESIAN_Z_MIN);
+	r.setArmPosition(z, 0.748); 
+	r.setArmPosition(z, CARTESIAN_Z_MIN);
 	log(std::string("done testing test_arm_z"));
 }
 
@@ -183,36 +196,43 @@ void test_move_servo_arm(){
 	Camera cam;
 	Robot r(cam);
 	printf("done init\n");
-	r.moveServoArm(x, 0.05);
-	r.moveServoArm(y, 0.05);
-	r.moveServoArm(z, 0.7);
+	r.setArmPosition(x, 0.05);
+	r.setArmPosition(y, 0.05);
+	r.setArmPosition(z, 0.7);
 }
 
 void test_move_servo_arm_to_flowers(){
 	Camera cam;
 	Robot r(cam);
 	
-	r.moveServoArm(z, 0.8);
-	r.moveServoArm(x, 0);
-	r.moveServoArm(y, 0);
-
-	usleep(30000000);
+	r.resetServoArm();
+	sleep(1);
 
 	std::vector<Point3D> robotPoints = test_image_processing(cam);
 
 	for (auto const & robotPoint : robotPoints){
+		// check if point is within bounds
+		if (robotPoint.x > CARTESIAN_X_MAX || robotPoint.x < CARTESIAN_X_MIN ||
+			robotPoint.y > CARTESIAN_Y_MAX || robotPoint.y < CARTESIAN_Y_MIN ||
+			robotPoint.z > CARTESIAN_Z_MAX || robotPoint.z < CARTESIAN_Z_MIN) {
+			std::stringstream ss;
+			ss << "INFO robot: ignoring out of bound flower at: (" 
+				<< robotPoint.x << ", " << robotPoint.y << ", " << robotPoint.x << ").";
+			log(ss.str());
+			continue;
+		}
 		log(std::string("move arm to point: ") 
 		+ std::to_string(robotPoint.x) + std::string(", ") 
 		+ std::to_string(robotPoint.y) + std::string(", ")
 		+ std::to_string(robotPoint.z));
-		r.moveServoArm(x, robotPoint.x);
-		r.moveServoArm(y, robotPoint.y);
-		r.moveServoArm(z, robotPoint.z);
+		r.setArmPosition(x, robotPoint.x);
+		r.setArmPosition(y, robotPoint.y);
+		r.setArmPosition(z, robotPoint.z);
 	}
 	
 }
 
-void test_drive_interace() {
+void test_drive_interface() {
 	log(std::string("INFO: starting test_drive_interace."));
 	Camera cam;
 	Robot r(cam);
@@ -228,55 +248,52 @@ void test_drive_interace() {
 	
 }
 
-void test_main_loop() {
-	log(std::string("INFO: starting test_scan."));
+void main_loop() {
+	log(std::string("INFO: starting main_loop."));
 	Camera cam;
 	Robot r(cam);
 
+	float drive_time = 7.5;
+	uint8_t drive_pwm = 150; 
+
+	std::vector<Point3D> flowerCenters;
+
 	r.resetServoArm();
+	sleep(5);
 
-	std::vector<Point3D> flowerCenters = r.scan();
+		cam.setExposure(80000); // higher for real plant
+		sleep(5);
+		flowerCenters = r.scan();
+		r.pollinate_all_in_zone(flowerCenters);
+		sleep(5);
+		r.resetServoArm();
+		sleep(5);
+		r.driveForwards(drive_pwm, drive_time);
+		sleep(5);
 
-	for (auto const & flowerCenter : flowerCenters){
+		
+		cam.setExposure(50000); // lower for fake plant
+		sleep(5);
+		flowerCenters = r.scan();
+		r.pollinate_all_in_zone(flowerCenters);
+		sleep(5);
+		r.resetServoArm();
+		sleep(5);
+		r.driveBackwards(drive_pwm, drive_time);
+		sleep(5);
+		
 
-		// check if point is within bounds
-		if (flowerCenter.x > CARTESIAN_X_MAX || flowerCenter.x < CARTESIAN_X_MIN ||
-			flowerCenter.y > CARTESIAN_Y_MAX || flowerCenter.y < CARTESIAN_Y_MIN ||
-			flowerCenter.z > CARTESIAN_Z_MAX || flowerCenter.z < CARTESIAN_Z_MIN) {
-			std::stringstream ss;
-			ss << "INFO robot: ignoring out of bound flower at: (" 
-				<< flowerCenter.x << ", " << flowerCenter.y << ", " << flowerCenter.x << ").";
-			log(ss.str());
-			continue;
-		}
-
-		log(std::string("move arm to point: ") 
-		+ std::to_string(flowerCenter.x) + std::string(", ") 
-		+ std::to_string(flowerCenter.y) + std::string(", ")
-		+ std::to_string(flowerCenter.z));
-
-		usleep(1000000);
-
-		r.moveServoArm(x, flowerCenter.x);
-		r.moveServoArm(y, flowerCenter.y);
-		r.moveServoArm(z, flowerCenter.z);
-
-		r.pollinate();
-
-		usleep(1000000);
-		// reset arm to top
-		r.moveServoArm(z, CARTESIAN_Z_MAX + 0.1);
-
-	}
-	r.resetServoArm();
-	log(std::string("INFO: done test_scan."));
-	
+	log(std::string("INFO: done main_loop."));
 }
 
 int main(int argc, char** argv)
 {
 	initialize_log();
 	log(std::string("Starting Program!"));
+	sleep(15);
+	main_loop();
+
+	// test_drive_interface();
 	// test_camera_image();
 	// Camera cam;
 	// test_image_processing(cam);
@@ -286,7 +303,7 @@ int main(int argc, char** argv)
 	// test_i2c_read_write();
 	// test_move_servo_arm();
 	// test_move_servo_arm_to_flowers();
-	test_drive_interace();
+	//test_main_loop();
 	// test_i2c_read_mcu_e();
 	// test_move_servo_arm();
 	return 0;

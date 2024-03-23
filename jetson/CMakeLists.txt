@@ -23,9 +23,7 @@ add_executable( capstone.exe
     src/communication/comm.cpp 
     src/algorithms/cluster.cpp 
     src/algorithms/frame_transform.cpp 
-    src/core/imaging.cpp  
-    src/core/pid_ctrl.cpp 
-    src/core/motor_controller.cpp 
+    src/core/imaging.cpp
     src/core/robot.cpp 
     src/core/main.cpp
 )

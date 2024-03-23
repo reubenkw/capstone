@@ -35,8 +35,8 @@ void step(uint8_t pin, uint step_delay) {
 
 float end_effector_position[3] = {0, 0, LIMIT_Z_MAX_DIST};
 // uses limit switches but no bounding on input. returns the absolute position moved to.
-int move_x(int delta, uint step_delay) {
-    int steps = delta / X_DIST_PER_STEP;
+float move_x(float delta, uint step_delay) {
+    int steps = (int) delta / X_DIST_PER_STEP;
     if (steps > 0) { // move forward
         gpio_set_level(GPIO_DIR_X, 1);
         for(; steps > 0; steps--) {
@@ -59,8 +59,8 @@ int move_x(int delta, uint step_delay) {
     return end_effector_position[STP_X] + delta;
 }
 
-int move_y(int delta, uint step_delay) {
-    int steps = delta / Y_DIST_PER_STEP;
+float move_y(float delta, uint step_delay) {
+    int steps = (int) delta / Y_DIST_PER_STEP;
     if (steps > 0) { // move forward
         gpio_set_level(GPIO_DIR_Y, 0);
         for(; steps > 0; steps--) {
@@ -117,7 +117,8 @@ void reset_xyz() {
     end_effector_position[STP_Z] = LIMIT_Z_MAX_DIST;
 }
 
-void move_stepper(uint8_t motor, float ideal_pos, int step_delay) {
+// return false if hit limit
+bool move_stepper(uint8_t motor, float ideal_pos, int step_delay) {
     int final = 0;
     if (motor == STP_X) {
         float delta = ideal_pos - end_effector_position[motor];
@@ -129,6 +130,8 @@ void move_stepper(uint8_t motor, float ideal_pos, int step_delay) {
         final = move_z(end_effector_position[STP_Z], ideal_pos, step_delay);
     }
     end_effector_position[motor] = final;
+    printf("final - ideal: %0.2f\n", final-ideal_pos);
+    return fabs(final-ideal_pos) < 1;
 }
 
 void pollinate() {
@@ -178,4 +181,29 @@ void pollinate() {
     usleep(action_delay);
     move_stepper(STP_Y, y_init, step_delay);
     usleep(action_delay);
+}
+
+void pollinate_v2(){
+    const int x_delta = 30;
+    const int y_delta = 15;
+    const uint action_delay = 100000;
+    const uint step_delay = 10000;
+
+    const int x_init = end_effector_position[STP_X] - 20; // seems offset
+    const int y_init = end_effector_position[STP_Y];
+    
+    move_stepper(STP_X, x_init-x_delta, step_delay);
+    usleep(action_delay);
+    move_stepper(STP_Y, y_init-y_delta, step_delay);
+    usleep(action_delay);
+    move_stepper(STP_X, x_init+x_delta, step_delay);
+    usleep(action_delay);
+    move_stepper(STP_Y, y_init, step_delay);
+    usleep(action_delay);
+    move_stepper(STP_X, x_init-x_delta, step_delay);
+    usleep(action_delay);
+    move_stepper(STP_Y, y_init+y_delta, step_delay);
+    usleep(action_delay);
+    move_stepper(STP_X, x_init+x_delta, step_delay);
+    usleep(action_delay); 
 }

@@ -27,11 +27,11 @@ cv::Mat toGreyscale(cv::Mat& image) {
 	return greyscale;
 }
 
-double brightestPixelVal(cv::Mat& image) {
+double brightestPixelVal(cv::Mat& image, Point2D topLeft, double width, double height) {
 	double brightestPix = 0;
-	for (int i = 0; i < image.rows; i++) {
-		for (int j = 0; j < image.cols; j++) {
-			cv::Point3_<uchar>* p = image.ptr<cv::Point3_<uchar> >(i, j);
+	for (int i = 0; i < height; i++) {
+		for (int j = 0; j < width; j++) {
+			cv::Point3_<uchar>* p = image.ptr<cv::Point3_<uchar> >(i + topLeft.y, j + topLeft.x);
 			double greyscale = toGreyscale({ p->x, p->y, p->z });
 			if (greyscale > brightestPix) {
 				brightestPix = greyscale;
@@ -71,7 +71,7 @@ cv::Mat colorMask(cv::Mat& image, Pixel ideal, double angleTol, double lengthTol
 	return thresholded;
 }
 
-cv::Mat whiteMask(cv::Mat& image, uint8_t brightest) {
+cv::Mat whiteMask(cv::Mat& image) {
 	cv::Mat thresholded =  cv::Mat::zeros(cv::Size(image.cols, image.rows), CV_8UC1);;
 
 	for (int i = 0; i < image.rows; i++) {
@@ -81,7 +81,7 @@ cv::Mat whiteMask(cv::Mat& image, uint8_t brightest) {
 			double r = p->x;
 			double g = p->y;
 			double b = p->z;
-			if (g/r > 0.6 && g/r < 1.4 && g/b > 0.6 && g/b < 1.4 && (r + g + b)/3 > 200) {
+			if (g/r > 0.6 && g/r < 1.4 && g/b > 0.6 && g/b < 1.4 && (r + g + b)/3 > 180) {
 				thresholded.at<uchar>(i, j) = 255;
 			}
 		}
@@ -109,19 +109,45 @@ cv::Mat greenMask(cv::Mat& image) {
 	return thresholded;
 }
 
-std::vector<Point2D> findFlowerCenters(cv::Mat& image, Camera & cam, std::string const & tag){
+bool nearYellow(cv::Mat& image, cv::Mat& yellow, Point2D topLeft, int width, int height, double area){
+	double brightest = brightestPixelVal(image, topLeft, width, height);
+	log(std::string("brightest: ") + std::to_string(brightest));
+
+	int startY = std::max(0, int(topLeft.y - 2*height));
+	int startX = std::max(0, int(topLeft.x - 2*width));
+
+	int endY = std::min(image.rows, int(topLeft.y + 2*height));
+	int endX = std::min(image.cols, int(topLeft.x + 2*width));
+
+	log(std::to_string(startY) + std::string(" ") + std::to_string(startX) );
+	log(std::to_string(endY) + std::string(" ") + std::to_string(endX) );
+
+	int numYellow = 0;
+	for (int i = startY; i < endY; i++) {
+		for (int j = startX; j < endX; j++) {
+			cv::Point3_<uchar>* p = image.ptr<cv::Point3_<uchar> >(i, j);
+			// need double not uint8 bc values might go > 255 in the math
+			double r = p->x;
+			double g = p->y;
+			double b = p->z;
+			if (g > b * 1.2 && r > b * 1.2 && r < g * 1.1 && g < r * 1.1 && 
+			    (r + g + b)/3 > brightest * 0.7) {
+				yellow.at<uchar>(i, j) = 255;
+				numYellow++;
+			}
+		}
+	}
+	log(std::string("numYellow: ") + std::to_string(numYellow));
+	log(std::string("area: ") + std::to_string(area));
+	return numYellow > 10;
+}
+
+std::vector<Point2D> findFlowerCenters(cv::Mat& image, std::string const & tag){
 	std::vector<Point2D> whiteBlobs;
+	cv::Mat yellow =  cv::Mat::zeros(cv::Size(image.cols, image.rows), CV_8UC1);;
 
-	uint8_t brightest = (uint8_t) brightestPixelVal(image);
-	log(std::string("brightest pixel value: ") + std::to_string(brightest));
-
-	cv::Mat white = whiteMask(image, brightest);
+	cv::Mat white = whiteMask(image);
 	cv::imwrite("./plots/" + tag + "_white.png", white);
-
-	cv::Mat green = greenMask(image);
-	cv::imwrite("./plots/" + tag + "_green.png", green);
-	cv::blur(green, green, cv::Size(80, 80));
-	cv::imwrite("./plots/" + tag + "_blurredGreen.png", green);
 
 	cv::Mat labels, stats, centroids;
 	int label_count = cv::connectedComponentsWithStats(white, labels, stats, centroids);
@@ -134,15 +160,20 @@ std::vector<Point2D> findFlowerCenters(cv::Mat& image, Camera & cam, std::string
 	for (int i = 1; i < label_count; i++) {
 		double centerX = centroids.at<double>(i, 0);
 		double centerY = centroids.at<double>(i, 1);
-		int blurredGreenVal = green.at<uchar>((int)centerY, (int)centerX);
 		float x = centerX/width;
 		float y = centerY/height;
-		if ( blurredGreenVal > 10 
-				&& stats.at<int>(i, cv::CC_STAT_AREA) > 20 
-				&& cam.getDepthVal(x, y) < 0.4) {
+		if (stats.at<int>(i, cv::CC_STAT_AREA) > 10 && 
+			nearYellow(image, yellow, 
+			Point2D(stats.at<int>(i, cv::CC_STAT_LEFT), stats.at<int>(i, cv::CC_STAT_TOP)), 
+			stats.at<int>(i, cv::CC_STAT_WIDTH), stats.at<int>(i, cv::CC_STAT_HEIGHT), 
+			stats.at<int>(i, cv::CC_STAT_AREA)) // check that the white petal is near yellow
+			) { 
 			whiteBlobs.push_back({ centroids.at<double>(i, 0), centroids.at<double>(i, 1) });
 		}
 	}
+
+	cv::imwrite("./plots/" + tag + "_yellow.png", yellow);
+
 	return whiteBlobs;
 }
 
@@ -158,7 +189,7 @@ Camera::Camera() : color{rs2::frame()}, depth{rs2::frame()} {
 	// set manual exposure
 	auto colorSensor = p.get_active_profile().get_device().query_sensors()[0];
 	colorSensor.set_option(RS2_OPTION_ENABLE_AUTO_EXPOSURE, 0);
-	colorSensor.set_option(RS2_OPTION_EXPOSURE, 80000);
+	colorSensor.set_option(RS2_OPTION_EXPOSURE, 50000);
 
 	// Block program until frames arrive
 	storeSnapshot();
@@ -181,6 +212,13 @@ cv::Mat Camera::getColorImage() {
 
     // Create OpenCV matrix of size (w,h) from the colorized depth data
     return cv::Mat(cv::Size(w, h), CV_8UC3, (void*)color.get_data(), cv::Mat::AUTO_STEP);
+}
+
+void Camera::setExposure(int exp) {
+	// set manual exposure
+	auto colorSensor = p.get_active_profile().get_device().query_sensors()[0];
+	colorSensor.set_option(RS2_OPTION_EXPOSURE, exp);
+	storeSnapshot();
 }
 
 // returns the most recent snapshot

@@ -39,7 +39,7 @@ void test_i2c_drive_interface() {
     }
 }
 
-void test_jetson_drive_interface() {
+void mcu_m_main() {
     init_boost();
     // need a delay after boost enable for precharge
     sleep(10);

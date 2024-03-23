@@ -248,7 +248,7 @@ void test_pollinate() {
     printf("done pollinate\n");
 }
 
-void test_i2c_stepper_interface() {
+void mcu_e_main() {
     printf("starting init\n");
     init_limit_gpio();
     init_stepper_mc();
@@ -282,16 +282,16 @@ void test_i2c_stepper_interface() {
                 printf("Move stepper motor: %d to position %0.2f from position %0.2f\n", 
                     rx_data[0], ideal_pos, end_effector_position[rx_data[0]]);
                 
-                move_stepper(rx_data[0], ideal_pos, default_step_delays[rx_data[0]]);
+                // actually move
+                bool move_success = move_stepper(rx_data[0], ideal_pos, default_step_delays[rx_data[0]]);
                 printf("moving arm.\n");
 
-                // emulate moving motors
-                // printf("pretending to move motors\n.");
-                // usleep(4 * 1000000);
-
-                // TODO: send if limit switch hit
-                // update status to done
-                state = S_E_ACTION_COMPLETE;
+                // update status to done (with or without limit)
+                if (move_success) {
+                    state = S_E_ACTION_COMPLETE;
+                } else {
+                    state = S_E_ACTION_ENDED_W_LIMIT;
+                }
                 i2c_write_jetson(state);
                 break;
             case CMD_E_RESET:
@@ -300,10 +300,6 @@ void test_i2c_stepper_interface() {
                 reset_xyz();
                 printf("reset arm.\n");
 
-                // emulate moving motors
-                // printf("pretending to move motors (reset)\n.");
-                // usleep(4 * 1000000);
-
                 state = S_E_ACTION_COMPLETE;
                 i2c_write_jetson(state);
                 break;
@@ -311,7 +307,7 @@ void test_i2c_stepper_interface() {
                 state = S_E_PROCESSING_CMD;
                 i2c_write_jetson(state);
 
-                pollinate();
+                pollinate_v2();
                 printf("pollinating.\n");
 
                 state = S_E_ACTION_COMPLETE;
