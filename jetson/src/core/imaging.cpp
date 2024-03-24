@@ -7,6 +7,8 @@
 #include <math.h>
 
 #include <opencv2/core/types.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/highgui/highgui.hpp>
 #include <librealsense2/rs.hpp>
 
 // very rough outline of an imaging class
@@ -160,6 +162,7 @@ std::vector<Point2D> findFlowerCenters(cv::Mat& image, std::string const & tag){
 	Pixel brightest = brightestPixelVal(image, {0,0}, image.cols, image.rows);
 
 	cv::Mat white = whiteMask(image, toGreyscale(brightest));
+	cv::dilate(white, white, cv::Mat(), cv::Point(-1, -1), 2, 1, 1);
 	cv::imwrite("./plots/" + tag + "_white.png", white);
 
 	cv::Mat labels, stats, centroids;
