@@ -86,7 +86,7 @@ cv::Mat whiteMask(cv::Mat& image, double brightest) {
 			if (std::abs(r/g - 1.0) < 0.15 && // make sure red and green are close together
 				std::abs(g/b - 1.0) < 0.5 && // make sure green and blue are close ish together
 				std::abs(r/b - 1.0) < 0.5 && // make sure red and blue are close ish together
-				(r + g + b) / 3 > 150 // make sure its relatively bright compared to the whole iamge
+				(r + g + b) / 3 > brightest*0.7 // make sure its relatively bright compared to the whole iamge
 				) {
 				thresholded.at<uchar>(i, j) = 255;
 			}
@@ -115,7 +115,7 @@ cv::Mat greenMask(cv::Mat& image) {
 	return thresholded;
 }
 
-bool nearYellow(cv::Mat& image, cv::Mat& yellow, Point2D topLeft, int width, int height, double area){
+bool nearYellow(cv::Mat& image, cv::Mat& white, cv::Mat& yellow, Point2D topLeft, int width, int height, double area){
 	Pixel brightest = brightestPixelVal(image, topLeft, width, height);
 	log(std::string("brightest: ") + 
 		std::to_string(brightest.r) + 
@@ -141,9 +141,10 @@ bool nearYellow(cv::Mat& image, cv::Mat& yellow, Point2D topLeft, int width, int
 			double r = p->x;
 			double g = p->y;
 			double b = p->z;
-			if ((double)brightest.b/brightest.r - b/r > 0.2 &&  // make sure there is less blue in the ratio compared to white
+			if ((double)brightest.b/brightest.r - b/r > 0.15 &&  // make sure there is less blue in the ratio compared to white
 				std::abs(r/g - 1.0) < 0.15 && // make sure red and green are close together
-			    (r + g)/2 > (brightest.r + brightest.g) / 2 * 0.65 // make sure its bright enough
+			    (r + g)/2 > (brightest.r + brightest.g) / 2 * 0.6 &&// make sure its bright enough
+				 white.at<uchar>(i, j) == 0// make sure we didnt count it as white
 				) {
 				yellow.at<uchar>(i, j) = 255;
 				numYellow++;
@@ -152,7 +153,7 @@ bool nearYellow(cv::Mat& image, cv::Mat& yellow, Point2D topLeft, int width, int
 	}
 	log(std::string("numYellow: ") + std::to_string(numYellow));
 	log(std::string("area: ") + std::to_string(area));
-	return numYellow > 5;
+	return numYellow > 10;
 }
 
 std::vector<Point2D> findFlowerCenters(cv::Mat& image, std::string const & tag){
@@ -162,7 +163,7 @@ std::vector<Point2D> findFlowerCenters(cv::Mat& image, std::string const & tag){
 	Pixel brightest = brightestPixelVal(image, {0,0}, image.cols, image.rows);
 
 	cv::Mat white = whiteMask(image, toGreyscale(brightest));
-	cv::dilate(white, white, cv::Mat(), cv::Point(-1, -1), 2, 1, 1);
+	cv::dilate(white, white, cv::getStructuringElement(cv::MORPH_RECT, cv::Size(5, 5)), cv::Point(-1, -1), 1, 1, 1);
 	cv::imwrite("./plots/" + tag + "_white.png", white);
 
 	cv::Mat labels, stats, centroids;
@@ -179,7 +180,7 @@ std::vector<Point2D> findFlowerCenters(cv::Mat& image, std::string const & tag){
 		float x = centerX/width;
 		float y = centerY/height;
 		if (stats.at<int>(i, cv::CC_STAT_AREA) > 10 && 
-			nearYellow(image, yellow, 
+			nearYellow(image, white, yellow, 
 			Point2D(stats.at<int>(i, cv::CC_STAT_LEFT), stats.at<int>(i, cv::CC_STAT_TOP)), 
 			stats.at<int>(i, cv::CC_STAT_WIDTH), stats.at<int>(i, cv::CC_STAT_HEIGHT), 
 			stats.at<int>(i, cv::CC_STAT_AREA)) // check that the white petal is near yellow
