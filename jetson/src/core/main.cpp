@@ -305,7 +305,7 @@ void main_loop() {
 	log(std::string("INFO: done main_loop."));
 }
 
-int main_loop(int argc, char** argv)
+int main(int argc, char** argv)
 {
 	initialize_log();
 	log(std::string("Starting Program!"));
