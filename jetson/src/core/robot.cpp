@@ -9,8 +9,8 @@
 #include <unistd.h> // linux sleep
 #include <optional>
 
-#define DISP_IMG_WIDTH 1696
-#define DISP_IMG_HEIGHT 960
+#define DISP_IMG_WIDTH (1280 * 2)
+#define DISP_IMG_HEIGHT (720 * 2)
 #define SCALE_FACTOR 0.5
 
 cv::Scalar bg_color(126, 187, 143);

@@ -27,14 +27,14 @@ cv::Mat toGreyscale(cv::Mat& image) {
 	return greyscale;
 }
 
-Point3D brightestPixelVal(cv::Mat& image, Point2D topLeft, double width, double height) {
-	Point3D brightestPix = 0;
+Pixel brightestPixelVal(cv::Mat& image, Point2D topLeft, double width, double height) {
+	Pixel brightestPix = Pixel{0, 0, 0};
 	for (int i = 0; i < height; i++) {
 		for (int j = 0; j < width; j++) {
 			cv::Point3_<uchar>* p = image.ptr<cv::Point3_<uchar> >(i + topLeft.y, j + topLeft.x);
-			double greyscale = toGreyscale({ p->x, p->y, p->z });
-			if (greyscale > brightestPix) {
-				brightestPix = Point3D(p->x, p->y, p->z);
+			double greyscale = toGreyscale({ (uint8_t) p->x, (uint8_t) p->y, (uint8_t) p->z });
+			if (greyscale > toGreyscale(brightestPix)) {
+				brightestPix = Pixel{(uint8_t)p->x, (uint8_t)p->y, (uint8_t)p->z};
 			}
 		}
 	}
@@ -71,7 +71,7 @@ cv::Mat colorMask(cv::Mat& image, Pixel ideal, double angleTol, double lengthTol
 	return thresholded;
 }
 
-cv::Mat whiteMask(cv::Mat& image) {
+cv::Mat whiteMask(cv::Mat& image, double brightest) {
 	cv::Mat thresholded =  cv::Mat::zeros(cv::Size(image.cols, image.rows), CV_8UC1);;
 
 	for (int i = 0; i < image.rows; i++) {
@@ -81,7 +81,11 @@ cv::Mat whiteMask(cv::Mat& image) {
 			double r = p->x;
 			double g = p->y;
 			double b = p->z;
-			if (g/r > 0.6 && g/r < 1.4 && g/b > 0.6 && g/b < 1.4 && (r + g + b)/3 > 180) {
+			if (std::abs(r/g - 1.0) < 0.15 && // make sure red and green are close together
+				std::abs(g/b - 1.0) < 0.5 && // make sure green and blue are close ish together
+				std::abs(r/b - 1.0) < 0.5 && // make sure red and blue are close ish together
+				brightest * 0.7 // make sure its relatively bright compared to the whole iamge
+				) {
 				thresholded.at<uchar>(i, j) = 255;
 			}
 		}
@@ -110,8 +114,13 @@ cv::Mat greenMask(cv::Mat& image) {
 }
 
 bool nearYellow(cv::Mat& image, cv::Mat& yellow, Point2D topLeft, int width, int height, double area){
-	double brightest = brightestPixelVal(image, topLeft, width, height);
-	log(std::string("brightest: ") + std::to_string(brightest));
+	Pixel brightest = brightestPixelVal(image, topLeft, width, height);
+	log(std::string("brightest: ") + 
+		std::to_string(brightest.r) + 
+		std::string(" ") + 
+		std::to_string(brightest.g) +
+		std::string(" ") + 
+		std::to_string(brightest.b) );
 
 	int startY = std::max(0, int(topLeft.y - 2*height));
 	int startX = std::max(0, int(topLeft.x - 2*width));
@@ -130,8 +139,10 @@ bool nearYellow(cv::Mat& image, cv::Mat& yellow, Point2D topLeft, int width, int
 			double r = p->x;
 			double g = p->y;
 			double b = p->z;
-			if (g > b * 1.2 && r > b * 1.2 && r < g * 1.15 && g < r * 1.15 && 
-			    (r + g)/2 > brightest * 0.7) {
+			if (b < brightest.b * 0.8 &&  // make sure blue is lower than it is in white
+				std::abs(r/g - 1.0) < 0.15 && // make sure red and green are close together
+			    (r + g)/2 > (brightest.r + brightest.g) / 2 * 0.7 // make sure its bright enough
+				) {
 				yellow.at<uchar>(i, j) = 255;
 				numYellow++;
 			}
@@ -144,9 +155,11 @@ bool nearYellow(cv::Mat& image, cv::Mat& yellow, Point2D topLeft, int width, int
 
 std::vector<Point2D> findFlowerCenters(cv::Mat& image, std::string const & tag){
 	std::vector<Point2D> whiteBlobs;
-	cv::Mat yellow =  cv::Mat::zeros(cv::Size(image.cols, image.rows), CV_8UC1);;
+	cv::Mat yellow =  cv::Mat::zeros(cv::Size(image.cols, image.rows), CV_8UC1);
 
-	cv::Mat white = whiteMask(image);
+	Pixel brightest = brightestPixelVal(image, {0,0}, image.cols, image.rows);
+
+	cv::Mat white = whiteMask(image, toGreyscale(brightest));
 	cv::imwrite("./plots/" + tag + "_white.png", white);
 
 	cv::Mat labels, stats, centroids;
@@ -184,7 +197,9 @@ double findYCenterOfPlant(cv::Mat& image) {
 
 Camera::Camera() : color{rs2::frame()}, depth{rs2::frame()} {
 	log(std::string("INFO Camera: starting init"));
-	p.start();
+	cfg.enable_stream(RS2_STREAM_DEPTH, 1280, 720);
+    cfg.enable_stream(RS2_STREAM_COLOR, 1280, 720);
+	p.start(cfg);
 	
 	// set manual exposure
 	auto colorSensor = p.get_active_profile().get_device().query_sensors()[0];

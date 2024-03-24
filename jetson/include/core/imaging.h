@@ -16,6 +16,7 @@ struct Pixel {
 class Camera {
 	rs2::pipeline p;
 	rs2::context ctx;
+	rs2::config cfg;
 	rs2::video_frame color;
 	rs2::depth_frame depth;
 	rs2_intrinsics intrinsic;
