@@ -186,8 +186,8 @@ void pollinate() {
 void pollinate_v2(){
     const int x_delta = 30;
     const int y_delta = 15;
-    const uint action_delay = 100000;
-    const uint step_delay = 10000;
+    const uint action_delay = 50000;
+    const uint step_delay = 5000;
 
     const int x_init = end_effector_position[STP_X] - 20; // seems offset
     const int y_init = end_effector_position[STP_Y];
