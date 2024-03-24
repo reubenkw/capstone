@@ -285,11 +285,11 @@ void write_scan_image(cv::Mat & scanPlot, cv::Mat & image, int i, Point3D armPos
     scanPlot.copyTo(state_largerROIRect);
 	addStateLabel(state_img, std::string("SCAN"));
 	addStateInfo(state_img, std::string("Arm Position [mm] - x:") +
-	std::to_string((int)armPosition.x * 1000) +
+	std::to_string((int)(armPosition.x * 1000)) +
 	std::string(", y: ") +
-	std::to_string((int)armPosition.y * 1000) +
+	std::to_string((int)(armPosition.y * 1000)) +
 	std::string(", z: ") +
-	std::to_string((int)armPosition.z * 1000)) ;
+	std::to_string((int)(armPosition.z * 1000))) ;
 	cv::resize(state_img, state_img, cv::Size(), SCALE_FACTOR, SCALE_FACTOR);
 	cv::imwrite("./display/state.jpg", state_img);
 }
