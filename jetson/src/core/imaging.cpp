@@ -27,14 +27,14 @@ cv::Mat toGreyscale(cv::Mat& image) {
 	return greyscale;
 }
 
-double brightestPixelVal(cv::Mat& image, Point2D topLeft, double width, double height) {
-	double brightestPix = 0;
+Point3D brightestPixelVal(cv::Mat& image, Point2D topLeft, double width, double height) {
+	Point3D brightestPix = 0;
 	for (int i = 0; i < height; i++) {
 		for (int j = 0; j < width; j++) {
 			cv::Point3_<uchar>* p = image.ptr<cv::Point3_<uchar> >(i + topLeft.y, j + topLeft.x);
 			double greyscale = toGreyscale({ p->x, p->y, p->z });
 			if (greyscale > brightestPix) {
-				brightestPix = greyscale;
+				brightestPix = Point3D(p->x, p->y, p->z);
 			}
 		}
 	}
@@ -130,8 +130,8 @@ bool nearYellow(cv::Mat& image, cv::Mat& yellow, Point2D topLeft, int width, int
 			double r = p->x;
 			double g = p->y;
 			double b = p->z;
-			if (g > b * 1.2 && r > b * 1.2 && r < g * 1.1 && g < r * 1.1 && 
-			    (r + g + b)/3 > brightest * 0.7) {
+			if (g > b * 1.2 && r > b * 1.2 && r < g * 1.15 && g < r * 1.15 && 
+			    (r + g)/2 > brightest * 0.7) {
 				yellow.at<uchar>(i, j) = 255;
 				numYellow++;
 			}

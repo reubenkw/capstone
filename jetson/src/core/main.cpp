@@ -31,7 +31,7 @@ void test_find_flowers(){
 	std::vector<Point2D> avgCenter = avgClusterCenters(yellowBlobs, 25);
 	log(std::string("finding avgCenters!!!!!!"));
 	for (Point2D const& blob : avgCenter) {
-		cv::circle(image, cv::Point((int)blob.x, (int)blob.y), 5, { 255, 0, 255 }, 5);
+		cv::circle(image, cv::Point((int)blob.x, (int)blob.y), 20, { 255, 0, 255 }, 5);
 		log(std::string("avgCenter: ") + std::to_string(blob.x) + std::string(",") + std::to_string(blob.y));
 	}
 
@@ -40,6 +40,7 @@ void test_find_flowers(){
 }
 
 std::vector<Point3D> test_image_processing(Camera & cam) {
+	cam.setExposure(160000); // higher for real plant	
 	cv::Mat image = cam.getColorImage();
 
 	cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
@@ -55,7 +56,7 @@ std::vector<Point3D> test_image_processing(Camera & cam) {
 	std::vector<Point2D> avgCenter = avgClusterCenters(yellowBlobs, 25);
 	log(std::string("finding avgCenters!!!!!!"));
 	for (Point2D const& blob : avgCenter) {
-		cv::circle(image, cv::Point((int)blob.x, (int)blob.y), 5, { 255, 0, 255 }, 5);
+		cv::circle(image, cv::Point((int)blob.x, (int)blob.y), 5, { 128, 0, 255 }, 5);
 		log(std::string("avgCenter: ") + std::to_string(blob.x) + std::string(",") + std::to_string(blob.y));
 	}
 
@@ -309,13 +310,13 @@ int main(int argc, char** argv)
 {
 	initialize_log();
 	log(std::string("Starting Program!"));
-	main_loop();
+	// main_loop();
 
 	// test_scan();
 	// test_drive_interface();
 	// test_camera_image();
-	// Camera cam;
-	// test_image_processing(cam);
+	Camera cam;
+	test_image_processing(cam);
 	// test_clustering();
 	// test_i2c_write();
 	// test_i2c_read();

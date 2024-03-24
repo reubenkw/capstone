@@ -318,7 +318,7 @@ std::vector<Point3D> Robot::findFlowers(int index){
 	flowerCenters = avgClusterCenters(flowerCenters, 25);
 	
 	for (Point2D const& blob : flowerCenters) {
-		cv::circle(image, cv::Point((int)blob.x, (int)blob.y), 20, { 255, 0, 255 }, 5);
+		cv::circle(image, cv::Point((int)blob.x, (int)blob.y), 20, { 128, 0, 255 }, 5);
 	}
 	cv::Mat scanPlot = cv::imread("./display/scan.jpg");
 	write_scan_image(scanPlot, image, index, getArmPosition());
