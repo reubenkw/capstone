@@ -265,6 +265,27 @@ void test_scan(){
 	sleep(5);
 }
 
+void test_limits() {
+	log(std::string("INFO: starting test_limits."));
+	Camera cam;
+	Robot r(cam);
+
+	log(std::string("testing minimums (z then x then y)."));
+	r.resetServoArm();
+	log(std::string("done testing minimums."));
+
+	sleep(5);
+	log(std::string("testing max x."));
+	r.setArmPosition(x, CARTESIAN_X_MAX);
+	log(std::string("done testing max x."));
+	sleep(5);
+	log(std::string("testing max y."));
+	r.setArmPosition(y, CARTESIAN_Y_MAX);
+	log(std::string("done testing max y."));
+
+	log(std::string("INFO: done test_limits."));
+}
+
 void main_loop() {
 	log(std::string("INFO: starting main_loop."));
 	sleep(5);
