@@ -306,9 +306,9 @@ int main(int argc, char** argv)
 {
 	initialize_log();
 	log(std::string("Starting Program!"));
-	test_scan();
-	// main_loop();
+	main_loop();
 
+	// test_scan();
 	// test_drive_interface();
 	// test_camera_image();
 	// Camera cam;

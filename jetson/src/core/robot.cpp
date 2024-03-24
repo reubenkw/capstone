@@ -56,8 +56,8 @@ Robot::Robot(Camera & camera)
 	addStateLabel(state_img, std::string("INITIALIZED"));
 	cv::Mat scan_img = cv::Mat::zeros(cv::Size(DISP_IMG_WIDTH, DISP_IMG_HEIGHT), CV_8UC3);
 	cv::resize(state_img, state_img, cv::Size(), SCALE_FACTOR, SCALE_FACTOR);
-	cv::imwrite("./display/state.png", state_img);
-	cv::imwrite("./display/scan.png", scan_img);
+	cv::imwrite("./display/state.jpg", state_img);
+	cv::imwrite("./display/scan.jpg", scan_img);
 
 	// arm starts in upright position
 	armPosition = Point3D(0, 0, CARTESIAN_Z_MAX);
@@ -130,8 +130,8 @@ void Robot::driveForwards(uint8_t pwm_speed, float seconds) {
 	addStateLabel(state_img, std::string("DRIVE"));
 	cv::Mat scan_img = cv::Mat::zeros(cv::Size(DISP_IMG_WIDTH, DISP_IMG_HEIGHT), CV_8UC3);
 	cv::resize(state_img, state_img, cv::Size(), SCALE_FACTOR, SCALE_FACTOR);
-	cv::imwrite("./display/state.png", state_img);
-	cv::imwrite("./display/scan.png", scan_img);
+	cv::imwrite("./display/state.jpg", state_img);
+	cv::imwrite("./display/scan.jpg", scan_img);
 
 	uint8_t data[5] = {0};
 	data[0] = pwm_speed;
@@ -165,8 +165,8 @@ void Robot::driveBackwards(uint8_t pwm_speed, float seconds) {
 	addStateLabel(state_img, std::string("DRIVE"));
 	cv::Mat scan_img = cv::Mat::zeros(cv::Size(DISP_IMG_WIDTH, DISP_IMG_HEIGHT), CV_8UC3);
 	cv::resize(state_img, state_img, cv::Size(), SCALE_FACTOR, SCALE_FACTOR);
-	cv::imwrite("./display/state.png", state_img);
-	cv::imwrite("./display/scan.png", scan_img);
+	cv::imwrite("./display/state.jpg", state_img);
+	cv::imwrite("./display/scan.jpg", scan_img);
 
 	uint8_t data[5] = {0};
 	data[0] = pwm_speed;
@@ -240,8 +240,8 @@ std::vector<Point3D> Robot::scan() {
 				+ std::to_string( scanLoc.at(i).x )
 				+ std::string(", ")
 				+ std::to_string( scanLoc.at(i).y ));
-			// setArmPosition(x, scanLoc.at(i).x);
-			// setArmPosition(y, scanLoc.at(i).y);
+			setArmPosition(x, scanLoc.at(i).x);
+			setArmPosition(y, scanLoc.at(i).y);
 			usleep(1000000);
 			std::vector<Point3D> newFlowers = findFlowers(i);
 			flowersToVisit.insert(flowersToVisit.end(), newFlowers.begin(), newFlowers.end());
@@ -277,7 +277,7 @@ void write_scan_image(cv::Mat & scanPlot, cv::Mat & image, int i, Point3D armPos
     // Write the smaller image to the ROI in the larger image
 	cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
     image.copyTo(largerROIRect);
-	cv::imwrite("./display/scan.png", scanPlot);
+	cv::imwrite("./display/scan.jpg", scanPlot);
 
 	cv::Mat state_img = cv::Mat::zeros(cv::Size(DISP_IMG_WIDTH, DISP_IMG_HEIGHT + 200), CV_8UC3);
 	cv::Rect state_roi(0, 0, DISP_IMG_WIDTH, DISP_IMG_HEIGHT);
@@ -291,7 +291,7 @@ void write_scan_image(cv::Mat & scanPlot, cv::Mat & image, int i, Point3D armPos
 	std::string(", z: ") +
 	std::to_string((int)armPosition.z * 1000)) ;
 	cv::resize(state_img, state_img, cv::Size(), SCALE_FACTOR, SCALE_FACTOR);
-	cv::imwrite("./display/state.png", state_img);
+	cv::imwrite("./display/state.jpg", state_img);
 }
 
 std::vector<Point3D> Robot::findFlowers(int index){
@@ -318,7 +318,7 @@ std::vector<Point3D> Robot::findFlowers(int index){
 	for (Point2D const& blob : flowerCenters) {
 		cv::circle(image, cv::Point((int)blob.x, (int)blob.y), 20, { 255, 0, 255 }, 5);
 	}
-	cv::Mat scanPlot = cv::imread("./display/scan.png");
+	cv::Mat scanPlot = cv::imread("./display/scan.jpg");
 	write_scan_image(scanPlot, image, index, getArmPosition());
 	
 	std::vector<Point3D> cam3DPoints = camera.getDeprojection(flowerCenters);
@@ -341,11 +341,11 @@ void update_pollinate(cv::Mat & scanPlot, int numFlowers, Point3D armPosition) {
 	std::string(", z: ") +
 	std::to_string((int)armPosition.z * 1000)) ;
 	cv::resize(state_img, state_img, cv::Size(), SCALE_FACTOR, SCALE_FACTOR);
-	cv::imwrite("./display/state.png", state_img);
+	cv::imwrite("./display/state.jpg", state_img);
 }
 
 void Robot::pollinate_all_in_zone(std::vector<Point3D> flowerCenters) {
-	cv::Mat scanPlot = cv::imread("./display/scan.png");
+	cv::Mat scanPlot = cv::imread("./display/scan.jpg");
 	update_pollinate(scanPlot, flowerCenters.size(), getArmPosition());
 	for (auto const & flowerCenter : flowerCenters) {
 
