@@ -84,7 +84,7 @@ cv::Mat whiteMask(cv::Mat& image, double brightest) {
 			if (std::abs(r/g - 1.0) < 0.15 && // make sure red and green are close together
 				std::abs(g/b - 1.0) < 0.5 && // make sure green and blue are close ish together
 				std::abs(r/b - 1.0) < 0.5 && // make sure red and blue are close ish together
-				brightest * 0.7 // make sure its relatively bright compared to the whole iamge
+				(r + g + b) / 3 > brightest * 0.7 // make sure its relatively bright compared to the whole iamge
 				) {
 				thresholded.at<uchar>(i, j) = 255;
 			}
