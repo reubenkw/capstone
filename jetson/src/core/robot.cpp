@@ -11,7 +11,7 @@
 
 #define DISP_IMG_WIDTH 1696
 #define DISP_IMG_HEIGHT 960
-#define SCALE_FACTOR 0.25
+#define SCALE_FACTOR 0.5
 
 void addStateLabel(cv::Mat& image, const std::string & text) {
 	// Define the text properties
@@ -365,7 +365,7 @@ void Robot::pollinate_all_in_zone(std::vector<Point3D> flowerCenters) {
 		+ std::to_string(flowerCenter.y) + std::string(", ")
 		+ std::to_string(flowerCenter.z));
 
-		sleep(1);
+		sleep(0.1);
 
 		setArmPosition(x, flowerCenter.x);
 		setArmPosition(y, flowerCenter.y);
@@ -374,7 +374,7 @@ void Robot::pollinate_all_in_zone(std::vector<Point3D> flowerCenters) {
 		update_pollinate(scanPlot, flowerCenters.size(), getArmPosition());
 		pollinate();
 
-		sleep(1);
+		sleep(0.1);
 		// reset arm to top
 		setArmPosition(z, CARTESIAN_Z_MAX + 0.1);
 
