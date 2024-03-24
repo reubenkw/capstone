@@ -7,6 +7,8 @@
 #include <math.h>
 
 #include <opencv2/core/types.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/highgui/highgui.hpp>
 #include <librealsense2/rs.hpp>
 
 // very rough outline of an imaging class
@@ -84,7 +86,7 @@ cv::Mat whiteMask(cv::Mat& image, double brightest) {
 			if (std::abs(r/g - 1.0) < 0.15 && // make sure red and green are close together
 				std::abs(g/b - 1.0) < 0.5 && // make sure green and blue are close ish together
 				std::abs(r/b - 1.0) < 0.5 && // make sure red and blue are close ish together
-				(r + g + b) / 3 > brightest * 0.7 // make sure its relatively bright compared to the whole iamge
+				(r + g + b) / 3 > 150 // make sure its relatively bright compared to the whole iamge
 				) {
 				thresholded.at<uchar>(i, j) = 255;
 			}
@@ -139,9 +141,9 @@ bool nearYellow(cv::Mat& image, cv::Mat& yellow, Point2D topLeft, int width, int
 			double r = p->x;
 			double g = p->y;
 			double b = p->z;
-			if (b < brightest.b * 0.8 &&  // make sure blue is lower than it is in white
+			if ((double)brightest.b/brightest.r - b/r > 0.2 &&  // make sure there is less blue in the ratio compared to white
 				std::abs(r/g - 1.0) < 0.15 && // make sure red and green are close together
-			    (r + g)/2 > (brightest.r + brightest.g) / 2 * 0.7 // make sure its bright enough
+			    (r + g)/2 > (brightest.r + brightest.g) / 2 * 0.65 // make sure its bright enough
 				) {
 				yellow.at<uchar>(i, j) = 255;
 				numYellow++;
@@ -150,7 +152,7 @@ bool nearYellow(cv::Mat& image, cv::Mat& yellow, Point2D topLeft, int width, int
 	}
 	log(std::string("numYellow: ") + std::to_string(numYellow));
 	log(std::string("area: ") + std::to_string(area));
-	return numYellow > 10;
+	return numYellow > 5;
 }
 
 std::vector<Point2D> findFlowerCenters(cv::Mat& image, std::string const & tag){
@@ -160,6 +162,7 @@ std::vector<Point2D> findFlowerCenters(cv::Mat& image, std::string const & tag){
 	Pixel brightest = brightestPixelVal(image, {0,0}, image.cols, image.rows);
 
 	cv::Mat white = whiteMask(image, toGreyscale(brightest));
+	cv::dilate(white, white, cv::Mat(), cv::Point(-1, -1), 2, 1, 1);
 	cv::imwrite("./plots/" + tag + "_white.png", white);
 
 	cv::Mat labels, stats, centroids;
