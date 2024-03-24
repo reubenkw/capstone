@@ -335,11 +335,11 @@ void update_pollinate(cv::Mat & scanPlot, int numFlowers, Point3D armPosition) {
 	addStateInfo(state_img, std::string("Number of Flowers: ") + 
 	std::to_string(numFlowers ) + 
 	std::string(" | Arm Position [mm] - x:") +
-	std::to_string((int)armPosition.x * 1000) +
+	std::to_string((int)(armPosition.x * 1000)) +
 	std::string(", y: ") +
-	std::to_string((int)armPosition.y * 1000) +
+	std::to_string((int)(armPosition.y * 1000)) +
 	std::string(", z: ") +
-	std::to_string((int)armPosition.z * 1000)) ;
+	std::to_string((int)(armPosition.z * 1000)));
 	cv::resize(state_img, state_img, cv::Size(), SCALE_FACTOR, SCALE_FACTOR);
 	cv::imwrite("./display/state.jpg", state_img);
 }

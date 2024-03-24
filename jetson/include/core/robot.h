@@ -46,7 +46,6 @@ public:
 	void pollinate();
 	std::vector<Point3D> scan();
 	std::vector<Point3D> findFlowers(int index);
-	void pollinate_row(int n = 1);
 	void driveForwards(uint8_t pwm_speed, float seconds);
 	void driveBackwards(uint8_t pwm_speed, float seconds);
 	void pollinate_all_in_zone(std::vector<Point3D> flowerCenters);
