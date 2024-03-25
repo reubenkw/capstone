@@ -40,8 +40,8 @@ void test_find_flowers(){
 }
 
 std::vector<Point3D> test_image_processing(Camera & cam) {
-	cam.setExposure(75000); // higher for real plant
-	// cam.setExposure(40000); // lower for fake plant	
+	// cam.setExposure(75000); // higher for real plant
+	cam.setExposure(40000); // lower for fake plant	
 	cv::Mat image = cam.getColorImage();
 
 	cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
