@@ -85,9 +85,9 @@ cv::Mat whiteMask(cv::Mat& image, double brightest) {
 			double g = p->y;
 			double b = p->z;
 			if (std::abs(r/g - 1.0) < 0.15 && // make sure red and green are close together
-				std::abs(g/b - 1.0) < 0.5 && // make sure green and blue are close ish together
-				std::abs(r/b - 1.0) < 0.5 && // make sure red and blue are close ish together
-				(r + g + b) / 3 > brightest*0.8 // make sure its relatively bright compared to the whole iamge
+				std::abs(g/b - 1.0) < 0.25 && // make sure green and blue are close ish together
+				std::abs(r/b - 1.0) < 0.25 && // make sure red and blue are close ish together
+				(r + g + b) / 3 > brightest*0.7 // make sure its relatively bright compared to the whole iamge
 				) {
 				thresholded.at<uchar>(i, j) = 255;
 			}
@@ -143,9 +143,8 @@ bool nearYellow(cv::Mat& image, cv::Mat& white, cv::Mat& yellow, Point2D topLeft
 			double g = p->y;
 			double b = p->z;
 			if ((double)brightest.b/brightest.r - b/r > 0.15 &&  // make sure there is less blue in the ratio compared to white
-				std::abs(r/g - 1.0) < 0.15 && // make sure red and green are close together
-			    (r + g)/2 > (brightest.r + brightest.g) / 2 * 0.65 &&// make sure its bright enough
-				 white.at<uchar>(i, j) == 0// make sure we didnt count it as white
+				r > g * 0.8 &&  // make sure its not green
+			    (r + g)/2 > (brightest.r + brightest.g) / 2 * 0.65// make sure its bright enough
 				) {
 				yellow.at<uchar>(i, j) = 255;
 				numYellow++;
