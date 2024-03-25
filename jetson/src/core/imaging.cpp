@@ -140,7 +140,7 @@ bool nearYellow(cv::Mat& image, cv::Mat& white, cv::Mat& yellow, Point2D topLeft
 			double g = p->y;
 			double b = p->z;
 			if (b < brightest.b * 0.6 && // check less blue
-			    (r + g)/2 > (brightest.r + brightest.g) / 2 * 0.75// make sure its bright enough
+			    (r + g)/2 > (brightest.r + brightest.g) / 2 * 0.65// make sure its bright enough
 				) {
 				yellow.at<uchar>(i, j) = 255;
 				numYellow++;
