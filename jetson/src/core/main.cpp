@@ -40,7 +40,8 @@ void test_find_flowers(){
 }
 
 std::vector<Point3D> test_image_processing(Camera & cam) {
-	// cam.setExposure(160000); // higher for real plant	
+	// cam.setExposure(160000); // higher for real plant
+	cam.setExposure(40000); // lower for fake plant	
 	cv::Mat image = cam.getColorImage();
 
 	cv::cvtColor(image, image, cv::COLOR_RGB2BGR);
@@ -331,13 +332,14 @@ int main(int argc, char** argv)
 {
 	initialize_log();
 	log(std::string("Starting Program!"));
+	// test_limits();
 	// main_loop();
 
 	// test_scan();
 	// test_drive_interface();
 	// test_camera_image();
-	Camera cam;
-	test_image_processing(cam);
+	 Camera cam;
+	 test_image_processing(cam);
 	// test_clustering();
 	// test_i2c_write();
 	// test_i2c_read();
