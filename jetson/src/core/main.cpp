@@ -257,7 +257,7 @@ void test_scan(){
 	std::vector<Point3D> flowerCenters;
 	// r.resetServoArm();
 	sleep(5);
-	cam.setExposure(50000); // lower for fake plant
+	cam.setExposure(40000);
 	sleep(5);
 	flowerCenters = r.scan();
 	r.pollinate_all_in_zone(flowerCenters);	
@@ -303,7 +303,7 @@ void main_loop() {
 	sleep(5);
 
 	while(true) {
-		cam.setExposure(80000); // higher for real plant
+		cam.setExposure(75000); // higher for real plant
 		sleep(sleep_time);
 		flowerCenters = r.scan();
 		r.pollinate_all_in_zone(flowerCenters);
@@ -314,7 +314,7 @@ void main_loop() {
 		sleep(sleep_time);
 
 			
-		cam.setExposure(50000); // lower for fake plant
+		cam.setExposure(40000); // lower for fake plant
 		sleep(sleep_time);
 		flowerCenters = r.scan();
 		r.pollinate_all_in_zone(flowerCenters);
