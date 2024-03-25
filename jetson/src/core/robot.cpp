@@ -18,7 +18,7 @@ cv::Scalar bg_color(126, 187, 143);
 void addStateLabel(cv::Mat& image, const std::string & text) {
 	// Define the text properties
 	double fontScale = 2.0;
-    int thickness = 2;
+    int thickness = 5;
     int fontFace = cv::FONT_HERSHEY_DUPLEX ; 
     int baseline = 0;
     cv::Size textSize = cv::getTextSize(text, fontFace, fontScale, thickness, &baseline);
@@ -34,7 +34,7 @@ void addStateLabel(cv::Mat& image, const std::string & text) {
 void addStateInfo(cv::Mat& image, const std::string & text) {
 	// Define the text properties
 	double fontScale = 1.5;
-    int thickness = 2;
+    int thickness = 3;
     int fontFace = cv::FONT_HERSHEY_DUPLEX ; 
     int baseline = 0;
     cv::Size textSize = cv::getTextSize(text, fontFace, fontScale, thickness, &baseline);
@@ -54,9 +54,9 @@ Robot::Robot(Camera & camera)
 	i2c_bus_file = open_i2c(); 
 
 	// initial scan image 
-	cv::Mat state_img(DISP_IMG_WIDTH, DISP_IMG_HEIGHT + 200, CV_8UC3, bg_color);
+	cv::Mat state_img(DISP_IMG_HEIGHT + 200, DISP_IMG_WIDTH, CV_8UC3, bg_color);
 	addStateLabel(state_img, std::string("INITIALIZED"));
-	cv::Mat scan_img(DISP_IMG_WIDTH, DISP_IMG_HEIGHT, CV_8UC3, bg_color);
+	cv::Mat scan_img(DISP_IMG_HEIGHT, DISP_IMG_WIDTH, CV_8UC3, bg_color);
 	cv::resize(state_img, state_img, cv::Size(), SCALE_FACTOR, SCALE_FACTOR);
 	cv::imwrite("./display/state.jpg", state_img);
 	cv::imwrite("./display/scan.jpg", scan_img);
@@ -128,9 +128,9 @@ void Robot::setArmPosition(uint8_t motor_num, double pos) {
 
 void Robot::driveForwards(uint8_t pwm_speed, float seconds) {
 	// clear state image
-	cv::Mat state_img(DISP_IMG_WIDTH, DISP_IMG_HEIGHT + 200, CV_8UC3, bg_color);
+	cv::Mat state_img(DISP_IMG_HEIGHT + 200, DISP_IMG_WIDTH, CV_8UC3, bg_color);
 	addStateLabel(state_img, std::string("DRIVE"));
-	cv::Mat scan_img(DISP_IMG_WIDTH, DISP_IMG_HEIGHT, CV_8UC3, bg_color);
+	cv::Mat scan_img(DISP_IMG_HEIGHT, DISP_IMG_WIDTH, CV_8UC3, bg_color);
 	cv::resize(state_img, state_img, cv::Size(), SCALE_FACTOR, SCALE_FACTOR);
 	cv::imwrite("./display/state.jpg", state_img);
 	cv::imwrite("./display/scan.jpg", scan_img);
@@ -163,9 +163,9 @@ void Robot::driveForwards(uint8_t pwm_speed, float seconds) {
 
 void Robot::driveBackwards(uint8_t pwm_speed, float seconds) {
 	// clear state image
-	cv::Mat state_img(DISP_IMG_WIDTH, DISP_IMG_HEIGHT + 200, CV_8UC3, bg_color);
+	cv::Mat state_img(DISP_IMG_HEIGHT + 200, DISP_IMG_WIDTH, CV_8UC3, bg_color);
 	addStateLabel(state_img, std::string("DRIVE"));
-	cv::Mat scan_img(DISP_IMG_WIDTH, DISP_IMG_HEIGHT, CV_8UC3, bg_color);
+	cv::Mat scan_img(DISP_IMG_HEIGHT, DISP_IMG_WIDTH, CV_8UC3, bg_color);
 	cv::resize(state_img, state_img, cv::Size(), SCALE_FACTOR, SCALE_FACTOR);
 	cv::imwrite("./display/state.jpg", state_img);
 	cv::imwrite("./display/scan.jpg", scan_img);
@@ -281,7 +281,7 @@ void write_scan_image(cv::Mat & scanPlot, cv::Mat & image, int i, Point3D armPos
     image.copyTo(largerROIRect);
 	cv::imwrite("./display/scan.jpg", scanPlot);
 
-	cv::Mat state_img(DISP_IMG_WIDTH, DISP_IMG_HEIGHT + 200, CV_8UC3, bg_color);
+	cv::Mat state_img(DISP_IMG_HEIGHT + 200, DISP_IMG_WIDTH, CV_8UC3, bg_color);
 	cv::Rect state_roi(0, 0, DISP_IMG_WIDTH, DISP_IMG_HEIGHT);
 	cv::Mat state_largerROIRect = state_img(state_roi);
     scanPlot.copyTo(state_largerROIRect);
@@ -329,7 +329,7 @@ std::vector<Point3D> Robot::findFlowers(int index){
 }
 
 void update_pollinate(cv::Mat & scanPlot, int numFlowers, Point3D armPosition) {
-	cv::Mat state_img(DISP_IMG_WIDTH, DISP_IMG_HEIGHT + 200, CV_8UC3, bg_color);
+	cv::Mat state_img(DISP_IMG_HEIGHT + 200, DISP_IMG_WIDTH, CV_8UC3, bg_color);
 	cv::Rect state_roi(0, 0, DISP_IMG_WIDTH, DISP_IMG_HEIGHT);
 	cv::Mat state_largerROIRect = state_img(state_roi);
     scanPlot.copyTo(state_largerROIRect);
