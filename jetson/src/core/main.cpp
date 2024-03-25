@@ -333,13 +333,13 @@ int main(int argc, char** argv)
 	initialize_log();
 	log(std::string("Starting Program!"));
 	// test_limits();
-	// main_loop();
+	main_loop();
 
 	// test_scan();
 	// test_drive_interface();
 	// test_camera_image();
-	 Camera cam;
-	 test_image_processing(cam);
+	//  Camera cam;
+	//  test_image_processing(cam);
 	// test_clustering();
 	// test_i2c_write();
 	// test_i2c_read();
