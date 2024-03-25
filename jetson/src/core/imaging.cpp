@@ -84,7 +84,8 @@ cv::Mat whiteMask(cv::Mat& image, double brightest) {
 			double r = p->x;
 			double g = p->y;
 			double b = p->z;
-			if ((r + g + b) / 3 > brightest*0.7 // make sure its relatively bright compared to the whole image
+			if ((r + g + b) / 3 > brightest*0.55 && // make sure its relatively bright compared to the whole image
+				g < b * 1.5
 				) {
 				thresholded.at<uchar>(i, j) = 255;
 			}
@@ -139,7 +140,7 @@ bool nearYellow(cv::Mat& image, cv::Mat& white, cv::Mat& yellow, Point2D topLeft
 			double r = p->x;
 			double g = p->y;
 			double b = p->z;
-			if (b < brightest.b * 0.6 && // check less blue
+			if (b < brightest.b * 0.65 && // check less blue
 			    (r + g)/2 > (brightest.r + brightest.g) / 2 * 0.65// make sure its bright enough
 				) {
 				yellow.at<uchar>(i, j) = 255;
@@ -149,7 +150,7 @@ bool nearYellow(cv::Mat& image, cv::Mat& white, cv::Mat& yellow, Point2D topLeft
 	}
 	log(std::string("numYellow: ") + std::to_string(numYellow));
 	log(std::string("area: ") + std::to_string(area));
-	return numYellow > 25;
+	return numYellow > 10;
 }
 
 std::vector<Point2D> findFlowerCenters(cv::Mat& image, std::string const & tag){
